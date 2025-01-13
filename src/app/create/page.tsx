@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Loading from '../../compounent/loading'
 import { auth } from '../../../firebase'
@@ -11,7 +11,11 @@ import Nav from '../../compounent/nav'
 type Plan = {
   id: string;
   status: string;
-  
+  title: string;
+  description: string;
+  createdAt: {
+    toDate: () => Date;
+  };
 };
 
 export default function CreatePlan() {
@@ -20,7 +24,7 @@ export default function CreatePlan() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [selectedMonth, setSelectedMonth] = useState('January')
-  const [plans, setPlans] = useState<any[]>([])
+  const [plans, setPlans] = useState<Plan[]>([])
   const [status, setStatus] = useState('Not Started')
   const [totalTasks, setTotalTasks] = useState(0)
   const [completedTasks, setCompletedTasks] = useState(0)
@@ -33,7 +37,7 @@ export default function CreatePlan() {
     'October', 'November', 'December'
   ]
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const db = getFirestore()
       const user = auth.currentUser
@@ -60,13 +64,13 @@ export default function CreatePlan() {
     } catch (error) {
       console.error('Error fetching plans:', error)
     }
-  }
+  }, [selectedMonth])
 
   useEffect(() => {
     if (!isLoading) {
       fetchPlans()
     }
-  }, [selectedMonth, isLoading])
+  }, [selectedMonth, isLoading, fetchPlans])
 
   React.useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {

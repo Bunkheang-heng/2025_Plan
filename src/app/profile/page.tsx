@@ -4,10 +4,11 @@ import { auth } from '../../../firebase'
 import { useRouter } from 'next/navigation'
 import Loading from '../../compounent/loading'
 import Nav from '../../compounent/nav'
+import { User } from 'firebase/auth'
 
 export default function Profile() {
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
 
   useEffect(() => {

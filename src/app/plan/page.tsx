@@ -1,14 +1,24 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Loading from '../../compounent/loading'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 import Nav from '../../compounent/nav'
 
+// Define Plan type
+type Plan = {
+  id: string;
+  status: string;
+  title: string;
+  description: string;
+  userId: string;
+  month: string;
+}
+
 export default function Plan() {
   const [isLoading, setIsLoading] = useState(true)
-  const [plans, setPlans] = useState<any[]>([])
+  const [plans, setPlans] = useState<Plan[]>([]) // Use Plan type instead of any
   const [selectedMonth, setSelectedMonth] = useState('January')
   const router = useRouter()
 
@@ -19,20 +29,7 @@ export default function Plan() {
     'October', 'November', 'December'
   ]
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (!user) {
-        router.push('/login')
-      } else {
-        fetchPlans()
-        setIsLoading(false)
-      }
-    })
-
-    return () => unsubscribe()
-  }, [router, selectedMonth])
-
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const db = getFirestore()
       const user = auth.currentUser
@@ -49,12 +46,25 @@ export default function Plan() {
       const planData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }))
+      })) as Plan[]
       setPlans(planData)
     } catch (error) {
       console.error('Error fetching plans:', error)
     }
-  }
+  }, [selectedMonth])
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        router.push('/login')
+      } else {
+        fetchPlans()
+        setIsLoading(false)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [router, selectedMonth, fetchPlans])
 
   const updatePlanStatus = async (planId: string) => {
     try {

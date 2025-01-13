@@ -20,7 +20,7 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password)
       router.push('/')
-    } catch (err) {
+    } catch {
       setError('Invalid email or password')
     } finally {
       setIsLoading(false)
