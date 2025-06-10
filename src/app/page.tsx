@@ -254,7 +254,7 @@ export default function Home() {
           const success = await deploy();
         </div>
         <div className="absolute top-40 right-32 opacity-10 text-green-400 font-mono text-sm -rotate-6 animate-float-delayed">
-          git commit -m "feature: new task"
+          git commit -m &quot;feature: new task&quot;
         </div>
         <div className="absolute bottom-32 left-32 opacity-10 text-blue-400 font-mono text-sm rotate-6 animate-float-slow">
           npm run build && npm start
@@ -289,7 +289,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2 text-green-400 font-mono text-sm">
                 <span>$</span>
-                <span className="animate-pulse">echo "Welcome back, Heng Bunkheang!"</span>
+                <span className="animate-pulse">echo &quot;Welcome back, Heng Bunkheang!&quot;</span>
               </div>
               <div className="ml-2">
                 <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text mb-2 font-mono">

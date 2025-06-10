@@ -193,7 +193,7 @@ export default function WeeklyPlans() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2 text-green-400 font-mono text-sm">
                 <span>$</span>
-                <span>echo "Weekly Iteration Pipeline Activated"</span>
+                <span>echo &quot;Weekly Iteration Pipeline Activated&quot;</span>
               </div>
               <div className="ml-2">
                 <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-cyan-400 bg-clip-text mb-2 font-mono">

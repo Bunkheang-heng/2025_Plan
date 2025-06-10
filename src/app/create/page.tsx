@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Loading from '../../compounent/loading'
 import { auth } from '../../../firebase'
@@ -18,7 +18,7 @@ type Plan = {
   priority?: string;
 };
 
-export default function CreatePlan() {
+function CreatePlanContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [title, setTitle] = useState('')
@@ -138,7 +138,19 @@ export default function CreatePlan() {
         return
       }
 
-      const planData: any = {
+      const planData: {
+        userId: string;
+        title: string;
+        description: string;
+        status: string;
+        priority: string;
+        planType: string;
+        createdAt: Date;
+        date?: string;
+        timePeriod?: string;
+        weekStart?: string;
+        month?: string;
+      } = {
         userId: user.uid,
         title,
         description,
@@ -271,7 +283,7 @@ export default function CreatePlan() {
           const newPlan = await createPlan();
         </div>
         <div className="absolute top-40 right-32 opacity-10 text-green-400 font-mono text-sm -rotate-6 animate-float-delayed">
-          git add . && git commit -m "new plan"
+          git add . && git commit -m &quot;new plan&quot;
         </div>
         <div className="absolute bottom-32 left-32 opacity-10 text-blue-400 font-mono text-sm rotate-6 animate-float-slow">
           npm run build-plan --prod
@@ -306,7 +318,7 @@ export default function CreatePlan() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2 text-green-400 font-mono text-sm">
                 <span>$</span>
-                <span>echo "Plan Creation Environment Loaded"</span>
+                <span>echo &quot;Plan Creation Environment Loaded&quot;</span>
               </div>
               <div className="ml-2">
                 <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text mb-2 font-mono">
@@ -487,7 +499,7 @@ export default function CreatePlan() {
                       </h3>
                     </div>
                     {periodPlans.length === 0 ? (
-                      <p className="text-slate-500 text-sm font-mono ml-5">// No tasks scheduled for {period}</p>
+                      <p className="text-slate-500 text-sm font-mono ml-5">{/* No tasks scheduled for */}{period}</p>
                     ) : (
                       <div className="space-y-3">
                         {(periodPlans as Plan[]).map((plan) => (
@@ -597,7 +609,7 @@ export default function CreatePlan() {
               
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-white font-mono">$ create_new_plan()</h2>
-                <p className="text-slate-400 font-mono text-sm mt-2">// Configure plan parameters</p>
+                <p className="text-slate-400 font-mono text-sm mt-2">{/* Configure plan parameters */}</p>
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -681,5 +693,13 @@ export default function CreatePlan() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function CreatePlan() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CreatePlanContent />
+    </Suspense>
   )
 }

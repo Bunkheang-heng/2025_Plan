@@ -291,7 +291,7 @@ export default function DailyPlans() {
           const dailyGoals = await fetch();
         </div>
         <div className="absolute top-40 right-32 opacity-10 text-green-400 font-mono text-sm -rotate-6 animate-float-delayed">
-          git add . && git commit -m "daily"
+          git add . && git commit -m &quot;daily&quot;
         </div>
         <div className="absolute bottom-32 left-32 opacity-10 text-blue-400 font-mono text-sm rotate-6 animate-float-slow">
           npm run daily-sprint
@@ -326,7 +326,7 @@ export default function DailyPlans() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2 text-green-400 font-mono text-sm">
                 <span>$</span>
-                <span>echo "Daily Sprint Mode Activated"</span>
+                <span>echo &quot;Daily Sprint Mode Activated&quot;</span>
               </div>
               <div className="ml-2">
                 <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text mb-2 font-mono">

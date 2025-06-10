@@ -136,7 +136,7 @@ export default function MonthlyPlans() {
       {/* Floating code elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 opacity-10 text-cyan-400 font-mono text-sm rotate-12 animate-float">
-          const monthlyGoals = require('./goals');
+          const monthlyGoals = require(&apos;./goals&apos;);
         </div>
         <div className="absolute top-40 right-32 opacity-10 text-green-400 font-mono text-sm -rotate-6 animate-float-delayed">
           git checkout -b monthly-release
@@ -174,7 +174,7 @@ export default function MonthlyPlans() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2 text-green-400 font-mono text-sm">
                 <span>$</span>
-                <span>echo "Monthly Release Pipeline Activated"</span>
+                <span>echo &quot;Monthly Release Pipeline Activated&quot;</span>
               </div>
               <div className="ml-2">
                 <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-emerald-400 via-green-400 to-cyan-400 bg-clip-text mb-2 font-mono">
