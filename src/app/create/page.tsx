@@ -75,23 +75,20 @@ function CreatePlanContent() {
       let q
       if (planType === 'daily') {
         q = query(
-          collection(db, 'plans'),
+          collection(db, 'daily'),
           where('userId', '==', user.uid),
-          where('planType', '==', 'daily'),
           where('date', '==', selectedDate)
         )
       } else if (planType === 'weekly') {
         q = query(
-          collection(db, 'plans'),
+          collection(db, 'weekly'),
           where('userId', '==', user.uid),
-          where('planType', '==', 'weekly'),
           where('weekStart', '==', selectedWeek)
         )
       } else {
         q = query(
-          collection(db, 'plans'),
+          collection(db, 'monthly'),
           where('userId', '==', user.uid),
-          where('planType', '==', 'monthly'),
           where('month', '==', selectedMonth)
         )
       }
@@ -146,7 +143,6 @@ function CreatePlanContent() {
         description: string;
         status: string;
         priority: string;
-        planType: string;
         createdAt: Date;
         date?: string;
         timePeriod?: string;
@@ -159,24 +155,25 @@ function CreatePlanContent() {
         description,
         status,
         priority,
-        planType,
         createdAt: new Date(),
       }
 
+      let collectionName = 'daily'
+      
       if (planType === 'daily') {
         planData.date = selectedDate
         planData.timePeriod = timePeriod
+        planData.startTime = startTime
+        collectionName = 'daily'
       } else if (planType === 'weekly') {
         planData.weekStart = selectedWeek
+        collectionName = 'weekly'
       } else {
         planData.month = selectedMonth
+        collectionName = 'monthly'
       }
 
-      if (planType === 'daily') {
-        planData.startTime = startTime
-      }
-
-      await addDoc(collection(db, 'plans'), planData)
+      await addDoc(collection(db, collectionName), planData)
 
       setShowCreateForm(false)
       setTitle('')
@@ -194,7 +191,8 @@ function CreatePlanContent() {
     if (window.confirm('Are you sure you want to delete this plan?')) {
       try {
         const db = getFirestore()
-        await deleteDoc(doc(db, 'plans', planId))
+        const collectionName = planType === 'daily' ? 'daily' : planType === 'weekly' ? 'weekly' : 'monthly'
+        await deleteDoc(doc(db, collectionName, planId))
         fetchPlans()
       } catch (error) {
         console.error('Error deleting plan:', error)

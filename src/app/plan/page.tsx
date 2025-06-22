@@ -39,7 +39,7 @@ export default function Plan() {
       if (!user) return
 
       const q = query(
-        collection(db, 'plans'),
+        collection(db, 'monthly'),
         where('userId', '==', user.uid),
         where('month', '==', selectedMonth)
       )
@@ -78,7 +78,7 @@ export default function Plan() {
   const updatePlanStatus = async (planId: string, newStatus: string) => {
     try {
       const db = getFirestore()
-      const planRef = doc(db, 'plans', planId)
+      const planRef = doc(db, 'monthly', planId)
       
       await updateDoc(planRef, {
         status: newStatus

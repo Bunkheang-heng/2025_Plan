@@ -39,9 +39,8 @@ export default function WeeklyPlans() {
       if (!user) return
 
       const q = query(
-        collection(db, 'plans'),
+        collection(db, 'weekly'),
         where('userId', '==', user.uid),
-        where('planType', '==', 'weekly'),
         where('weekStart', '==', selectedWeek)
       )
       
@@ -79,7 +78,7 @@ export default function WeeklyPlans() {
   const updatePlanStatus = async (planId: string, newStatus: string) => {
     try {
       const db = getFirestore()
-      const planRef = doc(db, 'plans', planId)
+      const planRef = doc(db, 'weekly', planId)
       
       await updateDoc(planRef, {
         status: newStatus

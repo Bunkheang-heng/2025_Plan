@@ -60,7 +60,7 @@ export default function Home() {
         
         // If plan time has passed (with 30 minute buffer), mark as Done
         if (currentTotalMinutes > planTotalMinutes + 30) {
-          const planRef = doc(db, 'plans', plan.id)
+          const planRef = doc(db, 'daily', plan.id)
           await updateDoc(planRef, {
             status: 'Done'
           })
@@ -76,9 +76,8 @@ export default function Home() {
     
     const today = new Date().toISOString().split('T')[0]
     const dailyQuery = query(
-      collection(db, 'plans'),
+      collection(db, 'daily'),
       where('userId', '==', userId),
-      where('planType', '==', 'daily'),
       where('date', '==', today)
     )
     
@@ -87,17 +86,15 @@ export default function Home() {
     const weekKey = startOfWeek.toISOString().split('T')[0]
     
     const weeklyQuery = query(
-      collection(db, 'plans'),
+      collection(db, 'weekly'),
       where('userId', '==', userId),
-      where('planType', '==', 'weekly'),
       where('weekStart', '==', weekKey)
     )
     
     const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' })
     const monthlyQuery = query(
-      collection(db, 'plans'),
+      collection(db, 'monthly'),
       where('userId', '==', userId),
-      where('planType', '==', 'monthly'),
       where('month', '==', currentMonth)
     )
 

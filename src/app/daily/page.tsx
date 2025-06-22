@@ -68,7 +68,7 @@ export default function DailyPlans() {
         
         // If plan time has passed (with 30 minute buffer), mark as Done
         if (currentTotalMinutes > planTotalMinutes + 30) {
-          const planRef = doc(db, 'plans', plan.id)
+          const planRef = doc(db, 'daily', plan.id)
           await updateDoc(planRef, {
             status: 'Done'
           })
@@ -87,9 +87,8 @@ export default function DailyPlans() {
       if (!user) return
 
       const q = query(
-        collection(db, 'plans'),
+        collection(db, 'daily'),
         where('userId', '==', user.uid),
-        where('planType', '==', 'daily'),
         where('date', '==', selectedDate)
       )
       
@@ -162,7 +161,7 @@ export default function DailyPlans() {
   const updatePlanStatus = async (planId: string, newStatus: string) => {
     try {
       const db = getFirestore()
-      const planRef = doc(db, 'plans', planId)
+      const planRef = doc(db, 'daily', planId)
       
       await updateDoc(planRef, {
         status: newStatus
