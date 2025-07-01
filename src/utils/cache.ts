@@ -27,7 +27,7 @@ class DataCache {
       return null;
     }
     
-    return entry.data;
+    return entry.data as T;
   }
   
   invalidate(pattern?: string): void {
