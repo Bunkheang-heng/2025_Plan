@@ -37,6 +37,7 @@ export default function Home() {
   }, [])
 
   const autoCompleteDailyPlans = useCallback(async (plans: { id: string; status: string; startTime?: string }[]) => {
+    const autoCompletedIds: string[] = []
     try {
       const db = getFirestore()
       const now = new Date()
@@ -51,6 +52,9 @@ export default function Home() {
       const currentMinute = parseInt(currentTime.split(':')[1])
       const currentTotalMinutes = currentHour * 60 + currentMinute
       
+      // Batch updates for better performance
+      const updates: Promise<void>[] = []
+      
       for (const plan of plans) {
         // Only auto-complete plans that are "Not Started" and have a start time
         if (plan.status !== 'Not Started' || !plan.startTime) continue
@@ -61,14 +65,17 @@ export default function Home() {
         // If plan time has passed (with 30 minute buffer), mark as Done
         if (currentTotalMinutes > planTotalMinutes + 30) {
           const planRef = doc(db, 'daily', plan.id)
-          await updateDoc(planRef, {
-            status: 'Done'
-          })
+          updates.push(updateDoc(planRef, { status: 'Done' }))
+          autoCompletedIds.push(plan.id)
         }
       }
+      
+      // Execute all updates in parallel
+      await Promise.all(updates)
     } catch (error) {
       console.error('Error auto-completing plans:', error)
     }
+    return autoCompletedIds
   }, [])
 
   const fetchAllStats = useCallback(async (userId: string) => {
@@ -105,20 +112,19 @@ export default function Home() {
         getDocs(monthlyQuery)
       ])
 
-      // Auto-complete overdue daily plans
+      // Auto-complete overdue daily plans and update local data
       const dailyPlans = dailySnapshot.docs.map(doc => ({
         id: doc.id,
         status: doc.data().status,
         startTime: doc.data().startTime
       }))
       
-      await autoCompleteDailyPlans(dailyPlans)
+      const autoCompletedIds = await autoCompleteDailyPlans(dailyPlans)
       
-      // Fetch updated daily plans after auto-completion
-      const updatedDailySnapshot = await getDocs(dailyQuery)
-
-      const dailyTotal = updatedDailySnapshot.docs.length
-      const dailyCompleted = updatedDailySnapshot.docs.filter(doc => doc.data().status === 'Done').length
+      // Calculate stats with auto-completed plans (no second fetch needed)
+      let dailyCompleted = dailySnapshot.docs.filter(doc => doc.data().status === 'Done').length
+      dailyCompleted += autoCompletedIds.length // Add auto-completed count
+      const dailyTotal = dailySnapshot.docs.length
 
       const weeklyTotal = weeklySnapshot.docs.length
       const weeklyCompleted = weeklySnapshot.docs.filter(doc => doc.data().status === 'Done').length
@@ -149,14 +155,14 @@ export default function Home() {
     return () => unsubscribe()
   }, [router, fetchAllStats])
 
-  // Auto-update stats every minute to reflect auto-completed plans
+  // Auto-update stats every 10 minutes to reduce load
   useEffect(() => {
     const interval = setInterval(() => {
       const user = auth.currentUser
       if (user && !isLoading) {
         fetchAllStats(user.uid)
       }
-    }, 60000) // Update every minute
+    }, 600000) // Update every 10 minutes instead of 1 minute
 
     return () => clearInterval(interval)
   }, [isLoading, fetchAllStats])

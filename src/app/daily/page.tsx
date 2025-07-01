@@ -39,6 +39,7 @@ export default function DailyPlans() {
   const router = useRouter()
 
   const autoCompletePlans = useCallback(async (plans: Plan[]) => {
+    const autoCompletedIds: string[] = []
     try {
       const db = getFirestore()
       const now = new Date()
@@ -53,11 +54,14 @@ export default function DailyPlans() {
       const selectedDay = new Date(selectedDate).toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh' })
       
       // Only auto-complete for today's plans
-      if (today !== selectedDay) return
+      if (today !== selectedDay) return autoCompletedIds
       
       const currentHour = parseInt(currentTime.split(':')[0])
       const currentMinute = parseInt(currentTime.split(':')[1])
       const currentTotalMinutes = currentHour * 60 + currentMinute
+      
+      // Batch updates for better performance
+      const updates: Promise<void>[] = []
       
       for (const plan of plans) {
         // Only auto-complete plans that are "Not Started" and have a start time
@@ -69,14 +73,17 @@ export default function DailyPlans() {
         // If plan time has passed (with 30 minute buffer), mark as Done
         if (currentTotalMinutes > planTotalMinutes + 30) {
           const planRef = doc(db, 'daily', plan.id)
-          await updateDoc(planRef, {
-            status: 'Done'
-          })
+          updates.push(updateDoc(planRef, { status: 'Done' }))
+          autoCompletedIds.push(plan.id)
         }
       }
+      
+      // Execute all updates in parallel
+      await Promise.all(updates)
     } catch (error) {
       console.error('Error auto-completing plans:', error)
     }
+    return autoCompletedIds
   }, [selectedDate])
 
   const fetchPlans = useCallback(async () => {
@@ -98,15 +105,13 @@ export default function DailyPlans() {
         ...doc.data()
       })) as Plan[]
       
-      // Auto-complete overdue plans
-      await autoCompletePlans(planData)
+      // Auto-complete overdue plans and update local data
+      const autoCompletedIds = await autoCompletePlans(planData)
       
-      // Fetch updated plans after auto-completion
-      const updatedQuerySnapshot = await getDocs(q)
-      const updatedPlanData = updatedQuerySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Plan[]
+      // Update local data with auto-completed plans (no second fetch needed)
+      const updatedPlanData = planData.map(plan => 
+        autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' } : plan
+      )
       
       // Group plans by time period
       const groupedPlans: TimePeriodPlans = {
@@ -143,7 +148,7 @@ export default function DailyPlans() {
     return () => unsubscribe()
   }, [router, fetchPlans])
 
-  // Auto-complete plans every minute
+  // Auto-complete plans every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       const today = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh' })
@@ -153,12 +158,36 @@ export default function DailyPlans() {
       if (today === selectedDay && !state.isLoading) {
         fetchPlans()
       }
-    }, 60000) // Check every minute
+    }, 300000) // Check every 5 minutes instead of 1 minute
 
     return () => clearInterval(interval)
   }, [selectedDate, state.isLoading, fetchPlans])
 
   const updatePlanStatus = async (planId: string, newStatus: string) => {
+    // Optimistic update - update UI immediately
+    setState(prev => {
+      const updatedPlans = { ...prev.plans }
+      
+      // Find and update the plan in the correct time period
+      Object.keys(updatedPlans).forEach(period => {
+        const planIndex = updatedPlans[period as keyof TimePeriodPlans].findIndex(plan => plan.id === planId)
+        if (planIndex !== -1) {
+          updatedPlans[period as keyof TimePeriodPlans][planIndex].status = newStatus
+        }
+      })
+      
+      // Recalculate stats
+      const allPlans = [...updatedPlans.morning, ...updatedPlans.afternoon, ...updatedPlans.night]
+      const completedTasks = allPlans.filter(plan => plan.status === 'Done').length
+      
+      return {
+        ...prev,
+        plans: updatedPlans,
+        completedTasks
+      }
+    })
+
+    // Then update Firestore
     try {
       const db = getFirestore()
       const planRef = doc(db, 'daily', planId)
@@ -166,9 +195,10 @@ export default function DailyPlans() {
       await updateDoc(planRef, {
         status: newStatus
       })
-      fetchPlans()
     } catch (error) {
       console.error('Error updating plan status:', error)
+      // Revert optimistic update on error
+      fetchPlans()
     }
   }
 

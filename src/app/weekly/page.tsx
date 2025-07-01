@@ -76,6 +76,20 @@ export default function WeeklyPlans() {
   }, [router, fetchPlans])
 
   const updatePlanStatus = async (planId: string, newStatus: string) => {
+    // Optimistic update
+    setState(prev => {
+      const updatedPlans = prev.plans.map(plan => 
+        plan.id === planId ? { ...plan, status: newStatus } : plan
+      )
+      const completedTasks = updatedPlans.filter(plan => plan.status === 'Done').length
+      
+      return {
+        ...prev,
+        plans: updatedPlans,
+        completedTasks
+      }
+    })
+
     try {
       const db = getFirestore()
       const planRef = doc(db, 'weekly', planId)
@@ -83,9 +97,9 @@ export default function WeeklyPlans() {
       await updateDoc(planRef, {
         status: newStatus
       })
-      fetchPlans()
     } catch (error) {
       console.error('Error updating plan status:', error)
+      fetchPlans()
     }
   }
 
