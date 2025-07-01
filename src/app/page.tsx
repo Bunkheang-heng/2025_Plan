@@ -78,13 +78,12 @@ export default function Home() {
     return autoCompletedIds
   }, [])
 
-  const fetchAllStats = useCallback(async (userId: string) => {
+  const fetchAllStats = useCallback(async () => {
     const db = getFirestore()
     
     const today = new Date().toISOString().split('T')[0]
     const dailyQuery = query(
       collection(db, 'daily'),
-      where('userId', '==', userId),
       where('date', '==', today)
     )
     
@@ -94,14 +93,12 @@ export default function Home() {
     
     const weeklyQuery = query(
       collection(db, 'weekly'),
-      where('userId', '==', userId),
       where('weekStart', '==', weekKey)
     )
     
     const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' })
     const monthlyQuery = query(
       collection(db, 'monthly'),
-      where('userId', '==', userId),
       where('month', '==', currentMonth)
     )
 
@@ -148,7 +145,7 @@ export default function Home() {
         router.push('/login')
       } else {
         setIsLoading(false)
-        fetchAllStats(user.uid)
+        fetchAllStats()
       }
     })
 
@@ -160,7 +157,7 @@ export default function Home() {
     const interval = setInterval(() => {
       const user = auth.currentUser
       if (user && !isLoading) {
-        fetchAllStats(user.uid)
+        fetchAllStats()
       }
     }, 600000) // Update every 10 minutes instead of 1 minute
 

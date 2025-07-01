@@ -10,7 +10,6 @@ type Plan = {
   status: string;
   title: string;
   description: string;
-  userId: string;
   month: string;
 }
 
@@ -40,7 +39,6 @@ export default function Plan() {
 
       const q = query(
         collection(db, 'monthly'),
-        where('userId', '==', user.uid),
         where('month', '==', selectedMonth)
       )
       

@@ -10,7 +10,6 @@ type Plan = {
   status: string;
   title: string;
   description: string;
-  userId: string;
   date: string;
   planType: string;
   timePeriod?: string;
@@ -95,7 +94,6 @@ export default function DailyPlans() {
 
       const q = query(
         collection(db, 'daily'),
-        where('userId', '==', user.uid),
         where('date', '==', selectedDate)
       )
       

@@ -10,7 +10,6 @@ type Plan = {
   status: string;
   title: string;
   description: string;
-  userId: string;
   weekStart: string;
   planType: string;
   priority?: string;
@@ -40,7 +39,6 @@ export default function WeeklyPlans() {
 
       const q = query(
         collection(db, 'weekly'),
-        where('userId', '==', user.uid),
         where('weekStart', '==', selectedWeek)
       )
       
