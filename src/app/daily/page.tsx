@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Loading from '../../compounent/loading'
+import { Loading } from '@/components'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 
@@ -34,7 +34,9 @@ export default function DailyPlans() {
     totalTasks: 0,
     completedTasks: 0
   })
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
+  })
   const router = useRouter()
 
   const autoCompletePlans = useCallback(async (plans: Plan[]) => {
@@ -49,27 +51,24 @@ export default function DailyPlans() {
         minute: '2-digit'
       })
       
-      const today = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh' })
-      const selectedDay = new Date(selectedDate).toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh' })
+      // Get today's date in YYYY-MM-DD format using Asia/Phnom_Penh timezone
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
       
-      // Only auto-complete for today's plans
-      if (today !== selectedDay) return autoCompletedIds
+      // Only auto-complete if we're viewing today's plans OR if we're viewing past plans
+      if (selectedDate > today) return autoCompletedIds
       
       const currentHour = parseInt(currentTime.split(':')[0])
       const currentMinute = parseInt(currentTime.split(':')[1])
       const currentTotalMinutes = currentHour * 60 + currentMinute
       
-      // Batch updates for better performance
       const updates: Promise<void>[] = []
       
       for (const plan of plans) {
-        // Only auto-complete plans that are "Not Started" and have a start time
         if (plan.status !== 'Not Started' || !plan.startTime) continue
         
         const [planHour, planMinute] = plan.startTime.split(':').map(Number)
         const planTotalMinutes = planHour * 60 + planMinute
         
-        // If plan time has passed (with 30 minute buffer), mark as Done
         if (currentTotalMinutes > planTotalMinutes + 30) {
           const planRef = doc(db, 'daily', plan.id)
           updates.push(updateDoc(planRef, { status: 'Done' }))
@@ -77,7 +76,6 @@ export default function DailyPlans() {
         }
       }
       
-      // Execute all updates in parallel
       await Promise.all(updates)
     } catch (error) {
       console.error('Error auto-completing plans:', error)
@@ -103,15 +101,12 @@ export default function DailyPlans() {
         ...doc.data()
       })) as Plan[]
       
-      // Auto-complete overdue plans and update local data
       const autoCompletedIds = await autoCompletePlans(planData)
       
-      // Update local data with auto-completed plans (no second fetch needed)
       const updatedPlanData = planData.map(plan => 
         autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' } : plan
       )
       
-      // Group plans by time period
       const groupedPlans: TimePeriodPlans = {
         morning: updatedPlanData.filter(plan => plan.timePeriod === 'morning'),
         afternoon: updatedPlanData.filter(plan => plan.timePeriod === 'afternoon'),
@@ -146,27 +141,23 @@ export default function DailyPlans() {
     return () => unsubscribe()
   }, [router, fetchPlans])
 
-  // Auto-complete plans every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
-      const today = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh' })
-      const selectedDay = new Date(selectedDate).toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh' })
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
       
-      // Only auto-check for today's plans
-      if (today === selectedDay && !state.isLoading) {
+      // Auto-refresh if we're viewing today's plans or past plans
+      if (selectedDate <= today && !state.isLoading) {
         fetchPlans()
       }
-    }, 300000) // Check every 5 minutes instead of 1 minute
+    }, 300000)
 
     return () => clearInterval(interval)
   }, [selectedDate, state.isLoading, fetchPlans])
 
   const updatePlanStatus = async (planId: string, newStatus: string) => {
-    // Optimistic update - update UI immediately
     setState(prev => {
       const updatedPlans = { ...prev.plans }
       
-      // Find and update the plan in the correct time period
       Object.keys(updatedPlans).forEach(period => {
         const planIndex = updatedPlans[period as keyof TimePeriodPlans].findIndex(plan => plan.id === planId)
         if (planIndex !== -1) {
@@ -174,7 +165,6 @@ export default function DailyPlans() {
         }
       })
       
-      // Recalculate stats
       const allPlans = [...updatedPlans.morning, ...updatedPlans.afternoon, ...updatedPlans.night]
       const completedTasks = allPlans.filter(plan => plan.status === 'Done').length
       
@@ -185,7 +175,6 @@ export default function DailyPlans() {
       }
     })
 
-    // Then update Firestore
     try {
       const db = getFirestore()
       const planRef = doc(db, 'daily', planId)
@@ -195,7 +184,6 @@ export default function DailyPlans() {
       })
     } catch (error) {
       console.error('Error updating plan status:', error)
-      // Revert optimistic update on error
       fetchPlans()
     }
   }
@@ -213,12 +201,12 @@ export default function DailyPlans() {
 
   const getDateOptions = () => {
     const dates = []
-    const today = new Date()
+    const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
     
     for (let i = -7; i <= 7; i++) {
-      const date = new Date(today)
-      date.setDate(today.getDate() + i)
-      dates.push(date.toISOString().split('T')[0])
+      const date = new Date(nowInPhnomPenh)
+      date.setDate(nowInPhnomPenh.getDate() + i)
+      dates.push(date.toLocaleDateString('en-CA'))
     }
     
     return dates
@@ -227,13 +215,13 @@ export default function DailyPlans() {
   const getPriorityStyle = (priority: string = 'medium') => {
     switch (priority) {
       case 'high':
-        return 'bg-red-100 text-red-800 border border-red-200'
+        return 'bg-red-50 text-red-700 border border-red-200'
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+        return 'bg-amber-50 text-amber-700 border border-amber-200'
       case 'low':
-        return 'bg-green-100 text-green-800 border border-green-200'
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200'
       default:
-        return 'bg-gray-100 text-gray-800 border border-gray-200'
+        return 'bg-slate-50 text-slate-700 border border-slate-200'
     }
   }
 
@@ -266,7 +254,6 @@ export default function DailyPlans() {
     const completed = plans.filter(plan => plan.status === 'Done').length
     const total = plans.length
     
-    // Sort plans by start time
     const sortedPlans = [...plans].sort((a, b) => {
       if (!a.startTime && !b.startTime) return 0
       if (!a.startTime) return 1
@@ -275,18 +262,18 @@ export default function DailyPlans() {
     })
     
     return (
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
         <div className={`${gradient} p-6`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {icon}
-              <h3 className="text-xl font-semibold text-white">{title}</h3>
+              <h3 className="text-xl font-bold text-white">{title}</h3>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-white text-sm font-medium">{completed}/{total}</span>
+              <span className="text-white/90 text-sm font-semibold">{completed}/{total}</span>
               <button
                 onClick={() => router.push(`/create?type=daily&timePeriod=${timePeriod}&date=${selectedDate}`)}
-                className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors duration-200"
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
               >
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -296,25 +283,25 @@ export default function DailyPlans() {
           </div>
         </div>
         
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-700/50">
           {sortedPlans.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="p-3 bg-gray-100 rounded-lg inline-block mb-4">
+              <div className="p-3 bg-gray-700/50 rounded-xl inline-block mb-4 border border-yellow-500/20">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <p className="text-gray-500">No tasks scheduled for {title.toLowerCase()}</p>
-              <p className="text-gray-400 text-sm mt-1">Add a new task to get started</p>
+              <h4 className="text-lg font-semibold text-gray-200 mb-2">No tasks for {title.toLowerCase()}</h4>
+              <p className="text-gray-400">Add a new task to get started</p>
             </div>
           ) : (
             sortedPlans.map((plan) => (
-              <div key={plan.id} className="p-4 hover:bg-gray-50 transition-colors duration-200">
-                <div className="flex items-start space-x-4">
-                  {plan.startTime && (
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-center">
-                        <div className="text-blue-800 font-semibold text-sm">
+              <div key={plan.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200">
+                <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {plan.startTime && (
+                      <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg px-3 py-2">
+                        <div className="text-blue-300 font-bold text-sm">
                           {new Date(`2000-01-01T${plan.startTime}`).toLocaleTimeString('en-US', { 
                             timeZone: 'Asia/Phnom_Penh',
                             hour: 'numeric', 
@@ -323,49 +310,52 @@ export default function DailyPlans() {
                           })}
                         </div>
                       </div>
-                    </div>
-                  )}
-                  <div className="flex-shrink-0 mt-1">
+                    )}
                     <select
                       value={plan.status}
                       onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm cursor-pointer"
+                      className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-gray-800/50"
                     >
-                      <option value="Not Started">⏳ Not Started</option>
-                      <option value="Done">✅ Done</option>
-                      <option value="Missed">❌ Missed</option>
+                      <option value="Not Started" className="bg-gray-800">⏳ Not Started</option>
+                      <option value="Done" className="bg-gray-800">✅ Done</option>
+                      <option value="Missed" className="bg-gray-800">❌ Missed</option>
                     </select>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-1">
-                      <h4 className={`font-medium ${
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h4 className={`font-semibold text-lg ${
                         plan.status === 'Done' 
                           ? 'text-gray-500 line-through' 
-                          : 'text-gray-900'
+                          : 'text-gray-100'
                       }`}>
                         {plan.title}
                       </h4>
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getPriorityStyle(plan.priority)}`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                        plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
+                        plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
+                        plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
+                        'bg-gray-500/20 text-gray-300 border-gray-400/50'
+                      }`}>
                         {getPriorityIcon(plan.priority)} {plan.priority?.toUpperCase() || 'MEDIUM'}
                       </span>
                     </div>
                     {plan.description && (
-                      <p className={`mt-1 text-sm ${
+                      <p className={`text-sm leading-relaxed ${
                         plan.status === 'Done'
                           ? 'text-gray-500'
-                          : 'text-gray-600'
+                          : 'text-gray-300'
                       }`}>
                         {plan.description}
                       </p>
                     )}
                   </div>
                   <div className="flex-shrink-0">
-                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
                       plan.status === 'Done'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
                         : plan.status === 'Missed'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-gray-100 text-gray-800'
+                        ? 'bg-red-500/20 text-red-300 border-red-400/50'
+                        : 'bg-gray-500/20 text-gray-300 border-gray-400/50'
                     }`}>
                       {plan.status}
                     </span>
@@ -384,37 +374,41 @@ export default function DailyPlans() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-6 py-8 pt-24">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+            Daily Mission Planning
+          </div>
+          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
             Daily Plans 📅
           </h1>
-          <p className="text-xl text-gray-600">
-            Manage your daily tasks and goals
+          <p className="text-xl text-gray-300 font-medium">
+            Organize your day and accomplish your objectives
           </p>
         </div>
 
-        {/* Date Selection */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        {/* Date Selection & Stats */}
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 lg:p-8 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-blue-500">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg border border-blue-400/50">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <label className="text-sm font-medium text-gray-700">Select Date:</label>
+                <label className="text-sm font-bold text-yellow-400">Select Date:</label>
               </div>
               <select
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium text-sm"
+                className="px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-semibold bg-gray-800/50 shadow-sm"
               >
                 {getDateOptions().map((date) => (
-                  <option key={date} value={date}>
+                  <option key={date} value={date} className="bg-gray-800 text-gray-100">
                     {formatDate(date)}
                   </option>
                 ))}
@@ -422,14 +416,18 @@ export default function DailyPlans() {
             </div>
             
             {/* Stats */}
-            <div className="flex items-center space-x-6 text-sm">
+            <div className="flex flex-wrap items-center gap-6 text-sm">
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span className="text-gray-600">Total: <span className="font-semibold text-gray-900">{state.totalTasks}</span></span>
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                <span className="text-gray-400 font-medium">Total: <span className="font-bold text-yellow-400">{state.totalTasks}</span></span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-gray-600">Completed: <span className="font-semibold text-gray-900">{state.completedTasks}</span></span>
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600"></div>
+                <span className="text-gray-400 font-medium">Completed: <span className="font-bold text-yellow-400">{state.completedTasks}</span></span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
+                <span className="text-gray-400 font-medium">Progress: <span className="font-bold text-yellow-400">{state.totalTasks > 0 ? Math.round((state.completedTasks / state.totalTasks) * 100) : 0}%</span></span>
               </div>
             </div>
           </div>
@@ -441,7 +439,7 @@ export default function DailyPlans() {
             title="Morning"
             plans={state.plans.morning}
             timePeriod="morning"
-            gradient="bg-orange-500"
+            gradient="bg-gradient-to-r from-orange-500 to-orange-600"
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -453,7 +451,7 @@ export default function DailyPlans() {
             title="Afternoon"
             plans={state.plans.afternoon}
             timePeriod="afternoon"
-            gradient="bg-blue-500"
+            gradient="bg-gradient-to-r from-blue-500 to-blue-600"
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -465,7 +463,7 @@ export default function DailyPlans() {
             title="Night"
             plans={state.plans.night}
             timePeriod="night"
-            gradient="bg-purple-500"
+            gradient="bg-gradient-to-r from-purple-500 to-purple-600"
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />

@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
-import Loading from '../compounent/loading'
+import { Loading, Container, PageHeader, StatCard } from '@/components'
 import { auth } from '../../firebase'
 import { useRouter } from 'next/navigation'
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
@@ -52,17 +52,14 @@ export default function Home() {
       const currentMinute = parseInt(currentTime.split(':')[1])
       const currentTotalMinutes = currentHour * 60 + currentMinute
       
-      // Batch updates for better performance
       const updates: Promise<void>[] = []
       
       for (const plan of plans) {
-        // Only auto-complete plans that are "Not Started" and have a start time
         if (plan.status !== 'Not Started' || !plan.startTime) continue
         
         const [planHour, planMinute] = plan.startTime.split(':').map(Number)
         const planTotalMinutes = planHour * 60 + planMinute
         
-        // If plan time has passed (with 30 minute buffer), mark as Done
         if (currentTotalMinutes > planTotalMinutes + 30) {
           const planRef = doc(db, 'daily', plan.id)
           updates.push(updateDoc(planRef, { status: 'Done' }))
@@ -70,7 +67,6 @@ export default function Home() {
         }
       }
       
-      // Execute all updates in parallel
       await Promise.all(updates)
     } catch (error) {
       console.error('Error auto-completing plans:', error)
@@ -81,22 +77,31 @@ export default function Home() {
   const fetchAllStats = useCallback(async () => {
     const db = getFirestore()
     
-    const today = new Date().toISOString().split('T')[0]
+    // Get today's date in YYYY-MM-DD format using Asia/Phnom_Penh timezone
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
     const dailyQuery = query(
       collection(db, 'daily'),
       where('date', '==', today)
     )
     
-    const startOfWeek = new Date()
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
-    const weekKey = startOfWeek.toISOString().split('T')[0]
+    // Get start of week (Monday) in Asia/Phnom_Penh timezone
+    const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
+    const startOfWeek = new Date(nowInPhnomPenh)
+    // Calculate Monday as start of week
+    const daysFromMonday = (nowInPhnomPenh.getDay() + 6) % 7
+    startOfWeek.setDate(nowInPhnomPenh.getDate() - daysFromMonday)
+    const weekKey = startOfWeek.toLocaleDateString('en-CA')
     
     const weeklyQuery = query(
       collection(db, 'weekly'),
       where('weekStart', '==', weekKey)
     )
     
-    const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' })
+    // Get current month in Asia/Phnom_Penh timezone
+    const currentMonth = new Date().toLocaleDateString('en-US', { 
+      month: 'long', 
+      timeZone: 'Asia/Phnom_Penh' 
+    })
     const monthlyQuery = query(
       collection(db, 'monthly'),
       where('month', '==', currentMonth)
@@ -109,7 +114,6 @@ export default function Home() {
         getDocs(monthlyQuery)
       ])
 
-      // Auto-complete overdue daily plans and update local data
       const dailyPlans = dailySnapshot.docs.map(doc => ({
         id: doc.id,
         status: doc.data().status,
@@ -118,9 +122,8 @@ export default function Home() {
       
       const autoCompletedIds = await autoCompleteDailyPlans(dailyPlans)
       
-      // Calculate stats with auto-completed plans (no second fetch needed)
       let dailyCompleted = dailySnapshot.docs.filter(doc => doc.data().status === 'Done').length
-      dailyCompleted += autoCompletedIds.length // Add auto-completed count
+      dailyCompleted += autoCompletedIds.length
       const dailyTotal = dailySnapshot.docs.length
 
       const weeklyTotal = weeklySnapshot.docs.length
@@ -152,14 +155,13 @@ export default function Home() {
     return () => unsubscribe()
   }, [router, fetchAllStats])
 
-  // Auto-update stats every 10 minutes to reduce load
   useEffect(() => {
     const interval = setInterval(() => {
       const user = auth.currentUser
       if (user && !isLoading) {
         fetchAllStats()
       }
-    }, 600000) // Update every 10 minutes instead of 1 minute
+    }, 600000)
 
     return () => clearInterval(interval)
   }, [isLoading, fetchAllStats])
@@ -168,175 +170,180 @@ export default function Home() {
     return <Loading />
   }
 
-  const StatCard = ({ title, total, completed, onClick, icon, gradient, description, type }: {
-    title: string
-    total: number
-    completed: number
-    onClick: () => void
-    icon: React.ReactNode
-    gradient: string
-    description: string
-    type: string
-  }) => {
-    const progress = total > 0 ? (completed / total) * 100 : 0
-    
-    return (
-      <div 
-        onClick={onClick}
-        className="group cursor-pointer bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 hover:border-gray-300"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className={`p-3 rounded-lg ${gradient}`}>
-            {icon}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg border-2 border-yellow-300">
+              <span className="text-black font-bold text-2xl">⚡</span>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">{description}</p>
+          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
+            Welcome back, Mr. Bunkheang 👋
+          </h1>
+          <p className="text-xl text-gray-300 font-medium mb-8">
+            J.A.R.V.I.S Productivity System - Track your goals and achieve more
+          </p>
+          <div className="flex items-center justify-center space-x-4 text-gray-400">
+            <span className="text-base">
+              {mounted ? new Date().toLocaleDateString('en-US', { 
+                timeZone: 'Asia/Phnom_Penh',
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              }) : ''}
+            </span>
+            <span className="w-1 h-1 bg-yellow-400 rounded-full"></span>
+            <span className="font-mono text-base text-yellow-400">
+              {mounted ? currentTime : '--:--:--'}
+            </span>
           </div>
         </div>
-        
-        <div className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="text-2xl font-bold text-gray-900">
-                {isNaN(progress) ? '0' : progress.toFixed(0)}%
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+          <div
+            onClick={() => router.push('/daily')}
+            className="group cursor-pointer bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-8 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/10 hover:-translate-y-1"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl border border-blue-400/50">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-              <div className="text-sm text-gray-600">
-                {completed}/{total} completed
+              <span className="text-yellow-400 font-medium">DAILY</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Daily Plans</h3>
+            <p className="text-gray-400 mb-6">Today's focus objectives</p>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</div>
+              <div className="text-sm text-gray-400">
+                {stats.daily.total > 0 ? Math.round((stats.daily.completed / stats.daily.total) * 100) : 0}% Complete
               </div>
             </div>
           </div>
           
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className={`h-2 ${gradient} rounded-full transition-all duration-500`}
-              style={{ width: `${isNaN(progress) ? 0 : progress}%` }}
-            />
+          <div
+            onClick={() => router.push('/weekly')}
+            className="group cursor-pointer bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-8 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/10 hover:-translate-y-1"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl border border-purple-400/50">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <span className="text-yellow-400 font-medium">WEEKLY</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Weekly Plans</h3>
+            <p className="text-gray-400 mb-6">Mon-Fri strategic goals</p>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-yellow-400">{stats.weekly.completed}/{stats.weekly.total}</div>
+              <div className="text-sm text-gray-400">
+                {stats.weekly.total > 0 ? Math.round((stats.weekly.completed / stats.weekly.total) * 100) : 0}% Complete
+              </div>
+            </div>
           </div>
           
-          <button className="w-full mt-4 py-2 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-gray-700 text-sm font-medium transition-colors duration-200">
-            View {type} plans
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-8 pt-24">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome back, Heng Bunkheang! 👋
-          </h1>
-          <p className="text-xl text-gray-600 mb-2">
-            Your productivity dashboard
-          </p>
-          <p className="text-sm text-gray-500">
-            {mounted ? new Date().toLocaleDateString('en-US', { 
-              timeZone: 'Asia/Phnom_Penh',
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }) : ''} • {mounted ? currentTime : '--:--:--'}
-          </p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <StatCard
-            title="Daily Plans"
-            description="Today's tasks"
-            total={stats.daily.total}
-            completed={stats.daily.completed}
-            onClick={() => router.push('/daily')}
-            gradient="bg-blue-500"
-            type="daily"
-            icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-          />
-          
-          <StatCard
-            title="Weekly Plans"
-            description="This week's goals"
-            total={stats.weekly.total}
-            completed={stats.weekly.completed}
-            onClick={() => router.push('/weekly')}
-            gradient="bg-purple-500"
-            type="weekly"
-            icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            }
-          />
-          
-          <StatCard
-            title="Monthly Plans"
-            description="This month's objectives"
-            total={stats.monthly.total}
-            completed={stats.monthly.completed}
+          <div
             onClick={() => router.push('/monthly')}
-            gradient="bg-green-500"
-            type="monthly"
-            icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14-4H5m14 8H5m14 4H5" />
-              </svg>
-            }
-          />
+            className="group cursor-pointer bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-8 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/10 hover:-translate-y-1"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl border border-emerald-400/50">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <span className="text-yellow-400 font-medium">MONTHLY</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Monthly Plans</h3>
+            <p className="text-gray-400 mb-6">Long-term mission objectives</p>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-yellow-400">{stats.monthly.completed}/{stats.monthly.total}</div>
+              <div className="text-sm text-gray-400">
+                {stats.monthly.total > 0 ? Math.round((stats.monthly.completed / stats.monthly.total) * 100) : 0}% Complete
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            Quick Actions
-          </h2>
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-xl shadow-yellow-500/10 p-8 lg:p-12">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
+              Quick Actions
+            </h2>
+            <p className="text-lg text-gray-300">
+              Access J.A.R.V.I.S systems and create new mission plans
+            </p>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* AI Chat Action */}
+            <button
+              onClick={() => router.push('/chat')}
+              className="group relative p-8 text-left border border-yellow-500/30 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 hover:border-yellow-500/50 hover:-translate-y-1 bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-4xl">🤖</span>
+                  <svg className="w-6 h-6 text-black/80 group-hover:text-black transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-xl font-bold text-black mb-3">J.A.R.V.I.S</h3>
+                <p className="text-black/90 leading-relaxed">Chat with your AI assistant</p>
+              </div>
+            </button>
+
             {[
               {
                 type: 'daily',
-                title: 'Create Daily Plan',
-                description: 'Add new daily tasks',
+                title: 'Daily Plan',
+                description: 'Organize today\'s missions',
                 icon: '📅',
-                gradient: 'bg-blue-500 hover:bg-blue-600'
+                gradient: 'from-blue-500 to-blue-600',
+                hoverGradient: 'hover:from-blue-600 hover:to-blue-700'
               },
               {
                 type: 'weekly',
-                title: 'Create Weekly Plan',
-                description: 'Set weekly goals',
+                title: 'Weekly Plan',
+                description: 'Set Mon-Fri objectives',
                 icon: '📊',
-                gradient: 'bg-purple-500 hover:bg-purple-600'
+                gradient: 'from-purple-500 to-purple-600',
+                hoverGradient: 'hover:from-purple-600 hover:to-purple-700'
               },
               {
                 type: 'monthly',
-                title: 'Create Monthly Plan',
-                description: 'Plan monthly objectives',
+                title: 'Monthly Plan',
+                description: 'Define strategic objectives',
                 icon: '🎯',
-                gradient: 'bg-green-500 hover:bg-green-600'
+                gradient: 'from-emerald-500 to-emerald-600',
+                hoverGradient: 'hover:from-emerald-600 hover:to-emerald-700'
               }
             ].map((action) => (
               <button
                 key={action.type}
                 onClick={() => router.push(`/create?type=${action.type}`)}
-                className={`p-6 text-left border border-gray-200 rounded-xl transition-all duration-200 hover:shadow-md hover:border-gray-300 bg-white`}
+                className={`group relative p-8 text-left border border-yellow-500/30 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 hover:border-yellow-500/50 hover:-translate-y-1 bg-gradient-to-br ${action.gradient} ${action.hoverGradient}`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-3xl">{action.icon}</span>
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-4xl">{action.icon}</span>
+                    <svg className="w-6 h-6 text-white/80 group-hover:text-white transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-3">{action.title}</h3>
+                  <p className="text-white/90 leading-relaxed">{action.description}</p>
                 </div>
-                
-                <h3 className="font-semibold text-gray-900 mb-2">{action.title}</h3>
-                <p className="text-sm text-gray-600">{action.description}</p>
               </button>
             ))}
           </div>

@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Loading from '../../compounent/loading'
+import { Loading } from '@/components'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'
 
@@ -29,14 +29,23 @@ function CreatePlanContent() {
   const [planType, setPlanType] = useState('monthly')
   const [timePeriod, setTimePeriod] = useState('morning')
   const [startTime, setStartTime] = useState('')
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedWeek, setSelectedWeek] = useState(() => {
-    const today = new Date()
-    const startOfWeek = new Date(today)
-    startOfWeek.setDate(today.getDate() - today.getDay())
-    return startOfWeek.toISOString().split('T')[0]
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
   })
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleDateString('en-US', { month: 'long' }))
+  const [selectedWeek, setSelectedWeek] = useState(() => {
+    const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
+    const startOfWeek = new Date(nowInPhnomPenh)
+    // Calculate Monday as start of week for Monday-Friday planning
+    const daysFromMonday = (nowInPhnomPenh.getDay() + 6) % 7
+    startOfWeek.setDate(nowInPhnomPenh.getDate() - daysFromMonday)
+    return startOfWeek.toLocaleDateString('en-CA')
+  })
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    return new Date().toLocaleDateString('en-US', { 
+      month: 'long',
+      timeZone: 'Asia/Phnom_Penh' 
+    })
+  })
   const [plans, setPlans] = useState<Plan[]>([])
   
   const router = useRouter()
@@ -196,10 +205,10 @@ function CreatePlanContent() {
   }
 
   const formatWeekRange = (weekStart: string) => {
-    const start = new Date(weekStart)
-    const end = new Date(start)
-    end.setDate(start.getDate() + 6)
-    return `${start.toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh', month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh', month: 'short', day: 'numeric', year: 'numeric' })}`
+    const monday = new Date(weekStart)
+    const friday = new Date(monday)
+    friday.setDate(monday.getDate() + 4) // Monday + 4 days = Friday
+    return `${monday.toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh', month: 'short', day: 'numeric' })} - ${friday.toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh', month: 'short', day: 'numeric', year: 'numeric' })} (Mon-Fri)`
   }
 
   const formatDate = (dateString: string) => {
@@ -269,148 +278,155 @@ function CreatePlanContent() {
 
   const groupedPlans = groupPlansByTimePeriod(plans)
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-6 py-8 pt-24">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Create New Plan ✏️
-          </h1>
-          <p className="text-xl text-gray-600">
-            Organize your tasks and achieve your goals
-          </p>
-        </div>
-
-        {/* Plan Type Selection */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Plan Type</h2>
-          <div className="flex space-x-4">
-            {[
-              { value: 'daily', label: 'Daily', icon: '📅', color: 'blue' },
-              { value: 'weekly', label: 'Weekly', icon: '📊', color: 'purple' },
-              { value: 'monthly', label: 'Monthly', icon: '📋', color: 'green' }
-            ].map((type) => (
-              <button
-                key={type.value}
-                onClick={() => setPlanType(type.value)}
-                className={`px-6 py-4 rounded-xl border transition-all duration-200 ${
-                  planType === type.value
-                    ? `border-${type.color}-500 bg-${type.color}-50 text-${type.color}-700`
-                    : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <span className="text-xl mr-3">{type.icon}</span>
-                <span className="font-medium">{type.label}</span>
-              </button>
-            ))}
+      return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-20 sm:pt-24">
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-2 sm:mb-4">
+              Mission Planning Console ✏️
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-300">
+              Create and organize your strategic objectives
+            </p>
           </div>
-        </div>
 
-        {/* Date/Period Selection */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            Select {planType === 'daily' ? 'Date' : planType === 'weekly' ? 'Week' : 'Month'}
-          </h2>
-          
-          {planType === 'daily' && (
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium"
-            />
-          )}
-          
-          {planType === 'weekly' && (
-            <select
-              value={selectedWeek}
-              onChange={(e) => setSelectedWeek(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 font-medium"
-            >
-              {[-2, -1, 0, 1, 2].map((offset) => {
-                const date = new Date()
-                date.setDate(date.getDate() + (offset * 7))
-                const startOfWeek = new Date(date)
-                startOfWeek.setDate(date.getDate() - date.getDay())
-                const weekKey = startOfWeek.toISOString().split('T')[0]
-                return (
-                  <option key={weekKey} value={weekKey}>
-                    {formatWeekRange(weekKey)}
-                  </option>
-                )
-              })}
-            </select>
-          )}
-          
-          {planType === 'monthly' && (
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 font-medium"
-            >
-              {months.map((month) => (
-                <option key={month} value={month}>
-                  {month} 2025
-                </option>
+          {/* Plan Type Selection */}
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg shadow-yellow-500/10">
+            <h2 className="text-lg sm:text-xl font-semibold text-yellow-400 mb-4 sm:mb-6">Select Mission Type</h2>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              {[
+                { value: 'daily', label: 'Daily', icon: '📅', color: 'blue' },
+                { value: 'weekly', label: 'Weekly', icon: '📊', color: 'purple' },
+                { value: 'monthly', label: 'Monthly', icon: '📋', color: 'green' }
+              ].map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => setPlanType(type.value)}
+                  className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl border transition-all duration-200 ${
+                    planType === type.value
+                      ? `border-yellow-500 bg-yellow-500/20 text-yellow-300`
+                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:border-yellow-500/30'
+                  }`}
+                >
+                  <span className="text-lg sm:text-xl mr-2 sm:mr-3">{type.icon}</span>
+                  <span className="text-sm sm:text-base font-medium">{type.label}</span>
+                </button>
               ))}
-            </select>
-          )}
-        </div>
-
-        {/* Header with create button */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">{getTitle()}</h2>
-            <p className="text-gray-600">{plans.length} plans created</p>
+            </div>
           </div>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className={`px-6 py-3 ${getButtonColor()} text-white rounded-lg shadow-sm transition-all duration-200 flex items-center space-x-2 font-medium`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Create Plan</span>
-          </button>
-        </div>
+
+                  {/* Date/Period Selection */}
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg shadow-yellow-500/10">
+            <h2 className="text-lg sm:text-xl font-semibold text-yellow-400 mb-4 sm:mb-6">
+              Select {planType === 'daily' ? 'Date' : planType === 'weekly' ? 'Week' : 'Month'}
+            </h2>
+            
+            {planType === 'daily' && (
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-3 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-medium text-sm sm:text-base bg-gray-800/50"
+              />
+            )}
+            
+            {planType === 'weekly' && (
+              <select
+                value={selectedWeek}
+                onChange={(e) => setSelectedWeek(e.target.value)}
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-3 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-medium text-sm sm:text-base bg-gray-800/50"
+              >
+                {[-2, -1, 0, 1, 2].map((offset) => {
+                  const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
+                  const date = new Date(nowInPhnomPenh)
+                  date.setDate(date.getDate() + (offset * 7))
+                  const startOfWeek = new Date(date)
+                  // Calculate Monday as start of week
+                  const daysFromMonday = (date.getDay() + 6) % 7
+                  startOfWeek.setDate(date.getDate() - daysFromMonday)
+                  const weekKey = startOfWeek.toLocaleDateString('en-CA')
+                  return (
+                    <option key={weekKey} value={weekKey} className="bg-gray-800 text-gray-100">
+                      {formatWeekRange(weekKey)}
+                    </option>
+                  )
+                })}
+              </select>
+            )}
+            
+            {planType === 'monthly' && (
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-3 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-medium text-sm sm:text-base bg-gray-800/50"
+              >
+                {months.map((month) => (
+                  <option key={month} value={month} className="bg-gray-800 text-gray-100">
+                    {month} 2025
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Header with create button */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+            <div>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-1 sm:mb-2">{getTitle()}</h2>
+              <p className="text-sm sm:text-base text-gray-400">{plans.length} mission plans created</p>
+            </div>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 ${getButtonColor()} text-white rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center space-x-2 font-medium text-sm sm:text-base border ${
+                planType === 'daily' ? 'border-blue-400/50' :
+                planType === 'weekly' ? 'border-purple-400/50' :
+                'border-emerald-400/50'
+              }`}
+            >
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Create Mission</span>
+            </button>
+          </div>
 
         {/* Plans List */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-xl overflow-hidden shadow-lg shadow-yellow-500/10">
           {plans.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="p-3 bg-gray-100 rounded-lg inline-block mb-4">
+              <div className="p-3 bg-gray-700/50 rounded-lg inline-block mb-4 border border-yellow-500/20">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">No plans created yet</h3>
-              <p className="text-gray-500 mb-6">Create your first {planType} plan to get started</p>
+              <h3 className="text-xl font-semibold text-gray-200 mb-3">No mission plans created yet</h3>
+              <p className="text-gray-400 mb-6">Create your first {planType} mission plan to get started</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-700/50">
               {planType === 'daily' ? (
                 Object.entries(groupedPlans).map(([period, periodPlans]) => (
                   <div key={period} className="p-6">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                      <h3 className="text-lg font-bold text-yellow-400 capitalize">
                         {period === 'morning' && '🌅 Morning'}
                         {period === 'afternoon' && '☀️ Afternoon'}
                         {period === 'night' && '🌙 Night'}
                       </h3>
                     </div>
                     {periodPlans.length === 0 ? (
-                      <p className="text-gray-500 text-sm ml-5">No tasks for {period}</p>
+                      <p className="text-gray-400 text-sm ml-5">No tasks for {period}</p>
                     ) : (
                       <div className="space-y-3">
                         {(periodPlans as Plan[]).map((plan) => (
-                          <div key={plan.id} className="flex items-start justify-between bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                          <div key={plan.id} className="flex items-start justify-between bg-gray-700/30 p-4 rounded-lg hover:bg-gray-600/30 transition-all duration-200 border border-gray-600/50 hover:border-yellow-500/30">
                             <div className="flex-1">
                               <div className="flex items-center space-x-3 mb-2">
                                 {plan.startTime && (
-                                  <div className="bg-blue-50 border border-blue-200 rounded px-2 py-1">
-                                    <span className="text-blue-800 font-semibold text-xs">
+                                  <div className="bg-blue-500/20 border border-blue-400/50 rounded px-2 py-1">
+                                    <span className="text-blue-300 font-semibold text-xs">
                                       {new Date(`2000-01-01T${plan.startTime}`).toLocaleTimeString('en-US', { 
                                         timeZone: 'Asia/Phnom_Penh',
                                         hour: 'numeric', 
@@ -420,28 +436,35 @@ function CreatePlanContent() {
                                     </span>
                                   </div>
                                 )}
-                                <h4 className="text-gray-900 font-medium">{plan.title}</h4>
-                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getPriorityStyle(plan.priority)}`}>
+                                <h4 className="text-gray-100 font-semibold">{plan.title}</h4>
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${
+                                  plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
+                                  plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
+                                  plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
+                                  'bg-gray-500/20 text-gray-300 border-gray-400/50'
+                                }`}>
                                   {getPriorityIcon(plan.priority)} {plan.priority?.toUpperCase() || 'MEDIUM'}
                                 </span>
                               </div>
-                              <p className="text-gray-600 text-sm mt-1">{plan.description}</p>
+                              <p className="text-gray-300 text-sm mt-1">{plan.description}</p>
                               <div className="flex items-center space-x-4 mt-2">
-                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                                  plan.status === 'Done' ? 'bg-green-100 text-green-800' :
-                                  plan.status === 'Missed' ? 'bg-red-100 text-red-800' :
-                                  'bg-gray-100 text-gray-800'
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${
+                                  plan.status === 'Done' 
+                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
+                                  plan.status === 'Missed' 
+                                    ? 'bg-red-500/20 text-red-300 border-red-400/50' :
+                                  'bg-gray-500/20 text-gray-300 border-gray-400/50'
                                 }`}>
                                   {plan.status}
                                 </span>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-gray-400">
                                   {new Date(plan.createdAt.toDate()).toLocaleDateString()}
                                 </span>
                               </div>
                             </div>
                             <button
                               onClick={() => handleDelete(plan.id)}
-                              className="p-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200 border border-transparent hover:border-red-400/30"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -455,32 +478,41 @@ function CreatePlanContent() {
                 ))
               ) : (
                 plans.map((plan) => (
-                  <div key={plan.id} className="p-6 hover:bg-gray-50 transition-colors duration-200">
+                  <div key={plan.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200 border-b border-gray-700/50 last:border-b-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-xl font-semibold text-gray-900">{plan.title}</h3>
-                          <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${getPriorityStyle(plan.priority)}`}>
+                        <div className="flex items-center space-x-3 mb-3">
+                          <h3 className="text-xl font-bold text-gray-100">{plan.title}</h3>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                            plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
+                            plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
+                            plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
+                            'bg-gray-500/20 text-gray-300 border-gray-400/50'
+                          }`}>
                             {getPriorityIcon(plan.priority)} {plan.priority?.toUpperCase() || 'MEDIUM'}
                           </span>
                         </div>
-                        <p className="text-gray-600 mb-4">{plan.description}</p>
+                        {plan.description && (
+                          <p className="text-gray-300 mb-4 leading-relaxed">{plan.description}</p>
+                        )}
                         <div className="flex items-center space-x-4">
-                          <span className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
-                            plan.status === 'Done' ? 'bg-green-100 text-green-800' :
-                            plan.status === 'Missed' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                            plan.status === 'Done'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+                              : plan.status === 'Missed'
+                              ? 'bg-red-500/20 text-red-300 border-red-400/50'
+                              : 'bg-gray-500/20 text-gray-300 border-gray-400/50'
                           }`}>
                             {plan.status}
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-400">
                             {new Date(plan.createdAt.toDate()).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
                       <button
                         onClick={() => handleDelete(plan.id)}
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200 border border-transparent hover:border-red-400/30"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -496,8 +528,8 @@ function CreatePlanContent() {
 
         {/* Create Form Modal */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-gray-100 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl shadow-yellow-500/10 max-w-lg w-full border border-yellow-500/30 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
               {/* Header with gradient */}
               <div className={`${getButtonColor()} bg-gradient-to-r p-6 rounded-t-2xl`}>
                 <div className="flex items-center justify-between">
@@ -540,8 +572,8 @@ function CreatePlanContent() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Title Field */}
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-yellow-400">
+                      <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
                       <span>Plan Title</span>
@@ -550,7 +582,7 @@ function CreatePlanContent() {
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 bg-gray-50/50 transition-all duration-200 placeholder-gray-400"
+                      className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 transition-all duration-200 placeholder-gray-400"
                       placeholder="Enter a clear, actionable title..."
                       required
                     />
@@ -558,8 +590,8 @@ function CreatePlanContent() {
 
                   {/* Description Field */}
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-yellow-400">
+                      <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       <span>Description</span>
@@ -568,7 +600,7 @@ function CreatePlanContent() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 bg-gray-50/50 transition-all duration-200 placeholder-gray-400 resize-none"
+                      className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 transition-all duration-200 placeholder-gray-400 resize-none"
                       placeholder="Describe your plan in detail..."
                     />
                   </div>
@@ -577,8 +609,8 @@ function CreatePlanContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Priority Field */}
                     <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <label className="flex items-center space-x-2 text-sm font-semibold text-yellow-400">
+                        <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                         <span>Priority Level</span>
@@ -586,18 +618,18 @@ function CreatePlanContent() {
                       <select
                         value={priority}
                         onChange={(e) => setPriority(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 bg-gray-50/50 transition-all duration-200"
+                        className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 transition-all duration-200"
                       >
-                        <option value="high">🔴 High Priority</option>
-                        <option value="medium">🟡 Medium Priority</option>
-                        <option value="low">🟢 Low Priority</option>
+                        <option value="high" className="bg-gray-800">🔴 High Priority</option>
+                        <option value="medium" className="bg-gray-800">🟡 Medium Priority</option>
+                        <option value="low" className="bg-gray-800">🟢 Low Priority</option>
                       </select>
                     </div>
 
                     {/* Status Field */}
                     <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <label className="flex items-center space-x-2 text-sm font-semibold text-yellow-400">
+                        <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>Initial Status</span>
@@ -605,11 +637,11 @@ function CreatePlanContent() {
                       <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 bg-gray-50/50 transition-all duration-200"
+                        className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 transition-all duration-200"
                       >
-                        <option value="Not Started">⏳ Not Started</option>
-                        <option value="Done">✅ Completed</option>
-                        <option value="Missed">❌ Missed</option>
+                        <option value="Not Started" className="bg-gray-800">⏳ Not Started</option>
+                        <option value="Done" className="bg-gray-800">✅ Completed</option>
+                        <option value="Missed" className="bg-gray-800">❌ Missed</option>
                       </select>
                     </div>
                   </div>
@@ -618,8 +650,8 @@ function CreatePlanContent() {
                   {planType === 'daily' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <label className="flex items-center space-x-2 text-sm font-semibold text-yellow-400">
+                          <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                           </svg>
                           <span>Time Period</span>
@@ -627,17 +659,17 @@ function CreatePlanContent() {
                         <select
                           value={timePeriod}
                           onChange={(e) => setTimePeriod(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 bg-gray-50/50 transition-all duration-200"
+                          className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 transition-all duration-200"
                         >
-                          <option value="morning">🌅 Morning</option>
-                          <option value="afternoon">☀️ Afternoon</option>
-                          <option value="night">🌙 Night</option>
+                          <option value="morning" className="bg-gray-800">🌅 Morning</option>
+                          <option value="afternoon" className="bg-gray-800">☀️ Afternoon</option>
+                          <option value="night" className="bg-gray-800">🌙 Night</option>
                         </select>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <label className="flex items-center space-x-2 text-sm font-semibold text-yellow-400">
+                          <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <span>Start Time</span>
@@ -647,24 +679,28 @@ function CreatePlanContent() {
                           type="time"
                           value={startTime}
                           onChange={(e) => setStartTime(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 bg-gray-50/50 transition-all duration-200"
+                          className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 transition-all duration-200"
                         />
                       </div>
                     </div>
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
+                  <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
                     <button
                       type="button"
                       onClick={() => setShowCreateForm(false)}
-                      className="px-6 py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
+                      className="px-6 py-3 border border-gray-600 rounded-xl text-gray-300 hover:bg-gray-700 hover:border-gray-500 transition-all duration-200 font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className={`px-8 py-3 ${getButtonColor()} text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold flex items-center space-x-2 transform hover:scale-105`}
+                      className={`px-8 py-3 ${getButtonColor()} text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold flex items-center space-x-2 transform hover:scale-105 border ${
+                        planType === 'daily' ? 'border-blue-400/50' :
+                        planType === 'weekly' ? 'border-purple-400/50' :
+                        'border-emerald-400/50'
+                      }`}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
