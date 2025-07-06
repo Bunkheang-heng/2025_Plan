@@ -18,10 +18,10 @@ const formatMessage = (message: string) => {
   // First, handle bold text formatting
   const formatBoldText = (text: string) => {
     const parts = text.split(/(\*\*.*?\*\*)/g)
-    return parts.map((part, index) => {
+    return parts.map((part, idx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.substring(2, part.length - 2)
-        return <strong key={index} className="font-bold text-yellow-400">{boldText}</strong>
+        return <strong key={idx} className="font-bold text-yellow-400">{boldText}</strong>
       }
       return part
     })
@@ -29,7 +29,7 @@ const formatMessage = (message: string) => {
 
   // Split message into lines
   const lines = message.split('\n')
-  const elements: JSX.Element[] = []
+  const elements: React.ReactElement[] = []
   let currentList: string[] = []
   let elementIndex = 0
   
@@ -46,7 +46,7 @@ const formatMessage = (message: string) => {
     }
   }
   
-  lines.forEach((line, index) => {
+  lines.forEach((line) => {
     const trimmedLine = line.trim()
     
     // Check if line is a bullet point

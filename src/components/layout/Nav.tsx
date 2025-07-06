@@ -98,7 +98,7 @@ export default function Nav() {
             <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
               J.A.R.V.I.S System
             </h1>
-            <p className="text-xs text-gray-400">Bunkheang's Personal Assistant</p>
+            <p className="text-xs text-gray-400">Bunkheang&apos;s Personal Assistant</p>
           </div>
         </div>
 

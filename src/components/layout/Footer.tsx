@@ -95,7 +95,7 @@ export default function Footer() {
         <div className="mt-12 pt-6 border-t border-yellow-500/30">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-400">
-              © {new Date().getFullYear()} J.A.R.V.I.S System - Bunkheang's Personal AI Assistant. All rights reserved.
+              © {new Date().getFullYear()} J.A.R.V.I.S System - Bunkheang&apos;s Personal AI Assistant. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <button className="text-sm text-gray-400 hover:text-yellow-400 transition-colors">

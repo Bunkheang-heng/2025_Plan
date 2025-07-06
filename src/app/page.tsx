@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
-import { Loading, Container, PageHeader, StatCard } from '@/components'
+import { Loading } from '@/components'
 import { auth } from '../../firebase'
 import { useRouter } from 'next/navigation'
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
@@ -218,7 +218,7 @@ export default function Home() {
               <span className="text-yellow-400 font-medium">DAILY</span>
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Daily Plans</h3>
-            <p className="text-gray-400 mb-6">Today's focus objectives</p>
+            <p className="text-gray-400 mb-6">Today&apos;s focus objectives</p>
             <div className="flex items-center justify-between">
               <div className="text-3xl font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</div>
               <div className="text-sm text-gray-400">
@@ -306,7 +306,7 @@ export default function Home() {
               {
                 type: 'daily',
                 title: 'Daily Plan',
-                description: 'Organize today\'s missions',
+                description: 'Organize today&apos;s missions',
                 icon: '📅',
                 gradient: 'from-blue-500 to-blue-600',
                 hoverGradient: 'hover:from-blue-600 hover:to-blue-700'

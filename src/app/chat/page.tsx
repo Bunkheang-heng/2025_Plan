@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  Container, 
   Loading, 
   ChatMessage, 
   ChatInput
