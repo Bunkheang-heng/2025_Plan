@@ -166,7 +166,7 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10">
             {/* AI Chat Action - Special Arc Reactor Style */}
             <button
               onClick={() => router.push('/chat')}
@@ -186,6 +186,28 @@ export default function Home() {
                 
                 <h3 className="text-xl font-bold text-black mb-3 animate-text-shadow">J.A.R.V.I.S</h3>
                 <p className="text-black/90 leading-relaxed">Chat with your AI assistant</p>
+              </div>
+            </button>
+
+            {/* Fitness Planner Action - Special Emerald Style */}
+            <button
+              onClick={() => router.push('/fitness-planner')}
+              className="group relative p-8 text-left border border-emerald-500/30 rounded-2xl transition-all duration-500 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 overflow-hidden animate-slide-in-up"
+              style={{ animationDelay: '0.9s' }}
+            >
+              {/* Energy Ripple Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-300/20 via-emerald-400/40 to-emerald-300/20 transform scale-0 group-hover:scale-150 transition-transform duration-700 ease-out rounded-full" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-4xl animate-bounce">💪</span>
+                  <svg className="w-6 h-6 text-white/80 group-hover:text-white transition-colors duration-200 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-xl font-bold text-white mb-3 animate-text-shadow">Fitness AI</h3>
+                <p className="text-white/90 leading-relaxed">Generate workout & meal plans</p>
               </div>
             </button>
 

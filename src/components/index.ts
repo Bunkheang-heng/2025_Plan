@@ -35,4 +35,9 @@ export { default as FloatingShapes } from './background/FloatingShapes'
 export { default as FloatingTechIcons } from './background/FloatingTechIcons'
 export { default as FloatingBinary } from './background/FloatingBinary'
 export { default as CircuitPattern } from './background/CircuitPattern'
-export { default as ScanningLines } from './background/ScanningLines' 
+export { default as ScanningLines } from './background/ScanningLines'
+
+// Fitness Components
+export { FitnessForm } from './fitness/FitnessForm'
+export { WeeklyPlanDisplay } from './fitness/WeeklyPlanDisplay'
+export type { FitnessPreferences } from './fitness/FitnessForm' 

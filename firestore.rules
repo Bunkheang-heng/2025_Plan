@@ -16,5 +16,10 @@ service cloud.firestore {
     match /monthly/{document} {
       allow read, write, delete, create: if request.auth != null;
     }
+    
+    // Fitness plans - users can only access their own fitness plans
+    match /fitnessPlans/{userId} {
+      allow read, write, delete, create: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }

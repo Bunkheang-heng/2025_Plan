@@ -69,6 +69,7 @@ export default function Nav() {
     { path: '/monthly', label: 'Monthly' },
     { path: '/create', label: 'New Plan' },
     { path: '/chat', label: 'AI Chat' },
+    { path: '/fitness-planner', label: 'Fitness Planner' },
   ]
 
   return (
