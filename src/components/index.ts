@@ -11,7 +11,6 @@ export { default as Loading } from './ui/Loading'
 export { default as PageHeader } from './layout/PageHeader'
 export { default as Container } from './layout/Container'
 export { default as Nav } from './layout/Nav'
-export { default as Footer } from './layout/Footer'
 export { default as HomeHeader } from './layout/HomeHeader'
 
 // Business Components
@@ -36,8 +35,3 @@ export { default as FloatingTechIcons } from './background/FloatingTechIcons'
 export { default as FloatingBinary } from './background/FloatingBinary'
 export { default as CircuitPattern } from './background/CircuitPattern'
 export { default as ScanningLines } from './background/ScanningLines'
-
-// Fitness Components
-export { FitnessForm } from './fitness/FitnessForm'
-export { WeeklyPlanDisplay } from './fitness/WeeklyPlanDisplay'
-export type { FitnessPreferences } from './fitness/FitnessForm' 

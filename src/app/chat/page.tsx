@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { 
   Loading, 
   ChatMessage, 
-  ChatInput
+  ChatInput,
+  AnimatedBackground
 } from '@/components'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, query, where, getDocs, addDoc } from 'firebase/firestore'
@@ -46,7 +47,6 @@ export default function ChatPage() {
     weekly: { total: 0, completed: 0 },
     monthly: { total: 0, completed: 0 }
   })
-  const [lastResponse, setLastResponse] = useState('')
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -225,9 +225,6 @@ export default function ChatPage() {
         )
       )
 
-      // Set the last response for text-to-speech
-      setLastResponse(finalMessage)
-
     } catch (error) {
       console.error('Chat error:', error)
       
@@ -322,54 +319,219 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-      {/* Header */}
-      <div className="border-b border-yellow-500/30 bg-gradient-to-r from-gray-900 to-black px-4 py-4">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg">
-              <span className="text-black font-bold text-lg">⚡</span>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+      {/* Animated Background */}
+      <AnimatedBackground />
+
+      {/* Header with Arc Reactor Design */}
+      <div className="border-b border-yellow-500/30 bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm px-4 py-6 relative z-10 shadow-xl shadow-yellow-500/10">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            {/* J.A.R.V.I.S Identity */}
+            <div className="flex items-center space-x-4">
+              {/* Arc Reactor Icon */}
+              <div className="relative group">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-2xl animate-arc-reactor border-2 border-yellow-300">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center animate-inner-glow">
+                    <span className="text-black font-bold text-2xl">⚡</span>
+                  </div>
+                </div>
+                {/* Energy Rings */}
+                <div className="absolute inset-0 rounded-full border-2 border-yellow-400/40 animate-energy-ring-1"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-yellow-400/30 animate-energy-ring-2"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-yellow-400/20 animate-energy-ring-3"></div>
+              </div>
+              
+              <div>
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 animate-text-glow">
+                  J.A.R.V.I.S
+                </h1>
+                <p className="text-sm text-gray-400 font-medium tracking-wide">Just A Rather Very Intelligent System</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                  <span className="text-xs text-green-400 font-semibold tracking-wider">ONLINE • READY</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
-                J.A.R.V.I.S
-              </h1>
-              <p className="text-xs text-gray-400">Just A Rather Very Intelligent System</p>
+
+            {/* Stats Display */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-xl px-4 py-3 shadow-lg">
+                <div className="flex items-center space-x-6">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">Daily</p>
+                    <p className="text-lg font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</p>
+                  </div>
+                  <div className="w-px h-8 bg-gray-700"></div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">Weekly</p>
+                    <p className="text-lg font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</p>
+                  </div>
+                  <div className="w-px h-8 bg-gray-700"></div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">Monthly</p>
+                    <p className="text-lg font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-yellow-400 font-medium">◉ ONLINE</span>
+
+          {/* Mobile Stats */}
+          <div className="lg:hidden mt-4 bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-3 shadow-lg">
+            <div className="flex items-center justify-around">
+              <div className="text-center">
+                <p className="text-xs text-gray-400 mb-1">Daily</p>
+                <p className="text-sm font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</p>
+              </div>
+              <div className="w-px h-8 bg-gray-700"></div>
+              <div className="text-center">
+                <p className="text-xs text-gray-400 mb-1">Weekly</p>
+                <p className="text-sm font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</p>
+              </div>
+              <div className="w-px h-8 bg-gray-700"></div>
+              <div className="text-center">
+                <p className="text-xs text-gray-400 mb-1">Monthly</p>
+                <p className="text-sm font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto mt-10">
-        <div className="max-w-3xl mx-auto">
-          {messages.map((message) => (
-            <ChatMessage
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto py-8 relative z-10">
+        <div className="max-w-4xl mx-auto px-4 space-y-4">
+          {messages.map((message, index) => (
+            <div
               key={message.id}
-              message={message.message}
-              isUser={message.isUser}
-              timestamp={message.timestamp}
-              isLoading={message.isLoading}
-              planReferences={message.planReferences}
-            />
+              className="animate-slide-in-up"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              <ChatMessage
+                message={message.message}
+                isUser={message.isUser}
+                timestamp={message.timestamp}
+                isLoading={message.isLoading}
+                planReferences={message.planReferences}
+              />
+            </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Chat Input */}
-      <div className="border-t border-yellow-500/30 bg-gradient-to-r from-gray-900 to-black">
-        <div className="max-w-3xl mx-auto">
+      <div className="border-t border-yellow-500/30 bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm shadow-2xl shadow-yellow-500/10 relative z-10">
+        <div className="max-w-4xl mx-auto">
           <ChatInput
             onSendMessage={sendMessage}
             isLoading={isSending}
-            lastResponse={lastResponse}
           />
         </div>
       </div>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        @keyframes arc-reactor {
+          0%, 100% { 
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 
+                        0 0 40px rgba(250, 204, 21, 0.6),
+                        0 0 60px rgba(250, 204, 21, 0.4);
+          }
+          50% { 
+            box-shadow: 0 0 30px rgba(250, 204, 21, 1), 
+                        0 0 60px rgba(250, 204, 21, 0.8),
+                        0 0 90px rgba(250, 204, 21, 0.6);
+          }
+        }
+
+        @keyframes inner-glow {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+
+        @keyframes energy-ring-1 {
+          0% { transform: scale(1); opacity: 0.6; }
+          50% { transform: scale(1.2); opacity: 0.3; }
+          100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        @keyframes energy-ring-2 {
+          0% { transform: scale(1); opacity: 0.4; }
+          50% { transform: scale(1.3); opacity: 0.2; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        @keyframes energy-ring-3 {
+          0% { transform: scale(1); opacity: 0.2; }
+          50% { transform: scale(1.4); opacity: 0.1; }
+          100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        @keyframes text-glow {
+          0%, 100% { text-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
+          50% { text-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.5); }
+        }
+
+        @keyframes slide-in-up {
+          0% { 
+            opacity: 0; 
+            transform: translateY(20px);
+          }
+          100% { 
+            opacity: 1; 
+            transform: translateY(0);
+          }
+        }
+
+        .animate-arc-reactor {
+          animation: arc-reactor 2s ease-in-out infinite;
+        }
+
+        .animate-inner-glow {
+          animation: inner-glow 2s ease-in-out infinite;
+        }
+
+        .animate-energy-ring-1 {
+          animation: energy-ring-1 3s ease-out infinite;
+        }
+
+        .animate-energy-ring-2 {
+          animation: energy-ring-2 3s ease-out infinite 0.5s;
+        }
+
+        .animate-energy-ring-3 {
+          animation: energy-ring-3 3s ease-out infinite 1s;
+        }
+
+        .animate-text-glow {
+          animation: text-glow 3s ease-in-out infinite;
+        }
+
+        .animate-slide-in-up {
+          animation: slide-in-up 0.5s ease-out forwards;
+          opacity: 0;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: rgba(31, 41, 55, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #fbbf24, #f59e0b);
+          border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #f59e0b, #d97706);
+        }
+      `}</style>
     </div>
   )
 } 

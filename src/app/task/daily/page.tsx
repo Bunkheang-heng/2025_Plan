@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
-import { auth } from '../../../firebase'
+import { auth } from '../../../../firebase'
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 
 type Plan = {

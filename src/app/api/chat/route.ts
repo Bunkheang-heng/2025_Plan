@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { GoogleGenAI } from '@google/genai'
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY!
+})
 
 export async function POST(request: NextRequest) {
   try {
     const { message, planContext } = await request.json()
 
-    // Get Gemini API key from environment variables
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
+    // Check Gemini API key
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
         { error: 'Gemini API key not configured' },
         { status: 500 }
@@ -53,17 +57,7 @@ You can reference the current time when giving advice or having conversations.
 `
 
     // Call Gemini API
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are J.A.R.V.I.S (Just A Rather Very Intelligent System), Bunkheang's trusted AI companion and personal assistant. You're not just another AI - you're his right-hand digital partner who genuinely cares about his success and well-being.
+    const systemPrompt = `You are J.A.R.V.I.S (Just A Rather Very Intelligent System), Bunkheang's trusted AI companion and personal assistant. You're not just another AI - you're his right-hand digital partner who genuinely cares about his success and well-being.
 
 Your personality:
 - Speak naturally and conversationally, like a knowledgeable friend who happens to be incredibly smart
@@ -99,52 +93,18 @@ When Bunkheang asks you to create daily plans, tasks, or schedule activities, yo
 
 ${contextPrompt}
 
-User Question: ${message}
-
 Respond like you're having a genuine conversation with a friend you want to help succeed. Be specific and actionable in your advice, but make it feel natural and human-like. Show that you understand his situation and care about his progress.
 
-If the user is asking you to create plans, schedule tasks, or organize their day, use the PLAN_CREATION_REQUEST format above to actually create the plans for them.`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          },
-          safetySettings: [
-            {
-              category: "HARM_CATEGORY_HARASSMENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_HATE_SPEECH",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            }
-          ]
-        }),
-      }
-    )
+If the user is asking you to create plans, schedule tasks, or organize their day, use the PLAN_CREATION_REQUEST format above to actually create the plans for them.
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Gemini API error:', errorData)
-      return NextResponse.json(
-        { error: 'Failed to get response from Gemini' },
-        { status: response.status }
-      )
-    }
+User Question: ${message}`
 
-    const data = await response.json()
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.'
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: systemPrompt
+    })
+    
+    const aiResponse = response.text
 
     return NextResponse.json({ 
       response: aiResponse,
