@@ -24,10 +24,13 @@ interface TechnicalLevel {
 export default function GoldMarketInfo() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const [isFetching, setIsFetching] = useState(false)
   const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y'>('1D')
+  const [dataSource, setDataSource] = useState<string>('Initializing...')
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
-  // Simulated market data - In production, this would come from an API
-  const [marketData] = useState<MarketData>({
+  // Real-time market data
+  const [marketData, setMarketData] = useState<MarketData>({
     price: 2045.85,
     change24h: 12.45,
     changePercent24h: 0.61,
@@ -37,6 +40,35 @@ export default function GoldMarketInfo() {
     volume: 156789,
     timestamp: new Date().toISOString()
   })
+
+  // Fetch gold price data
+  const fetchGoldPrice = async () => {
+    try {
+      setIsFetching(true)
+      const response = await fetch('/api/gold-price')
+      const result = await response.json()
+      
+      if (result.success && result.data) {
+        setMarketData({
+          price: result.data.price || 0,
+          change24h: result.data.change24h || result.data.change || 0,
+          changePercent24h: result.data.changePercent24h || result.data.changePercent || 0,
+          high24h: result.data.high24h || result.data.high || result.data.price,
+          low24h: result.data.low24h || result.data.low || result.data.price,
+          open: result.data.open || result.data.price,
+          volume: result.data.volume || 0,
+          timestamp: result.data.timestamp || new Date().toISOString()
+        })
+        setDataSource(result.message || result.data.source || 'Unknown')
+        setLastUpdate(new Date())
+      }
+    } catch (error) {
+      console.error('Error fetching gold price:', error)
+      setDataSource('Error - Using cached data')
+    } finally {
+      setIsFetching(false)
+    }
+  }
 
   const technicalLevels: TechnicalLevel[] = [
     { level: 2075.00, type: 'resistance', strength: 'strong' },
@@ -71,6 +103,17 @@ export default function GoldMarketInfo() {
     // Temporarily disable auth check for demo
     setIsLoading(false)
     
+    // Fetch initial data
+    fetchGoldPrice()
+    
+    // Auto-refresh every 60 seconds (1 minute)
+    const interval = setInterval(() => {
+      fetchGoldPrice()
+    }, 60000) // 60000ms = 1 minute
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(interval)
+    
     // const unsubscribe = auth.onAuthStateChanged((user) => {
     //   if (!user) {
     //     router.push('/login')
@@ -94,9 +137,24 @@ export default function GoldMarketInfo() {
         
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-            Live Market Data
+          <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
+            <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold">
+              <div className={`w-2 h-2 rounded-full mr-2 ${isFetching ? 'bg-blue-500 animate-pulse' : 'bg-yellow-500 animate-pulse'}`}></div>
+              {isFetching ? 'Updating...' : 'Live Market Data'}
+            </div>
+            <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-blue-500/30 rounded-full text-blue-400 text-xs font-medium">
+              📡 {dataSource}
+            </div>
+            <button
+              onClick={fetchGoldPrice}
+              disabled={isFetching}
+              className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-green-500/30 rounded-full text-green-400 text-sm font-semibold hover:bg-gray-700/50 transition-all disabled:opacity-50"
+            >
+              <svg className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {isFetching ? 'Refreshing...' : 'Refresh Now'}
+            </button>
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
             <span>Gold Market (XAU/USD)</span>
@@ -106,6 +164,9 @@ export default function GoldMarketInfo() {
           </h1>
           <p className="text-xl text-gray-300 font-medium">
             Real-time forex market information and trading insights
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            Last updated: {lastUpdate.toLocaleTimeString()} • Auto-refresh every 60 seconds
           </p>
         </div>
 
