@@ -23,23 +23,43 @@ type TimePeriodPlans = {
   night: Plan[];
 }
 
+type DayData = {
+  date: string;
+  plans: Plan[];
+  totalTasks: number;
+  completedTasks: number;
+}
+
 export default function DailyPlans() {
   const [state, setState] = useState({
     isLoading: true,
-    plans: {
+    monthData: {} as Record<string, DayData>,
+    selectedDayPlans: {
       morning: [],
       afternoon: [],
       night: []
     } as TimePeriodPlans,
-    totalTasks: 0,
-    completedTasks: 0
+    selectedDayStats: {
+      totalTasks: 0,
+      completedTasks: 0
+    }
   })
-  const [selectedDate, setSelectedDate] = useState(() => {
-    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
-  })
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const router = useRouter()
 
-  const autoCompletePlans = useCallback(async (plans: Plan[]) => {
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = firstDay.getDay()
+    
+    return { daysInMonth, startingDayOfWeek, year, month }
+  }
+
+  const autoCompletePlans = useCallback(async (plans: Plan[], dateStr: string) => {
     const autoCompletedIds: string[] = []
     try {
       const db = getFirestore()
@@ -55,7 +75,7 @@ export default function DailyPlans() {
       const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
       
       // Only auto-complete if we're viewing today's plans OR if we're viewing past plans
-      if (selectedDate > today) return autoCompletedIds
+      if (dateStr > today) return autoCompletedIds
       
       const currentHour = parseInt(currentTime.split(':')[0])
       const currentMinute = parseInt(currentTime.split(':')[1])
@@ -81,97 +101,176 @@ export default function DailyPlans() {
       console.error('Error auto-completing plans:', error)
     }
     return autoCompletedIds
-  }, [selectedDate])
+  }, [])
 
-  const fetchPlans = useCallback(async () => {
+  const fetchMonthData = useCallback(async (date: Date) => {
     try {
       const db = getFirestore()
       const user = auth.currentUser
       
       if (!user) return
 
+      const year = date.getFullYear()
+      const month = date.getMonth()
+      const startDate = new Date(year, month, 1).toISOString().split('T')[0]
+      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0]
+
       const q = query(
         collection(db, 'daily'),
-        where('date', '==', selectedDate)
+        where('date', '>=', startDate),
+        where('date', '<=', endDate)
       )
       
       const querySnapshot = await getDocs(q)
-      const planData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Plan[]
+      const monthData: Record<string, DayData> = {}
       
-      const autoCompletedIds = await autoCompletePlans(planData)
-      
-      const updatedPlanData = planData.map(plan => 
-        autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' } : plan
-      )
-      
-      const groupedPlans: TimePeriodPlans = {
-        morning: updatedPlanData.filter(plan => plan.timePeriod === 'morning'),
-        afternoon: updatedPlanData.filter(plan => plan.timePeriod === 'afternoon'),
-        night: updatedPlanData.filter(plan => plan.timePeriod === 'night')
+      // Group plans by date
+      querySnapshot.docs.forEach(doc => {
+        const plan = { id: doc.id, ...doc.data() } as Plan
+        if (!monthData[plan.date]) {
+          monthData[plan.date] = {
+            date: plan.date,
+            plans: [],
+            totalTasks: 0,
+            completedTasks: 0
+          }
+        }
+        monthData[plan.date].plans.push(plan)
+      })
+
+      // Auto-complete plans and calculate stats for each day
+      for (const dateStr in monthData) {
+        const dayData = monthData[dateStr]
+        const autoCompletedIds = await autoCompletePlans(dayData.plans, dateStr)
+        
+        dayData.plans = dayData.plans.map(plan => 
+          autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' } : plan
+        )
+        
+        dayData.totalTasks = dayData.plans.length
+        dayData.completedTasks = dayData.plans.filter(plan => plan.status === 'Done').length
       }
-      
-      const totalTasks = updatedPlanData.length
-      const completedTasks = updatedPlanData.filter(plan => plan.status === 'Done').length
       
       setState(prev => ({
         ...prev,
-        plans: groupedPlans,
-        totalTasks,
-        completedTasks,
+        monthData,
         isLoading: false
       }))
     } catch (error) {
       console.error('Error fetching plans:', error)
       setState(prev => ({ ...prev, isLoading: false }))
     }
-  }, [selectedDate, autoCompletePlans])
+  }, [autoCompletePlans])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
         router.push('/login')
       } else {
-        fetchPlans()
+        fetchMonthData(currentDate)
       }
     })
 
     return () => unsubscribe()
-  }, [router, fetchPlans])
+  }, [router, currentDate, fetchMonthData])
 
   useEffect(() => {
     const interval = setInterval(() => {
       const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
+      const currentMonth = currentDate.getMonth()
+      const currentYear = currentDate.getFullYear()
+      const todayDate = new Date(today)
+      const isCurrentMonth = todayDate.getMonth() === currentMonth && todayDate.getFullYear() === currentYear
       
-      // Auto-refresh if we're viewing today's plans or past plans
-      if (selectedDate <= today && !state.isLoading) {
-        fetchPlans()
+      // Auto-refresh if we're viewing current month
+      if (isCurrentMonth && !state.isLoading) {
+        fetchMonthData(currentDate)
       }
     }, 300000)
 
     return () => clearInterval(interval)
-  }, [selectedDate, state.isLoading, fetchPlans])
+  }, [currentDate, state.isLoading, fetchMonthData])
 
-  const updatePlanStatus = async (planId: string, newStatus: string) => {
-    setState(prev => {
-      const updatedPlans = { ...prev.plans }
+  const handleDateClick = (day: number) => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const dateStr = new Date(year, month, day).toISOString().split('T')[0]
+    
+    const dayData = state.monthData[dateStr]
+    
+    if (dayData) {
+      const groupedPlans: TimePeriodPlans = {
+        morning: dayData.plans.filter(plan => plan.timePeriod === 'morning'),
+        afternoon: dayData.plans.filter(plan => plan.timePeriod === 'afternoon'),
+        night: dayData.plans.filter(plan => plan.timePeriod === 'night')
+      }
       
-      Object.keys(updatedPlans).forEach(period => {
-        const planIndex = updatedPlans[period as keyof TimePeriodPlans].findIndex(plan => plan.id === planId)
+      setState(prev => ({
+        ...prev,
+        selectedDayPlans: groupedPlans,
+        selectedDayStats: {
+          totalTasks: dayData.totalTasks,
+          completedTasks: dayData.completedTasks
+        }
+      }))
+    } else {
+      setState(prev => ({
+        ...prev,
+        selectedDayPlans: {
+          morning: [],
+          afternoon: [],
+          night: []
+        },
+        selectedDayStats: {
+          totalTasks: 0,
+          completedTasks: 0
+        }
+      }))
+    }
+    
+    setSelectedDate(dateStr)
+  }
+
+  const changeMonth = (direction: number) => {
+    const newDate = new Date(currentDate)
+    newDate.setMonth(currentDate.getMonth() + direction)
+    setCurrentDate(newDate)
+  }
+
+  const updatePlanStatus = async (planId: string, newStatus: string, dateStr: string) => {
+    // Update local state
+    setState(prev => {
+      const updatedMonthData = { ...prev.monthData }
+      const updatedSelectedDayPlans = { ...prev.selectedDayPlans }
+      
+      // Update in monthData
+      if (updatedMonthData[dateStr]) {
+        const planIndex = updatedMonthData[dateStr].plans.findIndex(plan => plan.id === planId)
         if (planIndex !== -1) {
-          updatedPlans[period as keyof TimePeriodPlans][planIndex].status = newStatus
+          updatedMonthData[dateStr].plans[planIndex].status = newStatus
+          updatedMonthData[dateStr].completedTasks = updatedMonthData[dateStr].plans.filter(plan => plan.status === 'Done').length
+        }
+      }
+      
+      // Update in selectedDayPlans
+      Object.keys(updatedSelectedDayPlans).forEach(period => {
+        const planIndex = updatedSelectedDayPlans[period as keyof TimePeriodPlans].findIndex(plan => plan.id === planId)
+        if (planIndex !== -1) {
+          updatedSelectedDayPlans[period as keyof TimePeriodPlans][planIndex].status = newStatus
         }
       })
       
-      const allPlans = [...updatedPlans.morning, ...updatedPlans.afternoon, ...updatedPlans.night]
+      const allPlans = [...updatedSelectedDayPlans.morning, ...updatedSelectedDayPlans.afternoon, ...updatedSelectedDayPlans.night]
       const completedTasks = allPlans.filter(plan => plan.status === 'Done').length
       
       return {
         ...prev,
-        plans: updatedPlans,
-        completedTasks
+        monthData: updatedMonthData,
+        selectedDayPlans: updatedSelectedDayPlans,
+        selectedDayStats: {
+          totalTasks: allPlans.length,
+          completedTasks
+        }
       }
     })
 
@@ -184,33 +283,10 @@ export default function DailyPlans() {
       })
     } catch (error) {
       console.error('Error updating plan status:', error)
-      fetchPlans()
+      fetchMonthData(currentDate)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      timeZone: 'Asia/Phnom_Penh',
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  }
-
-  const getDateOptions = () => {
-    const dates = []
-    const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
-    
-    for (let i = -7; i <= 7; i++) {
-      const date = new Date(nowInPhnomPenh)
-      date.setDate(nowInPhnomPenh.getDate() + i)
-      dates.push(date.toLocaleDateString('en-CA'))
-    }
-    
-    return dates
-  }
 
 
 
@@ -232,13 +308,15 @@ export default function DailyPlans() {
     plans, 
     icon, 
     gradient, 
-    timePeriod 
+    timePeriod,
+    dateStr
   }: { 
     title: string;
     plans: Plan[];
     icon: React.ReactNode;
     gradient: string;
     timePeriod: string;
+    dateStr: string;
   }) => {
     const completed = plans.filter(plan => plan.status === 'Done').length
     const total = plans.length
@@ -261,7 +339,7 @@ export default function DailyPlans() {
             <div className="flex items-center space-x-4">
               <span className="text-white/90 text-sm font-semibold">{completed}/{total}</span>
               <button
-                onClick={() => router.push(`/create?type=daily&timePeriod=${timePeriod}&date=${selectedDate}`)}
+                onClick={() => router.push(`/create?type=daily&timePeriod=${timePeriod}&date=${dateStr}`)}
                 className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
               >
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,7 +380,7 @@ export default function DailyPlans() {
                     )}
                     <select
                       value={plan.status}
-                      onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
+                      onChange={(e) => updatePlanStatus(plan.id, e.target.value, dateStr)}
                       className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-gray-800/50"
                     >
                       <option value="Not Started" className="bg-gray-800">⏳ Not Started</option>
@@ -362,105 +440,236 @@ export default function DailyPlans() {
     return <Loading />
   }
 
+  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Daily Mission Planning
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
-            Daily Plans 📅
+          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
+            <span>Daily Plans Calendar</span>
+            <svg className="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+            </svg>
           </h1>
           <p className="text-xl text-gray-300 font-medium">
-            Organize your day and accomplish your objectives
+            Click on a day to view and manage your daily tasks
           </p>
         </div>
 
-        {/* Date Selection & Stats */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 lg:p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg border border-blue-400/50">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <label className="text-sm font-bold text-yellow-400">Select Date:</label>
-              </div>
-              <select
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-semibold bg-gray-800/50 shadow-sm"
+        {/* Calendar */}
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
+          {/* Calendar Header */}
+          <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => changeMonth(-1)}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
               >
-                {getDateOptions().map((date) => (
-                  <option key={date} value={date} className="bg-gray-800 text-gray-100">
-                    {formatDate(date)}
-                  </option>
-                ))}
-              </select>
+                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <h2 className="text-2xl font-bold text-white">{monthName}</h2>
+              
+              <button
+                onClick={() => changeMonth(1)}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-            
-            {/* Stats */}
-            <div className="flex flex-wrap items-center gap-6 text-sm">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
-                <span className="text-gray-400 font-medium">Total: <span className="font-bold text-yellow-400">{state.totalTasks}</span></span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600"></div>
-                <span className="text-gray-400 font-medium">Completed: <span className="font-bold text-yellow-400">{state.completedTasks}</span></span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
-                <span className="text-gray-400 font-medium">Progress: <span className="font-bold text-yellow-400">{state.totalTasks > 0 ? Math.round((state.completedTasks / state.totalTasks) * 100) : 0}%</span></span>
-              </div>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="p-6">
+            {/* Day Headers */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="text-center text-yellow-400 font-bold text-sm py-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Days */}
+            <div className="grid grid-cols-7 gap-2">
+              {/* Empty cells for days before month starts */}
+              {Array.from({ length: startingDayOfWeek }).map((_, index) => (
+                <div key={`empty-${index}`} className="aspect-square" />
+              ))}
+
+              {/* Actual days */}
+              {Array.from({ length: daysInMonth }).map((_, index) => {
+                const day = index + 1
+                const dateStr = new Date(year, month, day).toISOString().split('T')[0]
+                const dayData = state.monthData[dateStr]
+                const isToday = dateStr === new Date().toISOString().split('T')[0]
+                const hasPlans = dayData && dayData.totalTasks > 0
+                const allCompleted = dayData && dayData.totalTasks > 0 && dayData.completedTasks === dayData.totalTasks
+
+                return (
+                  <button
+                    key={day}
+                    onClick={() => handleDateClick(day)}
+                    className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                      isToday 
+                        ? 'border-yellow-400 bg-yellow-400/10' 
+                        : hasPlans
+                        ? allCompleted
+                          ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20'
+                          : 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
+                        : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className={`text-sm font-bold mb-1 ${
+                        isToday ? 'text-yellow-400' : 'text-gray-300'
+                      }`}>
+                        {day}
+                      </div>
+                      {hasPlans && (
+                        <>
+                          <div className={`text-xs font-bold ${
+                            allCompleted ? 'text-emerald-400' : 'text-blue-400'
+                          }`}>
+                            {dayData.completedTasks}/{dayData.totalTasks}
+                          </div>
+                          {allCompleted && (
+                            <div className="mt-1">
+                              <svg className="w-3 h-3 text-emerald-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>
-
-        {/* Time Period Sections */}
-        <div className="space-y-8">
-          <TimePeriodSection
-            title="Morning"
-            plans={state.plans.morning}
-            timePeriod="morning"
-            gradient="bg-gradient-to-r from-orange-500 to-orange-600"
-            icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            }
-          />
-          
-          <TimePeriodSection
-            title="Afternoon"
-            plans={state.plans.afternoon}
-            timePeriod="afternoon"
-            gradient="bg-gradient-to-r from-blue-500 to-blue-600"
-            icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            }
-          />
-          
-          <TimePeriodSection
-            title="Night"
-            plans={state.plans.night}
-            timePeriod="night"
-            gradient="bg-gradient-to-r from-purple-500 to-purple-600"
-            icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            }
-          />
-        </div>
       </div>
+
+      {/* Day Details Modal */}
+      {selectedDate && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in overflow-y-auto">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-yellow-500/30 rounded-2xl max-w-6xl w-full shadow-2xl shadow-yellow-500/20 animate-slide-up my-8">
+            <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">
+                    {new Date(selectedDate).toLocaleDateString('en-US', { 
+                      weekday: 'long',
+                      month: 'long', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </h2>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {state.selectedDayStats.totalTasks > 0 
+                      ? `${state.selectedDayStats.completedTasks}/${state.selectedDayStats.totalTasks} tasks completed`
+                      : 'No tasks planned for this day'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedDate(null)
+                    fetchMonthData(currentDate)
+                  }}
+                  className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                >
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-8 max-h-[70vh] overflow-y-auto">
+              <TimePeriodSection
+                title="Morning"
+                plans={state.selectedDayPlans.morning}
+                timePeriod="morning"
+                dateStr={selectedDate}
+                gradient="bg-gradient-to-r from-orange-500 to-orange-600"
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                }
+              />
+              
+              <TimePeriodSection
+                title="Afternoon"
+                plans={state.selectedDayPlans.afternoon}
+                timePeriod="afternoon"
+                dateStr={selectedDate}
+                gradient="bg-gradient-to-r from-blue-500 to-blue-600"
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                }
+              />
+              
+              <TimePeriodSection
+                title="Night"
+                plans={state.selectedDayPlans.night}
+                timePeriod="night"
+                dateStr={selectedDate}
+                gradient="bg-gradient-to-r from-purple-500 to-purple-600"
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out forwards;
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 } 
