@@ -1,7 +1,25 @@
 import { NextResponse } from 'next/server'
 
+interface NewsArticle {
+  title?: string
+  description?: string
+  url?: string
+  urlToImage?: string
+  publishedAt?: string
+  source?: {
+    name?: string
+  }
+  category?: string
+  relevance?: number
+}
+
+interface NewsApiResponse {
+  status: string
+  articles: NewsArticle[]
+}
+
 // Cache for storing news data
-let cachedNews: any = null
+let cachedNews: NewsArticle[] | null = null
 let cacheTime: number = 0
 const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes
 
@@ -45,14 +63,14 @@ export async function GET() {
       throw new Error(`NewsAPI error: ${response.status}`)
     }
 
-    const data = await response.json()
+    const data = await response.json() as NewsApiResponse
 
     if (data.status !== 'ok') {
       throw new Error('NewsAPI returned error status')
     }
 
     // Filter and categorize articles
-    const categorizedArticles = data.articles.map((article: any) => {
+    const categorizedArticles = data.articles.map((article: NewsArticle) => {
       const title = (article.title || '').toLowerCase()
       const description = (article.description || '').toLowerCase()
       const content = title + ' ' + description
@@ -80,12 +98,16 @@ export async function GET() {
 
     // Sort by relevance and date
     const sortedArticles = categorizedArticles
-      .filter((article: any) => article.relevance > 0)
-      .sort((a: any, b: any) => {
-        if (a.relevance !== b.relevance) {
-          return b.relevance - a.relevance
+      .filter((article: NewsArticle) => (article.relevance ?? 0) > 0)
+      .sort((a: NewsArticle, b: NewsArticle) => {
+        const aRelevance = a.relevance ?? 0
+        const bRelevance = b.relevance ?? 0
+        if (aRelevance !== bRelevance) {
+          return bRelevance - aRelevance
         }
-        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        const aDate = a.publishedAt ? new Date(a.publishedAt).getTime() : 0
+        const bDate = b.publishedAt ? new Date(b.publishedAt).getTime() : 0
+        return bDate - aDate
       })
       .slice(0, 30) // Limit to 30 most relevant articles
 

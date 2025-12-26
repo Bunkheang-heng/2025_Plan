@@ -1,12 +1,12 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loading } from '@/components'
 import PlanForm, { PlanFormData } from '@/components/forms/PlanForm'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, addDoc } from 'firebase/firestore'
 
-export default function CreatePlanPage() {
+function CreatePlanContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
@@ -45,7 +45,21 @@ export default function CreatePlanPage() {
         dateToUse = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
       }
 
-      const newPlan: any = {
+      interface PlanData {
+        title: string
+        description: string
+        priority: string
+        status: string
+        planType: 'daily' | 'weekly' | 'monthly'
+        createdAt: Date
+        date?: string
+        timePeriod?: string
+        startTime?: string
+        week?: string
+        month?: string
+      }
+
+      const newPlan: PlanData = {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
@@ -127,6 +141,14 @@ export default function CreatePlanPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CreatePlanPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CreatePlanContent />
+    </Suspense>
   )
 }
 

@@ -40,7 +40,7 @@ export default function NotFound() {
               Page Not Found
             </h2>
             <p className="text-gray-300 text-lg mb-6">
-              Oops! The page you're looking for doesn't exist or has been moved.
+              Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
             </p>
 
             <div className="bg-gray-700/30 border border-yellow-500/20 rounded-xl p-6 mb-6">

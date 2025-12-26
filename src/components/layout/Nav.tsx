@@ -16,7 +16,7 @@ interface SubLink {
 interface NavLink {
   path?: string;
   label: string;
-  icon: any;
+  icon: () => React.JSX.Element;
   subLinks?: SubLink[];
 }
 

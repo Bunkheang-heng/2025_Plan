@@ -35,3 +35,6 @@ export { default as FloatingTechIcons } from './background/FloatingTechIcons'
 export { default as FloatingBinary } from './background/FloatingBinary'
 export { default as CircuitPattern } from './background/CircuitPattern'
 export { default as ScanningLines } from './background/ScanningLines'
+
+// Project Components
+export * from './projects'

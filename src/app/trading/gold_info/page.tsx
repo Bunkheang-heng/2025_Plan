@@ -1,7 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { auth } from '../../../../firebase'
 import { Loading } from '@/components'
 
 interface MarketData {
@@ -25,7 +24,6 @@ export default function GoldMarketInfo() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isFetching, setIsFetching] = useState(false)
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y'>('1D')
   const [dataSource, setDataSource] = useState<string>('Initializing...')
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
@@ -335,7 +333,7 @@ export default function GoldMarketInfo() {
                   <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  Today's Events
+                  Today&apos;s Events
                 </h2>
               </div>
               <div className="p-6 space-y-3">

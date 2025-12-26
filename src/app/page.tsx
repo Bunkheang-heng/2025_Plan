@@ -4,7 +4,7 @@ import { Loading, AnimatedBackground } from '@/components'
 import { useStats } from '../hooks/useStats'
 import { auth } from '../../firebase'
 import { useRouter } from 'next/navigation'
-import { getFirestore, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore'
 
 type RecentTask = {
   id: string;
@@ -257,7 +257,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-gray-400 mb-1">Today's Tasks</div>
+                <div className="text-sm text-gray-400 mb-1">Today&apos;s Tasks</div>
                 <div className="text-3xl font-bold text-blue-400">{stats.daily.completed}/{stats.daily.total}</div>
               </div>
               <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">

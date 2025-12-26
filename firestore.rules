@@ -26,5 +26,10 @@ service cloud.firestore {
     match /trading_pnl/{document} {
       allow read, write, delete, create: if request.auth != null;
     }
+    
+    // Projects - authenticated users can access
+    match /projects/{document} {
+      allow read, write, delete, create: if request.auth != null;
+    }
   }
 }

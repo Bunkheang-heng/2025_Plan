@@ -40,8 +40,8 @@ export default function DailyPlans() {
       night: []
     } as TimePeriodPlans,
     selectedDayStats: {
-      totalTasks: 0,
-      completedTasks: 0
+    totalTasks: 0,
+    completedTasks: 0
     }
   })
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -144,9 +144,9 @@ export default function DailyPlans() {
         const autoCompletedIds = await autoCompletePlans(dayData.plans, dateStr)
         
         dayData.plans = dayData.plans.map(plan => 
-          autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' } : plan
-        )
-        
+        autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' } : plan
+      )
+      
         dayData.totalTasks = dayData.plans.length
         dayData.completedTasks = dayData.plans.filter(plan => plan.status === 'Done').length
       }
@@ -269,7 +269,7 @@ export default function DailyPlans() {
         selectedDayPlans: updatedSelectedDayPlans,
         selectedDayStats: {
           totalTasks: allPlans.length,
-          completedTasks
+        completedTasks
         }
       }
     })
@@ -485,7 +485,7 @@ export default function DailyPlans() {
               >
                 <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                  </svg>
               </button>
             </div>
           </div>
@@ -500,7 +500,7 @@ export default function DailyPlans() {
                 </div>
               ))}
             </div>
-
+            
             {/* Calendar Days */}
             <div className="grid grid-cols-7 gap-2">
               {/* Empty cells for days before month starts */}
@@ -543,17 +543,17 @@ export default function DailyPlans() {
                             allCompleted ? 'text-emerald-400' : 'text-blue-400'
                           }`}>
                             {dayData.completedTasks}/{dayData.totalTasks}
-                          </div>
+              </div>
                           {allCompleted && (
                             <div className="mt-1">
                               <svg className="w-3 h-3 text-emerald-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                               </svg>
-                            </div>
+              </div>
                           )}
                         </>
                       )}
-                    </div>
+              </div>
                   </button>
                 )
               })}
@@ -594,50 +594,50 @@ export default function DailyPlans() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-              </div>
-            </div>
+          </div>
+        </div>
 
             <div className="p-6 space-y-8 max-h-[70vh] overflow-y-auto">
-              <TimePeriodSection
-                title="Morning"
+          <TimePeriodSection
+            title="Morning"
                 plans={state.selectedDayPlans.morning}
-                timePeriod="morning"
+            timePeriod="morning"
                 dateStr={selectedDate}
-                gradient="bg-gradient-to-r from-orange-500 to-orange-600"
-                icon={
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                }
-              />
-              
-              <TimePeriodSection
-                title="Afternoon"
+            gradient="bg-gradient-to-r from-orange-500 to-orange-600"
+            icon={
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            }
+          />
+          
+          <TimePeriodSection
+            title="Afternoon"
                 plans={state.selectedDayPlans.afternoon}
-                timePeriod="afternoon"
+            timePeriod="afternoon"
                 dateStr={selectedDate}
-                gradient="bg-gradient-to-r from-blue-500 to-blue-600"
-                icon={
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                }
-              />
-              
-              <TimePeriodSection
-                title="Night"
+            gradient="bg-gradient-to-r from-blue-500 to-blue-600"
+            icon={
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            }
+          />
+          
+          <TimePeriodSection
+            title="Night"
                 plans={state.selectedDayPlans.night}
-                timePeriod="night"
+            timePeriod="night"
                 dateStr={selectedDate}
-                gradient="bg-gradient-to-r from-purple-500 to-purple-600"
-                icon={
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                }
-              />
-            </div>
-          </div>
+            gradient="bg-gradient-to-r from-purple-500 to-purple-600"
+            icon={
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            }
+          />
+        </div>
+      </div>
         </div>
       )}
 

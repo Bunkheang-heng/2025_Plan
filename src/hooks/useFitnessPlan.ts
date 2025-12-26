@@ -2,8 +2,27 @@
 import { useState, useEffect } from 'react'
 import { auth } from '../../firebase'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
-import { WeeklyPlan } from '@/app/fitness-planner/page'
-import { FitnessPreferences } from '@/components/fitness/FitnessForm'
+
+// Type definitions for fitness plans
+export interface WeeklyPlan {
+  day: string
+  exercises: Array<{
+    name: string
+    sets?: number
+    reps?: number
+    duration?: string
+    notes?: string
+  }>
+}
+
+export interface FitnessPreferences {
+  goal?: string
+  experience?: string
+  daysPerWeek?: number
+  workoutDuration?: string
+  equipment?: string[]
+  [key: string]: unknown
+}
 
 export interface StoredFitnessPlan {
   plan: WeeklyPlan[]

@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 
@@ -220,13 +221,12 @@ export default function TradingNews() {
                 {/* Article Image */}
                 {article.urlToImage && (
                   <div className="relative h-48 overflow-hidden bg-gray-900">
-                    <img
+                    <Image
                       src={article.urlToImage}
                       alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
-                      }}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      unoptimized
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
                     
