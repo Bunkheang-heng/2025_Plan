@@ -1,14 +1,20 @@
 'use client'
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { 
   Loading, 
   ChatMessage, 
-  ChatInput,
-  AnimatedBackground
+  ChatInput
 } from '@/components'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, query, where, getDocs, addDoc } from 'firebase/firestore'
+
+// Dynamically import heavy background component
+const AnimatedBackground = dynamic(() => import('@/components').then(mod => ({ default: mod.AnimatedBackground })), {
+  ssr: false,
+  loading: () => null
+})
 
 interface ChatMessageType {
   id: string

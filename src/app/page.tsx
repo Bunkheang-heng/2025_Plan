@@ -1,10 +1,17 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
-import { Loading, AnimatedBackground } from '@/components'
+import React, { useState, useEffect, useCallback, Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import { Loading } from '@/components'
 import { useStats } from '../hooks/useStats'
 import { auth } from '../../firebase'
 import { useRouter } from 'next/navigation'
 import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore'
+
+// Dynamically import heavy background component
+const AnimatedBackground = dynamic(() => import('@/components').then(mod => ({ default: mod.AnimatedBackground })), {
+  ssr: false,
+  loading: () => null
+})
 
 type RecentTask = {
   id: string;

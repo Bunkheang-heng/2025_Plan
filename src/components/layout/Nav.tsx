@@ -51,6 +51,7 @@ export default function Nav() {
     },
     { path: '/chat', label: 'AI Chat', icon: ChatIcon },
     { path: '/working_project', label: 'Working Project', icon: WorkingProjectIcon },
+    {path:'/business_idea', label: 'Business Idea', icon: BusinessIdeaIcon},
   ]
 
   function DashboardIcon() {
@@ -102,6 +103,14 @@ export default function Nav() {
   }
 
   function WorkingProjectIcon() {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12h.01M12 15h.01M12 18h.01M12 21a9 9 0 110-18 9 9 0 010 18z" />
+      </svg>
+    )
+  }
+
+  function BusinessIdeaIcon() {
     return (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12h.01M12 15h.01M12 18h.01M12 21a9 9 0 110-18 9 9 0 010 18z" />

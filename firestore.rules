@@ -31,5 +31,10 @@ service cloud.firestore {
     match /projects/{document} {
       allow read, write, delete, create: if request.auth != null;
     }
+    
+    // Business Ideas - authenticated users can access
+    match /businessIdeas/{document} {
+      allow read, write, delete, create: if request.auth != null;
+    }
   }
 }
