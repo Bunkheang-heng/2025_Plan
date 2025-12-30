@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 import { getFirestore, collection, query, getDocs, setDoc, doc, where } from 'firebase/firestore'
+import { FaWallet, FaChartLine } from 'react-icons/fa'
+
+type AccountType = 'real' | 'funded'
 
 type DailyPnL = {
   date: string;
@@ -11,6 +14,7 @@ type DailyPnL = {
   trades: number;
   lessons?: string;
   userId: string;
+  accountType: AccountType;
 }
 
 type MonthStats = {
@@ -23,6 +27,7 @@ type MonthStats = {
 }
 
 export default function TradingPnL() {
+  const [accountType, setAccountType] = useState<AccountType>('funded')
   const [state, setState] = useState({
     isLoading: true,
     dailyData: {} as Record<string, DailyPnL>,
@@ -44,6 +49,14 @@ export default function TradingPnL() {
     lessons: ''
   })
   const router = useRouter()
+
+  // Helper function to format date in local timezone (YYYY-MM-DD)
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -73,7 +86,7 @@ export default function TradingPnL() {
     return { totalPnL, winDays, lossDays, totalTrades, bestDay, worstDay }
   }
 
-  const fetchMonthData = useCallback(async (date: Date) => {
+  const fetchMonthData = useCallback(async (date: Date, account: AccountType) => {
     try {
       const db = getFirestore()
       const user = auth.currentUser
@@ -82,31 +95,68 @@ export default function TradingPnL() {
 
       const year = date.getFullYear()
       const month = date.getMonth()
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0]
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0]
+      const startDate = formatLocalDate(new Date(year, month, 1))
+      const endDate = formatLocalDate(new Date(year, month + 1, 0))
 
-      const q = query(
-        collection(db, 'trading_pnl'),
-        where('userId', '==', user.uid),
-        where('date', '>=', startDate),
-        where('date', '<=', endDate)
-      )
-      
-      const querySnapshot = await getDocs(q)
-      const dailyData: Record<string, DailyPnL> = {}
-      
-      querySnapshot.docs.forEach(doc => {
-        const data = doc.data() as DailyPnL
-        dailyData[data.date] = data
-      })
+      try {
+        // Try the optimized query with index
+        const q = query(
+          collection(db, 'trading_pnl'),
+          where('userId', '==', user.uid),
+          where('accountType', '==', account),
+          where('date', '>=', startDate),
+          where('date', '<=', endDate)
+        )
+        
+        const querySnapshot = await getDocs(q)
+        const dailyData: Record<string, DailyPnL> = {}
+        
+        querySnapshot.docs.forEach(doc => {
+          const data = doc.data() as DailyPnL
+          dailyData[data.date] = data
+        })
 
-      const monthStats = calculateMonthStats(dailyData)
-      
-      setState({
-        isLoading: false,
-        dailyData,
-        monthStats
-      })
+        const monthStats = calculateMonthStats(dailyData)
+        
+        setState({
+          isLoading: false,
+          dailyData,
+          monthStats
+        })
+      } catch (indexError: any) {
+        // If index is not ready, fallback to fetching all and filtering client-side
+        if (indexError.code === 'failed-precondition' || indexError.message?.includes('index')) {
+          console.warn('Index not ready, using fallback query. Index is building, this is temporary.')
+          
+          // Fallback: Fetch all user's trading_pnl and filter client-side
+          // This works without any composite index
+          const fallbackQuery = query(
+            collection(db, 'trading_pnl'),
+            where('userId', '==', user.uid)
+          )
+          
+          const fallbackSnapshot = await getDocs(fallbackQuery)
+          const dailyData: Record<string, DailyPnL> = {}
+          
+          fallbackSnapshot.docs.forEach(doc => {
+            const data = doc.data() as DailyPnL
+            // Filter by accountType and date range client-side
+            if (data.accountType === account && data.date >= startDate && data.date <= endDate) {
+              dailyData[data.date] = data
+            }
+          })
+
+          const monthStats = calculateMonthStats(dailyData)
+          
+          setState({
+            isLoading: false,
+            dailyData,
+            monthStats
+          })
+        } else {
+          throw indexError
+        }
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
       setState(prev => ({ ...prev, isLoading: false }))
@@ -118,17 +168,17 @@ export default function TradingPnL() {
       if (!user) {
         router.push('/login')
       } else {
-        fetchMonthData(currentDate)
+        fetchMonthData(currentDate, accountType)
       }
     })
 
     return () => unsubscribe()
-  }, [router, currentDate, fetchMonthData])
+  }, [router, currentDate, accountType, fetchMonthData])
 
   const handleDateClick = (day: number) => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
-    const dateStr = new Date(year, month, day).toISOString().split('T')[0]
+    const dateStr = formatLocalDate(new Date(year, month, day))
     
     const existingData = state.dailyData[dateStr]
     if (existingData) {
@@ -165,11 +215,12 @@ export default function TradingPnL() {
       
       if (!user) return
 
-      const docRef = doc(db, 'trading_pnl', `${user.uid}_${selectedDate}`)
+      const docRef = doc(db, 'trading_pnl', `${user.uid}_${accountType}_${selectedDate}`)
       
       await setDoc(docRef, {
         userId: user.uid,
         date: selectedDate,
+        accountType,
         amount,
         trades,
         lessons: formData.lessons || null
@@ -178,7 +229,7 @@ export default function TradingPnL() {
       setSelectedDate(null)
       setIsEditing(false)
       setFormData({ amount: '', trades: '', lessons: '' })
-      fetchMonthData(currentDate)
+      fetchMonthData(currentDate, accountType)
     } catch (error) {
       console.error('Error saving data:', error)
       alert('Failed to save data')
@@ -213,9 +264,47 @@ export default function TradingPnL() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </h1>
-          <p className="text-xl text-gray-300 font-medium">
+          <p className="text-xl text-gray-300 font-medium mb-6">
             Track your daily profit & loss
           </p>
+
+          {/* Account Type Toggle */}
+          <div className="flex items-center justify-center gap-4">
+            <div className="inline-flex items-center bg-gray-800/50 border border-gray-700 rounded-xl p-1">
+              <button
+                onClick={() => {
+                  const newAccountType: AccountType = 'real'
+                  setAccountType(newAccountType)
+                  setState(prev => ({ ...prev, isLoading: true }))
+                  fetchMonthData(currentDate, newAccountType)
+                }}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  accountType === 'real'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <FaWallet className="w-5 h-5" />
+                <span>Real Account</span>
+              </button>
+              <button
+                onClick={() => {
+                  const newAccountType: AccountType = 'funded'
+                  setAccountType(newAccountType)
+                  setState(prev => ({ ...prev, isLoading: true }))
+                  fetchMonthData(currentDate, newAccountType)
+                }}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  accountType === 'funded'
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg scale-105'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <FaChartLine className="w-5 h-5" />
+                <span>Funded Account</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -357,9 +446,9 @@ export default function TradingPnL() {
               {/* Actual days */}
               {Array.from({ length: daysInMonth }).map((_, index) => {
                 const day = index + 1
-                const dateStr = new Date(year, month, day).toISOString().split('T')[0]
+                const dateStr = formatLocalDate(new Date(year, month, day))
                 const dayData = state.dailyData[dateStr]
-                const isToday = dateStr === new Date().toISOString().split('T')[0]
+                const isToday = dateStr === formatLocalDate(new Date())
 
                 return (
                   <button
@@ -413,9 +502,18 @@ export default function TradingPnL() {
       {selectedDate && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-yellow-500/30 rounded-2xl max-w-md w-full shadow-2xl shadow-yellow-500/20 animate-slide-up">
-            <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
+            <div className={`bg-gradient-to-r ${accountType === 'real' ? 'from-blue-500/20 to-blue-600/20 border-b border-blue-500/30' : 'from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30'} p-6`}>
               <div className="flex items-center justify-between">
                 <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      accountType === 'real' 
+                        ? 'bg-blue-500/30 text-blue-300 border border-blue-400/50' 
+                        : 'bg-yellow-500/30 text-yellow-300 border border-yellow-400/50'
+                    }`}>
+                      {accountType === 'real' ? 'Real Account' : 'Funded Account'}
+                    </span>
+                  </div>
                   <h2 className="text-2xl font-bold text-white">
                     {new Date(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'long',

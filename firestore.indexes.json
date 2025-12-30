@@ -51,6 +51,10 @@
           "order": "ASCENDING"
         },
         {
+          "fieldPath": "accountType",
+          "order": "ASCENDING"
+        },
+        {
           "fieldPath": "date",
           "order": "ASCENDING"
         }
