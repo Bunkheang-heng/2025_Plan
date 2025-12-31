@@ -51,7 +51,9 @@ export default function Nav() {
     },
     { path: '/chat', label: 'AI Chat', icon: ChatIcon },
     { path: '/working_project', label: 'Working Project', icon: WorkingProjectIcon },
-    {path:'/business_idea', label: 'Business Idea', icon: BusinessIdeaIcon},
+    { path:'/business_idea', label: 'Business Idea', icon: BusinessIdeaIcon},
+    { path:'/couple_saving', label: 'Couple Saving', icon: CoupleSavingIcon},
+    
   ]
 
   function DashboardIcon() {
@@ -102,21 +104,62 @@ export default function Nav() {
     )
   }
 
+  // WORKING PROJECT = Briefcase Icon
   function WorkingProjectIcon() {
     return (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12h.01M12 15h.01M12 18h.01M12 21a9 9 0 110-18 9 9 0 010 18z" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3 7h18a1 1 0 011 1v11a2 2 0 01-2 2H4a2 2 0 01-2-2V8a1 1 0 011-1z"
+        />
       </svg>
     )
   }
 
+  // BUSINESS IDEA = Lightbulb Icon
   function BusinessIdeaIcon() {
     return (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12h.01M12 15h.01M12 18h.01M12 21a9 9 0 110-18 9 9 0 010 18z" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 3a7 7 0 017 7c0 2.281-1.218 4.177-3.09 5.207A2.992 2.992 0 0112 21m0 0a2.992 2.992 0 01-3.91-5.793C6.218 14.177 5 12.281 5 10a7 7 0 017-7zm0 14v1m-3-1h6"
+        />
       </svg>
     )
   }
+
+  // COUPLE SAVING = Heart with Dollar Icon
+  function CoupleSavingIcon() {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 21C12 21 4 13.476 4 8.727A4.727 4.727 0 0112 4a4.727 4.727 0 018 4.727C20 13.476 12 21 12 21z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13.5 11.5a1.5 1.5 0 11-3 0c0-.828.896-1.5 2-1.5s2 .672 2 1.5z"
+        />
+        <text
+          x="12"
+          y="15"
+          textAnchor="middle"
+          fontSize="5"
+          fill="currentColor"
+          fontFamily="monospace"
+          dy=".3em"
+        >$</text>
+      </svg>
+    )
+  } 
 
   const NavItem = ({ link }: { link: NavLink }) => {
     // Check if any sublink is active

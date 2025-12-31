@@ -36,5 +36,15 @@ service cloud.firestore {
     match /businessIdeas/{document} {
       allow read, write, delete, create: if request.auth != null;
     }
+    
+    // Couple Savings - authenticated users can access
+    match /coupleSavings/{document} {
+      allow read, write, delete, create: if request.auth != null;
+      
+      // Allow access to entries subcollection
+      match /entries/{entryId} {
+        allow read, write, delete, create: if request.auth != null;
+      }
+    }
   }
 }
