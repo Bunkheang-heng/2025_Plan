@@ -12,6 +12,7 @@ export { default as PageHeader } from './layout/PageHeader'
 export { default as Container } from './layout/Container'
 export { default as Nav } from './layout/Nav'
 export { default as HomeHeader } from './layout/HomeHeader'
+export { default as RouteProtection } from './layout/RouteProtection'
 
 // Business Components
 export { default as PlanItem } from './business/PlanItem'

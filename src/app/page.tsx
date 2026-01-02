@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { Loading } from '@/components'
+import { Loading, RouteProtection } from '@/components'
 import { useStats } from '../hooks/useStats'
 import { auth } from '../../firebase'
 import { useRouter } from 'next/navigation'
@@ -142,6 +142,41 @@ export default function Home() {
     return <Loading />
   }
 
+  return (
+    <RouteProtection>
+      <HomeContent 
+        greeting={greeting}
+        currentTime={currentTime}
+        currentDate={currentDate}
+        mounted={mounted}
+        recentTasks={recentTasks}
+        tradingStats={tradingStats}
+        stats={stats}
+        router={router}
+      />
+    </RouteProtection>
+  )
+}
+
+function HomeContent({ 
+  greeting, 
+  currentTime, 
+  currentDate, 
+  mounted, 
+  recentTasks, 
+  tradingStats, 
+  stats,
+  router 
+}: {
+  greeting: string
+  currentTime: string
+  currentDate: string
+  mounted: boolean
+  recentTasks: RecentTask[]
+  tradingStats: TradingStats
+  stats: { daily: { total: number; completed: number }; weekly: { total: number; completed: number }; monthly: { total: number; completed: number } }
+  router: ReturnType<typeof useRouter>
+}) {
   const quickActions = [
     {
       title: 'Daily Tasks',

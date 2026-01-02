@@ -1,8 +1,10 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import { auth } from '../../../firebase'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
+import { useUserRole } from '@/hooks/useUserRole'
+import { canAccessRoute } from '@/utils/userRole'
 
 interface AuthButtonProps {
   isLoggedIn: boolean
@@ -26,6 +28,7 @@ export default function Nav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const { role, isLoading: roleLoading } = useUserRole()
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -34,7 +37,7 @@ export default function Nav() {
     return () => unsubscribe()
   }, [])
 
-  const navLinks: NavLink[] = [
+  const allNavLinks: NavLink[] = [
     { path: '/', label: 'Dashboard', icon: DashboardIcon },
     { path: '/task/daily', label: 'Daily', icon: CalendarDayIcon },
     { path: '/task/weekly', label: 'Weekly', icon: CalendarWeekIcon },
@@ -53,8 +56,36 @@ export default function Nav() {
     { path: '/working_project', label: 'Working Project', icon: WorkingProjectIcon },
     { path:'/business_idea', label: 'Business Idea', icon: BusinessIdeaIcon},
     { path:'/couple_saving', label: 'Couple Saving', icon: CoupleSavingIcon},
-    
+    { path:'/admin/set-role', label: 'Admin: Set Role', icon: AdminIcon},
+    { path:'/admin/create-account', label: 'Admin: Create Account', icon: AdminIcon},
   ]
+
+  // Filter nav links based on user role
+  const navLinks = useMemo(() => {
+    if (roleLoading) return []
+    
+    return allNavLinks.filter(link => {
+      // Admin-only pages (like admin/set-role) should only show for admins
+      if (link.path?.startsWith('/admin') && role !== 'admin') {
+        return false
+      }
+      
+      // Check main path
+      if (link.path && !canAccessRoute(role, link.path)) {
+        return false
+      }
+      
+      // Check sublinks - if any sublink is accessible, show the parent
+      if (link.subLinks) {
+        const hasAccessibleSubLink = link.subLinks.some(subLink => 
+          canAccessRoute(role, subLink.path)
+        )
+        return hasAccessibleSubLink
+      }
+      
+      return true
+    })
+  }, [role, roleLoading])
 
   function DashboardIcon() {
     return (
@@ -159,7 +190,21 @@ export default function Nav() {
         >$</text>
       </svg>
     )
-  } 
+  }
+
+  // ADMIN = Shield Icon
+  function AdminIcon() {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        />
+      </svg>
+    )
+  }
 
   const NavItem = ({ link }: { link: NavLink }) => {
     // Check if any sublink is active

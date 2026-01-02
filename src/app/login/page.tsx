@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { auth } from '../../../firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -110,6 +111,13 @@ export default function Login() {
               {isLoading ? 'Accessing J.A.R.V.I.S...' : 'Access J.A.R.V.I.S System'}
             </button>
           </form>
+
+          {/* Admin Note */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-400 text-xs">
+              Need an account? Contact an administrator to create one for you.
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
