@@ -49,7 +49,8 @@ export default function Nav() {
         { path: '/trading/trading_pnl', label: 'Trading P&L' },
         { path: '/trading/trading_news', label: 'Trading News' },
         { path: '/trading/trading_ai_predication', label: 'Trading AI Predication' },
-        { path: '/trading/gold_info', label: 'Gold Market Information' }
+        { path: '/trading/gold_info', label: 'Gold Market Information' },
+        { path: '/trading/notification-settings', label: 'Notification Settings' }
       ]
     },
     { path: '/chat', label: 'AI Chat', icon: ChatIcon },

@@ -52,3 +52,4 @@ export async function setCurrentUserRole(role: 'admin' | 'restricted', name?: st
   console.log(`Role set to "${role}" for user: ${user.email}`)
 }
 
+

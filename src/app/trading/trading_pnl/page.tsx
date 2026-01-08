@@ -446,31 +446,45 @@ export default function TradingPnL() {
               {/* Actual days */}
               {Array.from({ length: daysInMonth }).map((_, index) => {
                 const day = index + 1
-                const dateStr = formatLocalDate(new Date(year, month, day))
+                const dateObj = new Date(year, month, day)
+                const dayOfWeek = dateObj.getDay() // 0 = Sunday, 6 = Saturday
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                const dateStr = formatLocalDate(dateObj)
                 const dayData = state.dailyData[dateStr]
                 const isToday = dateStr === formatLocalDate(new Date())
 
                 return (
                   <button
                     key={day}
-                    onClick={() => handleDateClick(day)}
-                    className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                      isToday 
-                        ? 'border-yellow-400 bg-yellow-400/10' 
+                    onClick={() => !isWeekend && handleDateClick(day)}
+                    disabled={isWeekend}
+                    className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
+                      isWeekend
+                        ? 'border-gray-600/30 bg-gray-800/30 opacity-50 cursor-not-allowed'
+                        : isToday 
+                        ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105' 
                         : dayData
                         ? dayData.amount >= 0
-                          ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20'
-                          : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20'
-                        : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50'
+                          ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
+                          : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
+                        : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 hover:scale-105'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
-                        isToday ? 'text-yellow-400' : 'text-gray-300'
+                        isWeekend 
+                          ? 'text-gray-500' 
+                          : isToday 
+                          ? 'text-yellow-400' 
+                          : 'text-gray-300'
                       }`}>
                         {day}
                       </div>
-                      {dayData && (
+                      {isWeekend ? (
+                        <div className="text-[10px] text-gray-500 font-semibold mt-1 text-center leading-tight">
+                          Market<br />Closed
+                        </div>
+                      ) : dayData ? (
                         <>
                           <div className={`text-xs font-bold ${
                             dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'
@@ -488,7 +502,7 @@ export default function TradingPnL() {
                             </div>
                           )}
                         </>
-                      )}
+                      ) : null}
                     </div>
                   </button>
                 )

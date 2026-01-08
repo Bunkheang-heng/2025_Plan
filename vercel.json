@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/trading-reminder",
+      "schedule": "*/30 * * * *"
+    }
+  ]
+}
+
