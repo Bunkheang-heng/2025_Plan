@@ -21,13 +21,15 @@ export default function TradingNews() {
     isLoading: true,
     isFetching: false,
     articles: [] as Article[],
-    nextUpdate: null as string | null
+    nextUpdate: null as string | null,
+    isPredicting: false,
+    predictionError: null as string | null
   })
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const router = useRouter()
 
   const fetchNews = useCallback(async () => {
-    setState(prev => ({ ...prev, isFetching: true }))
+    setState(prev => ({ ...prev, isFetching: true, predictionError: null }))
     
     try {
       const response = await fetch('/api/gold-news')
@@ -50,6 +52,48 @@ export default function TradingNews() {
       setState(prev => ({ ...prev, isLoading: false, isFetching: false }))
     }
   }, [])
+
+  const predictTodayTrend = useCallback(async () => {
+    setState(prev => ({ ...prev, isPredicting: true, predictionError: null }))
+    try {
+      // Ensure we have news loaded
+      let articles = state.articles
+      if (!articles || articles.length === 0) {
+        const newsRes = await fetch('/api/gold-news')
+        const newsData = await newsRes.json()
+        articles = newsData.articles || []
+      }
+
+      const res = await fetch('/api/gold-trend-prediction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          articles,
+          timezone: 'Asia/Phnom_Penh',
+          todayISO: new Date().toISOString()
+        })
+      })
+
+      const data = await res.json()
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.details || data?.error || 'Failed to predict trend')
+      }
+
+      // Store for the AI page to display
+      localStorage.setItem('goldTrendPrediction', JSON.stringify({
+        prediction: data.prediction,
+        articlesUsed: articles,
+        generatedAt: new Date().toISOString()
+      }))
+
+      router.push('/trading/trading_ai_predication')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to predict trend'
+      setState(prev => ({ ...prev, predictionError: msg }))
+    } finally {
+      setState(prev => ({ ...prev, isPredicting: false }))
+    }
+  }, [router, state.articles])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -131,20 +175,39 @@ export default function TradingNews() {
           </p>
 
           {/* Refresh Button */}
-          <button
-            onClick={fetchNews}
-            disabled={state.isFetching}
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg className={`w-5 h-5 ${state.isFetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>{state.isFetching ? 'Refreshing...' : 'Refresh News'}</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={fetchNews}
+              disabled={state.isFetching || state.isPredicting}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className={`w-5 h-5 ${state.isFetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>{state.isFetching ? 'Refreshing...' : 'Refresh News'}</span>
+            </button>
+
+            <button
+              onClick={predictTodayTrend}
+              disabled={state.isLoading || state.isFetching || state.isPredicting || state.articles.length === 0}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className={`w-5 h-5 ${state.isPredicting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1-1-3.5 0 2.25-2.25M15 3h6v6m0-6L10 14" />
+              </svg>
+              <span>{state.isPredicting ? 'Analyzing with AI...' : 'AI Predict Today Trend'}</span>
+            </button>
+          </div>
 
           {state.nextUpdate && (
             <p className="text-sm text-gray-400 mt-2">
               Auto-refresh at {new Date(state.nextUpdate).toLocaleTimeString()}
+            </p>
+          )}
+
+          {state.predictionError && (
+            <p className="text-sm text-red-400 mt-2">
+              {state.predictionError}
             </p>
           )}
         </div>
