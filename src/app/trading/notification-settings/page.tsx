@@ -10,6 +10,7 @@ type NotificationSettings = {
   enabled: boolean
   chatId?: string
   lastReminder?: string
+  messageTemplate?: string
 }
 
 export default function NotificationSettings() {
@@ -20,7 +21,43 @@ export default function NotificationSettings() {
   const [botUsername, setBotUsername] = useState<string>('')
   const [manualChatId, setManualChatId] = useState<string>('')
   const [showManualEntry, setShowManualEntry] = useState(false)
+  const [customMessage, setCustomMessage] = useState<string>('')
+  const [nextReminderIn, setNextReminderIn] = useState<string>('')
   const router = useRouter()
+
+  useEffect(() => {
+    // Countdown is based on server-stored lastReminder (set by cron).
+    // If cron is delayed, the countdown will self-correct after the next run updates lastReminder.
+    const tick = () => {
+      if (!settings.enabled) {
+        setNextReminderIn('')
+        return
+      }
+
+      const last = settings.lastReminder ? Date.parse(settings.lastReminder) : NaN
+      if (!Number.isFinite(last)) {
+        setNextReminderIn('Waiting for first reminder...')
+        return
+      }
+
+      const next = last + 30 * 60 * 1000
+      const diffMs = next - Date.now()
+
+      if (diffMs <= 0) {
+        setNextReminderIn('Sending soon...')
+        return
+      }
+
+      const totalSeconds = Math.floor(diffMs / 1000)
+      const minutes = Math.floor(totalSeconds / 60)
+      const seconds = totalSeconds % 60
+      setNextReminderIn(`${minutes}:${seconds.toString().padStart(2, '0')}`)
+    }
+
+    tick()
+    const id = window.setInterval(tick, 1000)
+    return () => window.clearInterval(id)
+  }, [settings.enabled, settings.lastReminder])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -35,7 +72,11 @@ export default function NotificationSettings() {
         const settingsSnap = await getDoc(settingsRef)
         
         if (settingsSnap.exists()) {
-          setSettings(settingsSnap.data() as NotificationSettings)
+          const data = settingsSnap.data() as NotificationSettings
+          setSettings(data)
+          if (typeof data.messageTemplate === 'string') {
+            setCustomMessage(data.messageTemplate)
+          }
         }
 
         // Get bot username from API
@@ -83,19 +124,66 @@ export default function NotificationSettings() {
         return
       }
 
-      await setDoc(settingsRef, {
-        enabled: newEnabled,
-        chatId: settings.chatId || null,
-        updatedAt: new Date().toISOString()
-      }, { merge: true })
+      // When enabling, send a reminder immediately. Only enable if the send succeeds.
+      if (newEnabled) {
+        const trimmed = customMessage.trim()
+        const defaultText = `⏰ <b>Trading Discipline Reminder</b>
 
-      setSettings(prev => ({ ...prev, enabled: newEnabled }))
-      setMessage({
-        type: 'success',
-        text: newEnabled 
-          ? 'Notifications enabled! You will receive reminders every 30 minutes.' 
-          : 'Notifications disabled.'
-      })
+It’s time to stop trading for now. Step away from the charts and give your mind a reset.
+
+Not every market movement is an opportunity. The best traders know when <b>not</b> to trade.
+
+Protect your capital. Protect your mindset. Trust your plan.
+
+<b>Discipline creates consistency.</b>  
+<b>Patience is a position.</b> 📈
+`
+        const reminderText = trimmed || defaultText
+
+        const res = await fetch('/api/telegram/send-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chatId: settings.chatId,
+            message: `✅ <b>Reminders enabled</b>\n\n${reminderText}`
+          })
+        })
+
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          setMessage({
+            type: 'error',
+            text: data?.details || data?.error || 'Failed to send the first reminder. Please try again.'
+          })
+          return
+        }
+
+        const nowIso = new Date().toISOString()
+        await setDoc(settingsRef, {
+          enabled: true,
+          chatId: settings.chatId || null,
+          lastReminder: nowIso,
+          updatedAt: nowIso
+        }, { merge: true })
+
+        setSettings(prev => ({ ...prev, enabled: true, lastReminder: nowIso }))
+        setMessage({
+          type: 'success',
+          text: 'Notifications enabled and first reminder sent!'
+        })
+      } else {
+        await setDoc(settingsRef, {
+          enabled: false,
+          chatId: settings.chatId || null,
+          updatedAt: new Date().toISOString()
+        }, { merge: true })
+
+        setSettings(prev => ({ ...prev, enabled: false }))
+        setMessage({
+          type: 'success',
+          text: 'Notifications disabled.'
+        })
+      }
 
       // Clear message after 5 seconds
       setTimeout(() => setMessage(null), 5000)
@@ -246,6 +334,102 @@ export default function NotificationSettings() {
     }
   }
 
+  const handleSaveCustomMessage = async () => {
+    const user = auth.currentUser
+    if (!user) return
+
+    const trimmed = customMessage.trim()
+    if (trimmed.length > 3500) {
+      setMessage({
+        type: 'error',
+        text: 'Message is too long. Please keep it under 3500 characters.'
+      })
+      return
+    }
+
+    setSaving(true)
+    setMessage(null)
+
+    try {
+      const db = getFirestore()
+      const settingsRef = doc(db, 'notificationSettings', user.uid)
+
+      await setDoc(settingsRef, {
+        messageTemplate: trimmed || null,
+        updatedAt: new Date().toISOString()
+      }, { merge: true })
+
+      setSettings(prev => ({ ...prev, messageTemplate: trimmed || undefined }))
+      setMessage({
+        type: 'success',
+        text: trimmed ? 'Custom reminder message saved!' : 'Custom message cleared. Default message will be used.'
+      })
+      setTimeout(() => setMessage(null), 5000)
+    } catch (error) {
+      console.error('Error saving custom message:', error)
+      setMessage({
+        type: 'error',
+        text: 'Failed to save custom message. Please try again.'
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSendTestReminder = async () => {
+    const user = auth.currentUser
+    if (!user) return
+
+    if (!settings.chatId) {
+      setMessage({
+        type: 'error',
+        text: 'No chat ID found yet. Please connect your Telegram bot first.'
+      })
+      return
+    }
+
+    setSaving(true)
+    setMessage(null)
+
+    const trimmed = customMessage.trim()
+    const defaultText = `⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
+    const testText = trimmed || defaultText
+
+    try {
+      const res = await fetch('/api/telegram/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatId: settings.chatId,
+          message: `🧪 <b>Test Reminder</b>\n\n${testText}`
+        })
+      })
+
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setMessage({
+          type: 'error',
+          text: data?.details || data?.error || 'Failed to send test message.'
+        })
+        return
+      }
+
+      setMessage({
+        type: 'success',
+        text: 'Test reminder sent! Check your Telegram.'
+      })
+      setTimeout(() => setMessage(null), 6000)
+    } catch (error) {
+      console.error('Error sending test reminder:', error)
+      setMessage({
+        type: 'error',
+        text: 'Failed to send test message. Please try again.'
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return <Loading />
   }
@@ -294,6 +478,11 @@ export default function NotificationSettings() {
                       ? 'You will receive reminders every 30 minutes' 
                       : 'Notifications are currently disabled'}
                   </p>
+                  {settings.enabled && (
+                    <p className="text-yellow-400 text-xs mt-1">
+                      Next reminder: {nextReminderIn || '...'}
+                    </p>
+                  )}
                 </div>
               </div>
               <button
@@ -414,6 +603,36 @@ export default function NotificationSettings() {
               </div>
             )}
 
+            {/* Custom Message */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Custom Reminder Message</h3>
+              <p className="text-gray-400 text-sm mb-4">
+                This message will be sent every 30 minutes when reminders are enabled. Leave empty to use the default message. Supports Telegram HTML (like <code className="bg-gray-700 px-2 py-0.5 rounded">&lt;b&gt;</code>).
+              </p>
+              <textarea
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder={`⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`}
+                className="w-full min-h-[140px] px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-500"
+              />
+              <div className="mt-3 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleSaveCustomMessage}
+                  disabled={saving}
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Message'}
+                </button>
+                <button
+                  onClick={handleSendTestReminder}
+                  disabled={saving || !settings.chatId}
+                  className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition-all disabled:opacity-50"
+                >
+                  {saving ? 'Sending...' : 'Send Test to Telegram'}
+                </button>
+              </div>
+            </div>
+
             {/* Instructions */}
             <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -427,7 +646,7 @@ export default function NotificationSettings() {
                 <li>Send <code className="bg-gray-700 px-2 py-1 rounded">/start</code> to the bot</li>
                 <li>Your chat ID will be automatically registered</li>
                 <li>Toggle notifications on to receive reminders every 30 minutes</li>
-                <li>You'll receive messages like: "⏰ Time to stop trading! Take a break."</li>
+                <li>Optional: Customize the reminder message and send yourself a test</li>
               </ol>
             </div>
           </div>

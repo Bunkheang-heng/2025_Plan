@@ -69,7 +69,15 @@ export async function GET(request: NextRequest) {
         continue
       }
 
-      const reminderMessage = `⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
+      const defaultMessage = `⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
+      const reminderMessageRaw =
+        typeof settings.messageTemplate === 'string' && settings.messageTemplate.trim().length > 0
+          ? settings.messageTemplate.trim()
+          : defaultMessage
+      // Telegram message limit is 4096 chars; keep margin for safety.
+      const reminderMessage = reminderMessageRaw.length > 4000
+        ? `${reminderMessageRaw.slice(0, 3997)}...`
+        : reminderMessageRaw
 
       try {
         const response = await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
