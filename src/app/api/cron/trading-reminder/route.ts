@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFirestore, collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore'
-import { initializeApp, getApps } from 'firebase/app'
-
-// Initialize Firebase if not already initialized
-if (getApps().length === 0) {
-  initializeApp({
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  })
-}
+import { getAdminFirestore } from '@/lib/firebase-admin'
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
@@ -41,12 +28,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const db = getFirestore()
+    const db = getAdminFirestore()
     
     // Get all users with notifications enabled
-    const settingsRef = collection(db, 'notificationSettings')
-    const q = query(settingsRef, where('enabled', '==', true))
-    const snapshot = await getDocs(q)
+    const snapshot = await db.collection('notificationSettings')
+      .where('enabled', '==', true)
+      .get()
 
     if (snapshot.empty) {
       return NextResponse.json({ 
@@ -60,12 +47,28 @@ export async function GET(request: NextRequest) {
     let errorCount = 0
 
     // Send reminder to each user
+    const now = Date.now()
+    
     for (const docSnap of snapshot.docs) {
       const settings = docSnap.data()
       const chatId = settings.chatId
 
       if (!chatId) {
         console.warn(`User ${docSnap.id} has notifications enabled but no chat ID`)
+        continue
+      }
+
+      // Get user's custom interval (default: 30 minutes)
+      const intervalMinutes = settings.tradingReminderMinutes || 30
+      const intervalMs = intervalMinutes * 60 * 1000
+
+      // Check if it's time to send a reminder
+      const lastReminder = settings.lastReminder ? Date.parse(settings.lastReminder) : null
+      const timeSinceLastReminder = lastReminder ? now - lastReminder : Infinity
+
+      // Only send if enough time has passed since last reminder
+      if (timeSinceLastReminder < intervalMs) {
+        // Not time yet, skip this user
         continue
       }
 
@@ -99,8 +102,8 @@ export async function GET(request: NextRequest) {
           messages.push({ userId: docSnap.id, status: 'success' })
           
           // Update last reminder timestamp
-          const settingsRef = doc(db, 'notificationSettings', docSnap.id)
-          await updateDoc(settingsRef, {
+          const settingsRef = db.collection('notificationSettings').doc(docSnap.id)
+          await settingsRef.update({
             lastReminder: new Date().toISOString()
           })
         } else {

@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFirestore, doc, setDoc } from 'firebase/firestore'
-import { initializeApp, getApps } from 'firebase/app'
-
-// Initialize Firebase if not already initialized
-if (getApps().length === 0) {
-  initializeApp({
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  })
-}
+import { getAdminFirestore } from '@/lib/firebase-admin'
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 
@@ -41,12 +28,12 @@ export async function POST(request: NextRequest) {
     // Handle /start command
     if (text.startsWith('/start')) {
       if (userId) {
-        // Save chat ID to Firestore
+        // Save chat ID to Firestore using Admin SDK (bypasses security rules)
         try {
-          const db = getFirestore()
-          const settingsRef = doc(db, 'notificationSettings', userId)
+          const db = getAdminFirestore()
+          const settingsRef = db.collection('notificationSettings').doc(userId)
           
-          await setDoc(settingsRef, {
+          await settingsRef.set({
             chatId,
             updatedAt: new Date().toISOString()
           }, { merge: true })

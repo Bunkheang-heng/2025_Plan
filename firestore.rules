@@ -56,8 +56,23 @@ service cloud.firestore {
 
     // Notification settings - users can only access their own settings
     match /notificationSettings/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read, write, delete, create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // School Classes - users can only access their own classes
+    match /schoolClasses/{docId} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // School Assignments - users can only access their own assignments
+    match /schoolAssignments/{docId} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
     }
   }
 }

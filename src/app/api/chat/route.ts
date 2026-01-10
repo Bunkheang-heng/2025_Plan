@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, planContext } = await request.json()
+    const { message, planContext, userContext } = await request.json()
 
     // Check Gemini API key
     if (!process.env.GEMINI_API_KEY) {
@@ -38,16 +38,16 @@ export async function POST(request: NextRequest) {
       hour12: true
     })
 
-    // Prepare context from user's plans
-    const contextPrompt = planContext ? `
+    // Prepare context from the app (plans + other modules)
+    const contextPrompt = (planContext || userContext) ? `
 Current Time & Location Context:
 - Current time in Cambodia (Phnom Penh): ${cambodiaTime}
 - Current time (short format): ${cambodiaTimeShort}
 
-Current User Plan Context:
-${JSON.stringify(planContext, null, 2)}
+Current User App Context (source of truth from the app database/UI):
+${JSON.stringify({ planContext, userContext }, null, 2)}
 
-Based on this context, please provide helpful insights and advice about the user's productivity and planning. You can reference the current time when giving advice about daily schedules, time management, or when to do certain tasks.
+Use this context to provide helpful, specific advice. If Bunkheang asks about trading, use the trading context (PnL, news, reminders). If he asks about savings/projects/business ideas, use those modules. You can reference current time when giving advice about schedules or reminders.
 ` : `
 Current Time & Location Context:
 - Current time in Cambodia (Phnom Penh): ${cambodiaTime}

@@ -8,7 +8,18 @@ import {
   ChatInput
 } from '@/components'
 import { auth } from '../../../firebase'
-import { getFirestore, collection, query, where, getDocs, addDoc } from 'firebase/firestore'
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  doc,
+  getDoc,
+  orderBy,
+  limit
+} from 'firebase/firestore'
 
 // Dynamically import heavy background component
 const AnimatedBackground = dynamic(() => import('@/components').then(mod => ({ default: mod.AnimatedBackground })), {
@@ -41,6 +52,69 @@ interface Plan {
   month?: string
   timePeriod?: string
   startTime?: string
+}
+
+type JarvisContext = {
+  user: { uid: string }
+  trading?: {
+    pnl?: {
+      month: string
+      funded?: { totalPnL: number; winDays: number; lossDays: number; totalTrades: number; bestDay: number; worstDay: number }
+      real?: { totalPnL: number; winDays: number; lossDays: number; totalTrades: number; bestDay: number; worstDay: number }
+    }
+  }
+  notifications?: {
+    enabled?: boolean
+    chatId?: string
+    lastReminder?: string
+    messageTemplatePreview?: string
+  }
+  coupleSavings?: {
+    month: string
+    totalAmount: number
+    entryCount: number
+    recent: Array<{ date: string; amount: number; note?: string }>
+  }
+  businessIdeas?: {
+    total: number
+    recent: Array<{ title: string; category?: string; tags?: string[] }>
+  }
+  projects?: {
+    total: number
+    recent: Array<{ name: string; status?: string; type?: string; deadline?: string }>
+  }
+}
+
+type TradingPnLRow = {
+  date: string
+  amount: number
+  trades: number
+  lessons?: string | null
+  userId: string
+  accountType: 'real' | 'funded'
+}
+
+type MonthStats = {
+  totalPnL: number
+  winDays: number
+  lossDays: number
+  totalTrades: number
+  bestDay: number
+  worstDay: number
+}
+
+const calculateMonthStats = (rows: TradingPnLRow[]): MonthStats => {
+  if (!rows.length) {
+    return { totalPnL: 0, winDays: 0, lossDays: 0, totalTrades: 0, bestDay: 0, worstDay: 0 }
+  }
+  const totalPnL = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0)
+  const winDays = rows.filter(r => (Number(r.amount) || 0) > 0).length
+  const lossDays = rows.filter(r => (Number(r.amount) || 0) < 0).length
+  const totalTrades = rows.reduce((sum, r) => sum + (Number(r.trades) || 0), 0)
+  const amounts = rows.map(r => Number(r.amount) || 0)
+  const bestDay = amounts.length ? Math.max(...amounts) : 0
+  const worstDay = amounts.length ? Math.min(...amounts) : 0
+  return { totalPnL, winDays, lossDays, totalTrades, bestDay, worstDay }
 }
 
 export default function ChatPage() {
@@ -128,6 +202,157 @@ export default function ChatPage() {
     }
   }, [])
 
+  const buildJarvisContext = useCallback(async (): Promise<JarvisContext | null> => {
+    try {
+      const user = auth.currentUser
+      if (!user) return null
+
+      const db = getFirestore()
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = now.getMonth()
+      const startOfMonth = new Date(year, month, 1)
+      const endOfMonth = new Date(year, month + 1, 0)
+      const yyyyMm = `${year}-${String(month + 1).padStart(2, '0')}`
+      const startDate = startOfMonth.toISOString().slice(0, 10)
+      const endDate = endOfMonth.toISOString().slice(0, 10)
+
+      const fetchPnLForAccount = async (accountType: 'funded' | 'real'): Promise<MonthStats> => {
+        try {
+          const q = query(
+            collection(db, 'trading_pnl'),
+            where('userId', '==', user.uid),
+            where('accountType', '==', accountType),
+            where('date', '>=', startDate),
+            where('date', '<=', endDate)
+          )
+          const snap = await getDocs(q)
+          const rows = snap.docs.map(d => d.data() as TradingPnLRow)
+          return calculateMonthStats(rows)
+        } catch (e: any) {
+          // Fallback if composite index isn't ready: fetch by userId and filter client-side.
+          if (e?.code === 'failed-precondition' || String(e?.message || '').includes('index')) {
+            const fallback = query(collection(db, 'trading_pnl'), where('userId', '==', user.uid))
+            const snap = await getDocs(fallback)
+            const rows = snap.docs
+              .map(d => d.data() as TradingPnLRow)
+              .filter(r => r.accountType === accountType && r.date >= startDate && r.date <= endDate)
+            return calculateMonthStats(rows)
+          }
+          return calculateMonthStats([])
+        }
+      }
+
+      const fetchNotificationSettings = async () => {
+        try {
+          const snap = await getDoc(doc(db, 'notificationSettings', user.uid))
+          if (!snap.exists()) return undefined
+          const d = snap.data() as any
+          const preview = typeof d.messageTemplate === 'string' ? d.messageTemplate.trim().slice(0, 180) : ''
+          return {
+            enabled: Boolean(d.enabled),
+            chatId: typeof d.chatId === 'string' ? d.chatId : undefined,
+            lastReminder: typeof d.lastReminder === 'string' ? d.lastReminder : undefined,
+            messageTemplatePreview: preview || undefined
+          }
+        } catch {
+          return undefined
+        }
+      }
+
+      const fetchCoupleSavings = async () => {
+        try {
+          const q = query(
+            collection(db, 'coupleSavings'),
+            where('date', '>=', startDate),
+            where('date', '<=', endDate),
+            orderBy('date', 'desc')
+          )
+          const snap = await getDocs(q)
+          const rows = snap.docs.map(d => d.data() as any)
+          const recent = rows.slice(0, 5).map(r => ({
+            date: String(r.date || ''),
+            amount: Number(r.amount) || 0,
+            note: typeof r.note === 'string' ? r.note : undefined
+          }))
+          const totalAmount = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0)
+          return { month: yyyyMm, totalAmount, entryCount: rows.length, recent }
+        } catch (e: any) {
+          // If index issues, fallback to orderBy only then filter client-side.
+          if (e?.code === 'failed-precondition' || String(e?.message || '').includes('index')) {
+            const q = query(collection(db, 'coupleSavings'), orderBy('date', 'desc'))
+            const snap = await getDocs(q)
+            const rows = snap.docs
+              .map(d => d.data() as any)
+              .filter(r => String(r.date || '') >= startDate && String(r.date || '') <= endDate)
+            const recent = rows.slice(0, 5).map(r => ({
+              date: String(r.date || ''),
+              amount: Number(r.amount) || 0,
+              note: typeof r.note === 'string' ? r.note : undefined
+            }))
+            const totalAmount = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0)
+            return { month: yyyyMm, totalAmount, entryCount: rows.length, recent }
+          }
+          return { month: yyyyMm, totalAmount: 0, entryCount: 0, recent: [] }
+        }
+      }
+
+      const fetchBusinessIdeas = async () => {
+        try {
+          const q = query(collection(db, 'businessIdeas'), orderBy('createdAt', 'desc'), limit(10))
+          const snap = await getDocs(q)
+          const rows = snap.docs.map(d => d.data() as any)
+          const recent = rows.slice(0, 6).map(r => ({
+            title: String(r.title || '').slice(0, 120),
+            category: typeof r.category === 'string' ? r.category : undefined,
+            tags: Array.isArray(r.tags) ? r.tags.slice(0, 6) : undefined
+          }))
+          return { total: snap.size, recent }
+        } catch {
+          return { total: 0, recent: [] }
+        }
+      }
+
+      const fetchProjects = async () => {
+        try {
+          const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(10))
+          const snap = await getDocs(q)
+          const rows = snap.docs.map(d => d.data() as any)
+          const recent = rows.slice(0, 6).map(r => ({
+            name: String(r.name || '').slice(0, 120),
+            status: typeof r.status === 'string' ? r.status : undefined,
+            type: typeof r.type === 'string' ? r.type : undefined,
+            deadline: typeof r.deadline === 'string' ? r.deadline : undefined
+          }))
+          return { total: snap.size, recent }
+        } catch {
+          return { total: 0, recent: [] }
+        }
+      }
+
+      const [funded, real, notifications, coupleSavings, businessIdeas, projects] = await Promise.all([
+        fetchPnLForAccount('funded'),
+        fetchPnLForAccount('real'),
+        fetchNotificationSettings(),
+        fetchCoupleSavings(),
+        fetchBusinessIdeas(),
+        fetchProjects()
+      ])
+
+      return {
+        user: { uid: user.uid },
+        trading: { pnl: { month: yyyyMm, funded, real } },
+        notifications,
+        coupleSavings,
+        businessIdeas,
+        projects
+      }
+    } catch (error) {
+      console.error('Error building Jarvis context:', error)
+      return null
+    }
+  }, [])
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
@@ -192,6 +417,9 @@ export default function ChatPage() {
         completedToday: stats.daily.completed + stats.weekly.completed + stats.monthly.completed
       }
 
+      // Prepare full app context snapshot (trading/savings/projects/ideas/notifications...)
+      const userContext = await buildJarvisContext()
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -199,7 +427,8 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           message,
-          planContext
+          planContext,
+          userContext
         }),
       })
 
