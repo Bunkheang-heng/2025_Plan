@@ -100,29 +100,29 @@ export default function TradingPnL() {
 
       try {
         // Try the optimized query with index
-        const q = query(
-          collection(db, 'trading_pnl'),
-          where('userId', '==', user.uid),
+      const q = query(
+        collection(db, 'trading_pnl'),
+        where('userId', '==', user.uid),
           where('accountType', '==', account),
-          where('date', '>=', startDate),
-          where('date', '<=', endDate)
-        )
-        
-        const querySnapshot = await getDocs(q)
-        const dailyData: Record<string, DailyPnL> = {}
-        
-        querySnapshot.docs.forEach(doc => {
-          const data = doc.data() as DailyPnL
-          dailyData[data.date] = data
-        })
+        where('date', '>=', startDate),
+        where('date', '<=', endDate)
+      )
+      
+      const querySnapshot = await getDocs(q)
+      const dailyData: Record<string, DailyPnL> = {}
+      
+      querySnapshot.docs.forEach(doc => {
+        const data = doc.data() as DailyPnL
+        dailyData[data.date] = data
+      })
 
-        const monthStats = calculateMonthStats(dailyData)
-        
-        setState({
-          isLoading: false,
-          dailyData,
-          monthStats
-        })
+      const monthStats = calculateMonthStats(dailyData)
+      
+      setState({
+        isLoading: false,
+        dailyData,
+        monthStats
+      })
       } catch (indexError: any) {
         // If index is not ready, fallback to fetching all and filtering client-side
         if (indexError.code === 'failed-precondition' || indexError.message?.includes('index')) {

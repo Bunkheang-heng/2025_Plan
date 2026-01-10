@@ -1,10 +1,8 @@
-name: Trading Reminder Cron
+name: School Reminders Cron
 
 on:
   schedule:
-    # GitHub Actions supports a minimum of every 5 minutes.
-    # Our /api/cron/trading-reminder endpoint decides per-user whether it is time to send,
-    # based on notificationSettings.tradingReminderMinutes + lastReminder.
+    # Run every 5 minutes; endpoint decides what to send.
     - cron: "*/5 * * * *"
   workflow_dispatch: {}
 
@@ -13,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Trigger trading reminder endpoint
+      - name: Trigger school reminders endpoint
         env:
           CRON_URL: ${{ secrets.CRON_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
@@ -27,7 +25,7 @@ jobs:
             exit 1
           fi
 
-          ENDPOINT="${CRON_URL%/}/api/cron/trading-reminder"
+          ENDPOINT="${CRON_URL%/}/api/cron/school-reminders"
           echo "Calling $ENDPOINT"
 
           curl -fsSL \

@@ -215,7 +215,7 @@ export default function SchoolClassesPage() {
                                   {c.room ? `Room ${c.room}` : ''}
                                   {c.room && c.teacher ? ' • ' : ''}
                                   {c.teacher || ''}
-                                </p>
+                            </p>
                               )}
                           </div>
                           <div className="flex gap-2">
