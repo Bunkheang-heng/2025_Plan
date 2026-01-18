@@ -154,6 +154,7 @@ export default function SetRolePage() {
               >
                 <option value="admin">Admin (Full Access)</option>
                 <option value="restricted">Restricted (Couple Saving Only)</option>
+                <option value="partner">Partner (Trading Partner Only)</option>
               </select>
             </div>
 
@@ -208,6 +209,7 @@ export default function SetRolePage() {
                 >
                   <option value="admin">Admin (Full Access)</option>
                   <option value="restricted">Restricted (Couple Saving Only)</option>
+                  <option value="partner">Partner (Trading Partner Only)</option>
                 </select>
               </div>
 

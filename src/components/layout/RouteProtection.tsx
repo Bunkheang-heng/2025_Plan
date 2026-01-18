@@ -31,8 +31,10 @@ export default function RouteProtection({ children }: RouteProtectionProps) {
 
       // Check if user can access this route
       if (!canAccessRoute(role, pathname)) {
-        // Redirect restricted users to couple saving page
-        router.push('/couple_saving')
+        // Redirect to the user's allowed home
+        if (role === 'restricted') router.push('/couple_saving')
+        else if (role === 'partner') router.push('/trading_partner')
+        else router.push('/')
         return
       }
 
@@ -46,7 +48,9 @@ export default function RouteProtection({ children }: RouteProtectionProps) {
   useEffect(() => {
     if (!isLoading && role) {
       if (!canAccessRoute(role, pathname)) {
-        router.push('/couple_saving')
+        if (role === 'restricted') router.push('/couple_saving')
+        else if (role === 'partner') router.push('/trading_partner')
+        else router.push('/')
       } else {
         setIsChecking(false)
       }

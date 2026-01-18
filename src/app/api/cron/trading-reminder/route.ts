@@ -23,7 +23,17 @@ export async function GET(request: NextRequest) {
     if (!TELEGRAM_BOT_TOKEN) {
       console.error('Telegram bot token not configured')
       return NextResponse.json(
-        { error: 'Telegram bot token not configured' },
+        { error: 'Telegram bot token not configured. Set TELEGRAM_BOT_TOKEN in your deployment environment.' },
+        { status: 500 }
+      )
+    }
+
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+      console.error('FIREBASE_SERVICE_ACCOUNT not configured for Firebase Admin SDK')
+      return NextResponse.json(
+        {
+          error: 'Firebase Admin not configured. Set FIREBASE_SERVICE_ACCOUNT in your deployment environment.'
+        },
         { status: 500 }
       )
     }

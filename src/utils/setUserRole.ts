@@ -18,7 +18,7 @@ import { getFirestore, collection, query, where, getDocs } from 'firebase/firest
 /**
  * Set role for a user by email
  */
-export async function setUserRoleForEmail(email: string, role: 'admin' | 'restricted', name?: string): Promise<void> {
+export async function setUserRoleForEmail(email: string, role: 'admin' | 'restricted' | 'partner', name?: string): Promise<void> {
   try {
     const db = getFirestore()
     
@@ -42,7 +42,7 @@ export async function setUserRoleForEmail(email: string, role: 'admin' | 'restri
 /**
  * Set role for current authenticated user
  */
-export async function setCurrentUserRole(role: 'admin' | 'restricted', name?: string): Promise<void> {
+export async function setCurrentUserRole(role: 'admin' | 'restricted' | 'partner', name?: string): Promise<void> {
   const user = auth.currentUser
   if (!user) {
     throw new Error('No user is currently authenticated')

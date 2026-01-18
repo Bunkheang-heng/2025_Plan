@@ -14,6 +14,7 @@ export default function CreateAccountPage() {
   const [role, setRole] = useState<UserRole>('restricted')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [createdUid, setCreatedUid] = useState<string>('')
   const { role: currentUserRole } = useUserRole()
   const router = useRouter()
 
@@ -30,6 +31,7 @@ export default function CreateAccountPage() {
 
     setLoading(true)
     setMessage('')
+    setCreatedUid('')
 
     try {
       // Create user account
@@ -39,7 +41,8 @@ export default function CreateAccountPage() {
       // Set user role and profile
       await setUserRole(user.uid, role, email, name || undefined, true)
 
-      setMessage(`✅ Successfully created account for ${email} with role "${role}"`)
+      setCreatedUid(user.uid)
+      setMessage(`✅ Successfully created account for ${email} (UID: ${user.uid}) with role "${role}"`)
       
       // Clear form
       setEmail('')
@@ -144,11 +147,14 @@ export default function CreateAccountPage() {
                   >
                     <option value="admin">Admin (Full Access)</option>
                     <option value="restricted">Restricted (Couple Saving Only)</option>
+                    <option value="partner">Partner (Trading Partner Only)</option>
                   </select>
                   <p className="mt-1 text-xs text-gray-400">
                     {role === 'admin' 
                       ? 'Admin users have full access to all pages' 
-                      : 'Restricted users can only access the Couple Saving page'}
+                      : role === 'partner'
+                        ? 'Partner users can only access the Trading Partner page'
+                        : 'Restricted users can only access the Couple Saving page'}
                   </p>
                 </div>
 
@@ -169,6 +175,11 @@ export default function CreateAccountPage() {
                   : 'bg-red-500/20 border border-red-500/50 text-red-400'
               }`}>
                 {message}
+                {createdUid && (
+                  <div className="mt-2 text-xs text-gray-300">
+                    UID: <span className="font-mono text-white">{createdUid}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -182,6 +193,7 @@ export default function CreateAccountPage() {
                   <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
                     <li><strong>Admin:</strong> Full access to all pages</li>
                     <li><strong>Restricted:</strong> Only access to Couple Saving page</li>
+                    <li><strong>Partner:</strong> Only access to Trading Partner page</li>
                   </ul>
                 </li>
                 <li>Click "Create Account" to create the account</li>

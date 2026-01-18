@@ -1,7 +1,7 @@
 import { auth } from '../../firebase'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 
-export type UserRole = 'admin' | 'restricted'
+export type UserRole = 'admin' | 'restricted' | 'partner'
 
 export interface UserProfile {
   role: UserRole
@@ -11,7 +11,7 @@ export interface UserProfile {
 
 /**
  * Get the user's role from Firestore
- * Defaults to 'admin' if no role is set
+ * Defaults to 'restricted' if no role is set (security-first)
  */
 export async function getUserRole(userId: string): Promise<UserRole> {
   try {
@@ -20,15 +20,15 @@ export async function getUserRole(userId: string): Promise<UserRole> {
     
     if (userDoc.exists()) {
       const data = userDoc.data()
-      return (data.role as UserRole) || 'admin'
+      return (data.role as UserRole) || 'restricted'
     }
     
-    // If user doesn't exist in users collection, default to admin
-    return 'admin'
+    // If user doesn't exist in users collection, default to restricted
+    return 'restricted'
   } catch (error) {
     console.error('Error fetching user role:', error)
-    // Default to admin on error
-    return 'admin'
+    // Default to restricted on error
+    return 'restricted'
   }
 }
 
@@ -87,6 +87,11 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
   // Restricted users can only access couple saving page
   if (role === 'restricted') {
     return path === '/couple_saving' || path.startsWith('/couple_saving')
+  }
+
+  // Trading partners can only access trading partner page
+  if (role === 'partner') {
+    return path === '/trading_partner' || path.startsWith('/trading_partner')
   }
   
   return false

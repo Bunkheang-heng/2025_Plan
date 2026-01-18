@@ -30,10 +30,24 @@ jobs:
           ENDPOINT="${CRON_URL%/}/api/cron/trading-reminder"
           echo "Calling $ENDPOINT"
 
-          curl -fsSL \
+          # Print response body on error to make debugging easy.
+          set -e
+          RESP="$(curl -sS \
             -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Accept: application/json" \
             --retry 3 \
             --retry-delay 5 \
-            "$ENDPOINT"
+            -w "\nHTTP_STATUS:%{http_code}\n" \
+            "$ENDPOINT")"
+          echo "$RESP"
+          STATUS="$(echo "$RESP" | sed -n 's/^HTTP_STATUS://p' | tail -n 1)"
+          if [ -z "$STATUS" ]; then
+            echo "Failed to parse HTTP status"
+            exit 1
+          fi
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "Request failed with HTTP $STATUS"
+            exit 1
+          fi
 
 

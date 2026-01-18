@@ -43,6 +43,7 @@ export default function Nav() {
     { path: '/task/weekly', label: 'Weekly', icon: CalendarWeekIcon },
     { path: '/task/monthly', label: 'Monthly', icon: CalendarMonthIcon },
     { path: '/school', label: 'School', icon: SchoolIcon },
+    { path: '/trading_partner/groups', label: 'Trading Partner', icon: TradingPartnerIcon },
     { 
       label: 'Trading', 
       icon: TradingIcon,
@@ -133,6 +134,14 @@ export default function Nav() {
     return (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    )
+  }
+
+  function TradingPartnerIcon() {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H2v-2a4 4 0 013-3.87m12 5v-2a4 4 0 00-4-4H11a4 4 0 00-4 4v2m10-10a4 4 0 10-8 0 4 4 0 008 0zm6 2a3 3 0 10-6 0 3 3 0 006 0zM5 12a3 3 0 10-6 0 3 3 0 006 0z" />
       </svg>
     )
   }

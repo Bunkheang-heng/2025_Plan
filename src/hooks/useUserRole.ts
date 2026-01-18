@@ -3,7 +3,7 @@ import { auth } from '../../firebase'
 import { getUserRole, UserRole } from '@/utils/userRole'
 
 export function useUserRole() {
-  const [role, setRole] = useState<UserRole>('admin')
+  const [role, setRole] = useState<UserRole>('restricted')
   const [isLoading, setIsLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
 
@@ -16,13 +16,13 @@ export function useUserRole() {
           setRole(userRole)
         } catch (error) {
           console.error('Error loading user role:', error)
-          setRole('admin') // Default to admin on error
+          setRole('restricted') // Default to restricted on error
         } finally {
           setIsLoading(false)
         }
       } else {
         setUserId(null)
-        setRole('admin')
+        setRole('restricted')
         setIsLoading(false)
       }
     })
