@@ -52,37 +52,60 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const messages = []
+    const messages: Array<
+      | { userId: string; status: 'skipped'; reason: string }
+      | { userId: string; status: 'success' }
+      | { userId: string; status: 'error'; error: string }
+    > = []
     let successCount = 0
     let errorCount = 0
 
     // Send reminder to each user
     const now = Date.now()
-    
-    for (const docSnap of snapshot.docs) {
-      const settings = docSnap.data()
-      const chatId = settings.chatId
+
+    // Simple concurrency limiter to avoid long serial runtimes (and Vercel timeouts).
+    async function runWithConcurrency<T>(tasks: Array<() => Promise<T>>, concurrency: number) {
+      const results: T[] = []
+      let idx = 0
+      async function worker() {
+        while (idx < tasks.length) {
+          const current = idx++
+          results[current] = await tasks[current]()
+        }
+      }
+      const workers = Array.from({ length: Math.max(1, concurrency) }, () => worker())
+      await Promise.all(workers)
+      return results
+    }
+
+    const tasks = snapshot.docs.map((docSnap) => async () => {
+      const settings = docSnap.data() as any
+      const chatId = settings.chatId as string | undefined
 
       if (!chatId) {
+        const reason = 'enabled_but_no_chatId'
         console.warn(`User ${docSnap.id} has notifications enabled but no chat ID`)
-        continue
+        messages.push({ userId: docSnap.id, status: 'skipped', reason })
+        return
       }
 
       // Get user's custom interval (default: 30 minutes)
-      const intervalMinutes = settings.tradingReminderMinutes || 30
+      const intervalMinutes = (settings.tradingReminderMinutes as number | undefined) || 30
       const intervalMs = intervalMinutes * 60 * 1000
 
       // Check if it's time to send a reminder
-      const lastReminder = settings.lastReminder ? Date.parse(settings.lastReminder) : null
-      const timeSinceLastReminder = lastReminder ? now - lastReminder : Infinity
+      const lastReminderStr = typeof settings.lastReminder === 'string' ? settings.lastReminder : undefined
+      const lastReminder = lastReminderStr ? Date.parse(lastReminderStr) : NaN
+      const timeSinceLastReminder = Number.isFinite(lastReminder) ? now - lastReminder : Infinity
 
       // Only send if enough time has passed since last reminder
       if (timeSinceLastReminder < intervalMs) {
-        // Not time yet, skip this user
-        continue
+        messages.push({ userId: docSnap.id, status: 'skipped', reason: 'interval_not_reached' })
+        return
       }
 
-      const defaultMessage = `⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
+      const defaultMessage =
+        `⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
       const reminderMessageRaw =
         typeof settings.messageTemplate === 'string' && settings.messageTemplate.trim().length > 0
           ? settings.messageTemplate.trim()
@@ -93,48 +116,48 @@ export async function GET(request: NextRequest) {
         : reminderMessageRaw
 
       try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10_000)
         const response = await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
             text: reminderMessage,
             parse_mode: 'HTML',
           }),
-        })
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeout))
 
-        const data = await response.json()
+        const data = await response.json().catch(() => ({} as any))
 
-        if (response.ok && data.ok) {
+        if (response.ok && (data as any)?.ok) {
           successCount++
           messages.push({ userId: docSnap.id, status: 'success' })
-          
+
           // Update last reminder timestamp
           const settingsRef = db.collection('notificationSettings').doc(docSnap.id)
           await settingsRef.update({
-            lastReminder: new Date().toISOString()
+            lastReminder: new Date().toISOString(),
           })
         } else {
           errorCount++
-          messages.push({ 
-            userId: docSnap.id, 
-            status: 'error', 
-            error: data.description 
-          })
-          console.error(`Failed to send to ${docSnap.id}:`, data.description)
+          const desc = typeof (data as any)?.description === 'string'
+            ? (data as any).description
+            : `Telegram error (HTTP ${response.status})`
+          messages.push({ userId: docSnap.id, status: 'error', error: desc })
+          console.error(`Failed to send to ${docSnap.id}:`, desc)
         }
       } catch (error) {
         errorCount++
-        messages.push({ 
-          userId: docSnap.id, 
-          status: 'error', 
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
+        const msg = error instanceof Error ? error.message : 'Unknown error'
+        messages.push({ userId: docSnap.id, status: 'error', error: msg })
         console.error(`Error sending to ${docSnap.id}:`, error)
       }
-    }
+    })
+
+    // Keep modest concurrency so we don't hammer Telegram / exceed runtime.
+    await runWithConcurrency(tasks, 5)
 
     return NextResponse.json({
       success: true,

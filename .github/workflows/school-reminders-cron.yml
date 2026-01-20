@@ -16,6 +16,7 @@ jobs:
           CRON_URL: ${{ secrets.CRON_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
+          set -euo pipefail
           if [ -z "$CRON_URL" ]; then
             echo "Missing secrets.CRON_URL (example: https://your-app.vercel.app)"
             exit 1
@@ -28,10 +29,25 @@ jobs:
           ENDPOINT="${CRON_URL%/}/api/cron/school-reminders"
           echo "Calling $ENDPOINT"
 
-          curl -fsSL \
+          # Always print HTTP status + body (even on 4xx/5xx) for debugging.
+          HTTP_CODE="$(curl -sS \
+            -o /tmp/cron_resp.txt \
+            -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Accept: application/json" \
             --retry 3 \
             --retry-delay 5 \
-            "$ENDPOINT"
+            --connect-timeout 20 \
+            --max-time 60 \
+            "$ENDPOINT" || true)"
+          echo "HTTP_STATUS:${HTTP_CODE:-unknown}"
+          echo "BODY_START"
+          cat /tmp/cron_resp.txt || true
+          echo
+          echo "BODY_END"
+          if [ -z "${HTTP_CODE:-}" ] || [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "Request failed"
+            exit 1
+          fi
 
 
