@@ -54,8 +54,6 @@ export function getAdminApp(): App {
   throw new Error(
     'Firebase Admin credentials not configured. Set FIREBASE_SERVICE_ACCOUNT (recommended) or GOOGLE_APPLICATION_CREDENTIALS.'
   )
-
-  return adminApp
 }
 
 export function getAdminFirestore() {
