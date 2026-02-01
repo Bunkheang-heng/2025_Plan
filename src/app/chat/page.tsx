@@ -153,17 +153,29 @@ export default function ChatPage() {
       const daysFromMonday = (nowInPhnomPenh.getDay() + 6) % 7
       startOfWeek.setDate(nowInPhnomPenh.getDate() - daysFromMonday)
       const weekKey = startOfWeek.toLocaleDateString('en-CA')
-      const currentMonth = new Date().toLocaleDateString('en-US', { 
+      const currentMonthKey = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
         month: 'long',
-        timeZone: 'Asia/Phnom_Penh' 
+        timeZone: 'Asia/Phnom_Penh'
+      })
+      const currentMonthLegacy = new Date().toLocaleDateString('en-US', {
+        month: 'long',
+        timeZone: 'Asia/Phnom_Penh'
       })
 
       // Fetch all plan types
-      const [dailySnapshot, weeklySnapshot, monthlySnapshot] = await Promise.all([
+      const [dailySnapshot, weeklySnapshot, monthlyNewSnapshot, monthlyLegacySnapshot] = await Promise.all([
         getDocs(query(collection(db, 'daily'), where('date', '==', today))),
         getDocs(query(collection(db, 'weekly'), where('weekStart', '==', weekKey))),
-        getDocs(query(collection(db, 'monthly'), where('month', '==', currentMonth)))
+        getDocs(query(collection(db, 'monthly'), where('month', '==', currentMonthKey))),
+        getDocs(query(collection(db, 'monthly'), where('month', '==', currentMonthLegacy)))
       ])
+
+      const monthlyDocsById = new Map<string, any>()
+      for (const snap of [monthlyNewSnapshot, monthlyLegacySnapshot]) {
+        snap.docs.forEach(d => monthlyDocsById.set(d.id, { id: d.id, ...d.data() }))
+      }
+      const monthlyPlans = Array.from(monthlyDocsById.values()) as any[]
 
       // Combine all plans
       const allPlans: Plan[] = [
@@ -177,9 +189,8 @@ export default function ChatPage() {
           ...doc.data(),
           planType: 'weekly'
         })),
-        ...monthlySnapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data(),
+        ...monthlyPlans.map(p => ({
+          ...p,
           planType: 'monthly'
         }))
       ] as Plan[]
@@ -189,12 +200,12 @@ export default function ChatPage() {
       // Calculate stats
       const dailyCompleted = dailySnapshot.docs.filter(doc => doc.data().status === 'Done').length
       const weeklyCompleted = weeklySnapshot.docs.filter(doc => doc.data().status === 'Done').length
-      const monthlyCompleted = monthlySnapshot.docs.filter(doc => doc.data().status === 'Done').length
+      const monthlyCompleted = monthlyPlans.filter(p => p?.status === 'Done').length
 
       setStats({
         daily: { total: dailySnapshot.docs.length, completed: dailyCompleted },
         weekly: { total: weeklySnapshot.docs.length, completed: weeklyCompleted },
-        monthly: { total: monthlySnapshot.docs.length, completed: monthlyCompleted }
+        monthly: { total: monthlyPlans.length, completed: monthlyCompleted }
       })
 
     } catch (error) {

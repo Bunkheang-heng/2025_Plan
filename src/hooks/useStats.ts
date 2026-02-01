@@ -77,21 +77,23 @@ export function useStats() {
       where('weekStart', '==', weekKey)
     )
     
-    // Get current month in Asia/Phnom_Penh timezone
-    const currentMonth = new Date().toLocaleDateString('en-US', { 
-      month: 'long', 
-      timeZone: 'Asia/Phnom_Penh' 
+    // Get current month in Asia/Phnom_Penh timezone (support both new "YYYY Month" and legacy "Month")
+    const currentMonthKey = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      timeZone: 'Asia/Phnom_Penh'
     })
-    const monthlyQuery = query(
-      collection(db, 'monthly'),
-      where('month', '==', currentMonth)
-    )
+    const currentMonthLegacy = new Date().toLocaleDateString('en-US', {
+      month: 'long',
+      timeZone: 'Asia/Phnom_Penh'
+    })
 
     try {
-      const [dailySnapshot, weeklySnapshot, monthlySnapshot] = await Promise.all([
+      const [dailySnapshot, weeklySnapshot, monthlyNewSnapshot, monthlyLegacySnapshot] = await Promise.all([
         getDocs(dailyQuery),
         getDocs(weeklyQuery),
-        getDocs(monthlyQuery)
+        getDocs(query(collection(db, 'monthly'), where('month', '==', currentMonthKey))),
+        getDocs(query(collection(db, 'monthly'), where('month', '==', currentMonthLegacy)))
       ])
 
       const dailyPlans = dailySnapshot.docs.map(doc => ({
@@ -109,8 +111,13 @@ export function useStats() {
       const weeklyTotal = weeklySnapshot.docs.length
       const weeklyCompleted = weeklySnapshot.docs.filter(doc => doc.data().status === 'Done').length
 
-      const monthlyTotal = monthlySnapshot.docs.length
-      const monthlyCompleted = monthlySnapshot.docs.filter(doc => doc.data().status === 'Done').length
+      const monthlyDocsById = new Map<string, { status?: string }>()
+      for (const snap of [monthlyNewSnapshot, monthlyLegacySnapshot]) {
+        snap.docs.forEach(d => monthlyDocsById.set(d.id, d.data() as any))
+      }
+      const monthlyDocs = Array.from(monthlyDocsById.values())
+      const monthlyTotal = monthlyDocs.length
+      const monthlyCompleted = monthlyDocs.filter(d => d.status === 'Done').length
 
       setStats({
         daily: { total: dailyTotal, completed: dailyCompleted },

@@ -22,12 +22,10 @@ export default function MonthlyPlans() {
     totalTasks: 0,
     completedTasks: 0
   })
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    return new Date().toLocaleDateString('en-US', { 
-      month: 'long',
-      timeZone: 'Asia/Phnom_Penh' 
-    })
-  })
+  const TZ = 'Asia/Phnom_Penh'
+  const nowInPhnomPenh = () => new Date(new Date().toLocaleString('en-US', { timeZone: TZ }))
+  const [currentYear, setCurrentYear] = useState(() => nowInPhnomPenh().getFullYear())
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(() => nowInPhnomPenh().getMonth())
   const router = useRouter()
 
   const months = [
@@ -37,6 +35,17 @@ export default function MonthlyPlans() {
     'October', 'November', 'December'
   ]
 
+  const selectedMonthDate = new Date(currentYear, selectedMonthIndex, 1, 12)
+  const selectedMonthKey = selectedMonthDate.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    timeZone: TZ
+  })
+  const selectedMonthLegacy = selectedMonthDate.toLocaleDateString('en-US', {
+    month: 'long',
+    timeZone: TZ
+  })
+
   const fetchPlans = useCallback(async () => {
     try {
       const db = getFirestore()
@@ -44,16 +53,19 @@ export default function MonthlyPlans() {
       
       if (!user) return
 
-      const q = query(
-        collection(db, 'monthly'),
-        where('month', '==', selectedMonth)
-      )
-      
-      const querySnapshot = await getDocs(q)
-      const planData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Plan[]
+      const [snapshotNew, snapshotLegacy] = await Promise.all([
+        getDocs(query(collection(db, 'monthly'), where('month', '==', selectedMonthKey))),
+        getDocs(query(collection(db, 'monthly'), where('month', '==', selectedMonthLegacy)))
+      ])
+
+      const merged = new Map<string, Plan>()
+      for (const snap of [snapshotNew, snapshotLegacy]) {
+        snap.docs.forEach(d => {
+          merged.set(d.id, { id: d.id, ...(d.data() as any) } as Plan)
+        })
+      }
+
+      const planData = Array.from(merged.values())
       
       setState(prev => ({
         ...prev,
@@ -66,7 +78,7 @@ export default function MonthlyPlans() {
       console.error('Error fetching plans:', error)
       setState(prev => ({ ...prev, isLoading: false }))
     }
-  }, [selectedMonth])
+  }, [selectedMonthKey, selectedMonthLegacy])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -79,6 +91,11 @@ export default function MonthlyPlans() {
 
     return () => unsubscribe()
   }, [router, fetchPlans])
+
+  useEffect(() => {
+    setState(prev => ({ ...prev, isLoading: true }))
+    fetchPlans()
+  }, [currentYear, selectedMonthIndex, fetchPlans])
 
   const updatePlanStatus = async (planId: string, newStatus: string) => {
     setState(prev => {
@@ -107,21 +124,6 @@ export default function MonthlyPlans() {
     }
   }
 
-
-
-  const getPriorityIcon = (priority: string = 'medium') => {
-    switch (priority) {
-      case 'high':
-        return '🔴'
-      case 'medium':
-        return '🟡'
-      case 'low':
-        return '🟢'
-      default:
-        return '⚪'
-    }
-  }
-
   if (state.isLoading) {
     return <Loading />
   }
@@ -136,36 +138,69 @@ export default function MonthlyPlans() {
             Monthly Strategic Planning
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
-            Monthly Plans 🎯
+            Monthly Plans
           </h1>
           <p className="text-xl text-gray-300 font-medium">
             Plan and track your long-term strategic objectives
           </p>
         </div>
 
-        {/* Month Selection & Stats */}
+        {/* Month Calendar & Stats */}
         <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 lg:p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg border border-emerald-400/50">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <label className="text-sm font-bold text-yellow-400">Select Month:</label>
-              </div>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-semibold bg-gray-800/50 shadow-sm"
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setCurrentYear(y => y - 1)}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                aria-label="Previous year"
               >
-                {months.map((month) => (
-                  <option key={month} value={month} className="bg-gray-800 text-gray-100">
-                    {month} 2025
-                  </option>
-                ))}
-              </select>
+                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <div className="text-center">
+                <div className="text-sm font-bold text-yellow-400">Select Month</div>
+                <div className="text-2xl font-bold text-white">{currentYear}</div>
+                <div className="text-xs text-gray-400 mt-1">Selected: {selectedMonthKey}</div>
+              </div>
+
+              <button
+                onClick={() => setCurrentYear(y => y + 1)}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                aria-label="Next year"
+              >
+                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-6">
+              {months.map((m, idx) => {
+                const isSelected = idx === selectedMonthIndex
+                const now = nowInPhnomPenh()
+                const isCurrentMonth = now.getFullYear() === currentYear && now.getMonth() === idx
+
+                return (
+                  <button
+                    key={m}
+                    onClick={() => setSelectedMonthIndex(idx)}
+                    className={`px-4 py-3 rounded-xl border-2 text-left transition-all duration-200 hover:scale-[1.02] ${
+                      isSelected
+                        ? 'border-yellow-400 bg-yellow-400/10'
+                        : isCurrentMonth
+                        ? 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
+                        : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <div className={`text-sm font-bold ${isSelected ? 'text-yellow-400' : 'text-gray-200'}`}>
+                      {m.slice(0, 3)}
+                    </div>
+                    <div className="text-xs text-gray-400">{currentYear}</div>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -199,7 +234,7 @@ export default function MonthlyPlans() {
               <div className="flex items-center space-x-4">
                 <span className="text-white/90 text-sm font-semibold">{state.completedTasks}/{state.totalTasks}</span>
                 <button
-                  onClick={() => router.push('/create?type=monthly')}
+                  onClick={() => router.push(`/create?type=monthly&month=${encodeURIComponent(selectedMonthKey)}`)}
                   className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
                 >
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,10 +252,10 @@ export default function MonthlyPlans() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h4 className="text-lg font-semibold text-gray-200 mb-2">No plans for {selectedMonth}</h4>
+              <h4 className="text-lg font-semibold text-gray-200 mb-2">No plans for {selectedMonthKey}</h4>
               <p className="text-gray-400 mb-6">Create your first monthly objective to get started</p>
               <button
-                onClick={() => router.push('/create?type=monthly')}
+                onClick={() => router.push(`/create?type=monthly&month=${encodeURIComponent(selectedMonthKey)}`)}
                 className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 border border-emerald-400/50"
               >
                 Create Monthly Plan
@@ -237,9 +272,9 @@ export default function MonthlyPlans() {
                         onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
                         className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-gray-800/50"
                       >
-                        <option value="Not Started" className="bg-gray-800">⏳ Not Started</option>
-                        <option value="Done" className="bg-gray-800">✅ Done</option>
-                        <option value="Missed" className="bg-gray-800">❌ Missed</option>
+                        <option value="Not Started" className="bg-gray-800">Not Started</option>
+                        <option value="Done" className="bg-gray-800">Done</option>
+                        <option value="Missed" className="bg-gray-800">Missed</option>
                       </select>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -257,7 +292,7 @@ export default function MonthlyPlans() {
                           plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
                           'bg-gray-500/20 text-gray-300 border-gray-400/50'
                         }`}>
-                          {getPriorityIcon(plan.priority)} {plan.priority?.toUpperCase() || 'MEDIUM'}
+                          {plan.priority?.toUpperCase() || 'MEDIUM'}
                         </span>
                       </div>
                       {plan.description && (

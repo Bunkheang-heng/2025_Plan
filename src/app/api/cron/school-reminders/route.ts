@@ -68,6 +68,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Firebase Admin must be configured (do not rely on default credentials)
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      console.error('Firebase Admin credentials not configured for cron')
+      return NextResponse.json(
+        {
+          error: 'Firebase Admin not configured. Set FIREBASE_SERVICE_ACCOUNT (recommended) or GOOGLE_APPLICATION_CREDENTIALS.'
+        },
+        { status: 500 }
+      )
+    }
+
     const db = getAdminFirestore()
     const now = new Date()
     const currentTime = now.getHours() * 60 + now.getMinutes() // Current time in minutes
@@ -141,11 +152,11 @@ export async function GET(request: NextRequest) {
                 })
                 .join(', ')
 
-              let classMsg = `📚 <b>Class Reminder</b>\n\n`
+              let classMsg = `<b>Class Reminder</b>\n\n`
               classMsg += `<b>${classItem.title}</b>\n`
-              classMsg += `⏰ Starts at ${classItem.startTime}\n`
-              if (classItem.room) classMsg += `📍 Room: ${classItem.room}\n`
-              if (classItem.teacher) classMsg += `👤 Teacher: ${classItem.teacher}\n`
+              classMsg += `Starts at ${classItem.startTime}\n`
+              if (classItem.room) classMsg += `Room: ${classItem.room}\n`
+              if (classItem.teacher) classMsg += `Teacher: ${classItem.teacher}\n`
               classMsg += `\nClass is starting in ${classReminderMinutes} minutes!`
 
               notifications.push(classMsg)
@@ -169,22 +180,22 @@ export async function GET(request: NextRequest) {
             // Check if due today
             if (dueDate === today && assignmentNotificationsEnabled) {
               const dueTime = assignment.dueTime || '23:59'
-              let assignmentMsg = `📝 <b>Assignment Due Today</b>\n\n`
+              let assignmentMsg = `<b>Assignment Due Today</b>\n\n`
               assignmentMsg += `<b>${assignment.title}</b>\n`
-              if (assignment.course) assignmentMsg += `📖 Course: ${assignment.course}\n`
-              assignmentMsg += `⏰ Due: ${dueTime}\n`
-              if (assignment.notes) assignmentMsg += `\n📄 ${assignment.notes}\n`
+              if (assignment.course) assignmentMsg += `Course: ${assignment.course}\n`
+              assignmentMsg += `Due: ${dueTime}\n`
+              if (assignment.notes) assignmentMsg += `\nNotes: ${assignment.notes}\n`
               assignmentMsg += `\nDon't forget to submit!`
 
               notifications.push(assignmentMsg)
             }
             // Check if due tomorrow (1 day reminder)
             else if (dueDate === tomorrow && assignmentReminderDays.includes(1)) {
-              let assignmentMsg = `📝 <b>Assignment Reminder</b>\n\n`
+              let assignmentMsg = `<b>Assignment Reminder</b>\n\n`
               assignmentMsg += `<b>${assignment.title}</b>\n`
-              if (assignment.course) assignmentMsg += `📖 Course: ${assignment.course}\n`
-              assignmentMsg += `📅 Due: Tomorrow (${dueDate})\n`
-              if (assignment.dueTime) assignmentMsg += `⏰ Time: ${assignment.dueTime}\n`
+              if (assignment.course) assignmentMsg += `Course: ${assignment.course}\n`
+              assignmentMsg += `Due: Tomorrow (${dueDate})\n`
+              if (assignment.dueTime) assignmentMsg += `Time: ${assignment.dueTime}\n`
               assignmentMsg += `\nThis assignment is due tomorrow!`
 
               notifications.push(assignmentMsg)

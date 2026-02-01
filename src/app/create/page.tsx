@@ -55,7 +55,7 @@ function CreatePlanContent() {
         date?: string
         timePeriod?: string
         startTime?: string
-        week?: string
+        weekStart?: string
         month?: string
       }
 
@@ -76,9 +76,13 @@ function CreatePlanContent() {
           newPlan.startTime = formData.startTime
         }
       } else if (planType === 'weekly') {
-        newPlan.week = selectedWeek || new Date().toISOString().split('T')[0]
+        const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
+        const startOfWeek = new Date(nowInPhnomPenh)
+        const daysFromMonday = (nowInPhnomPenh.getDay() + 6) % 7
+        startOfWeek.setDate(nowInPhnomPenh.getDate() - daysFromMonday)
+        newPlan.weekStart = selectedWeek || startOfWeek.toLocaleDateString('en-CA')
       } else if (planType === 'monthly') {
-        newPlan.month = selectedMonth || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+        newPlan.month = selectedMonth || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', timeZone: 'Asia/Phnom_Penh' })
       }
 
       // Save to Firestore

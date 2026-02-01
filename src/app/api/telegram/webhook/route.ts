@@ -12,6 +12,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      console.error('Firebase Admin credentials not configured for webhook')
+      return NextResponse.json(
+        { error: 'Firebase Admin not configured' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const message = body.message
 
@@ -46,7 +54,7 @@ export async function POST(request: NextRequest) {
             },
             body: JSON.stringify({
               chat_id: chatId,
-              text: '✅ Successfully connected! Your trading reminders are now set up. You will receive notifications every 30 minutes when enabled.',
+              text: 'Successfully connected. Your trading reminders are now set up. You will receive notifications every 30 minutes when enabled.',
             }),
           })
 

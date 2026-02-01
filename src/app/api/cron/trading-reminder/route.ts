@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
       }
 
       const defaultMessage =
-        `⏰ <b>Trading Reminder</b>\n\nTime to stop trading! Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
+        `<b>Trading Reminder</b>\n\nTime to stop trading. Take a break and review your strategy.\n\nRemember: Discipline is key to successful trading.`
       const reminderMessageRaw =
         typeof settings.messageTemplate === 'string' && settings.messageTemplate.trim().length > 0
           ? settings.messageTemplate.trim()
