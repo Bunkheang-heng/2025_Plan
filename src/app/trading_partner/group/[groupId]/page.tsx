@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { auth } from '../../../../../firebase'
-import { collection, doc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
 import { Loading } from '@/components'
 import { useUserRole } from '@/hooks/useUserRole'
 import { FaArrowLeft, FaChartLine, FaCog, FaWallet } from 'react-icons/fa'
@@ -27,7 +27,7 @@ type DailyPartnerPnL = {
   note?: string
 }
 
-type MonthStats = {
+type OverallStats = {
   totalPnL: number
   winDays: number
   lossDays: number
@@ -44,17 +44,7 @@ const formatLocalDate = (date: Date): string => {
   return `${year}-${month}-${day}`
 }
 
-const getDaysInMonth = (date: Date) => {
-  const year = date.getFullYear()
-  const month = date.getMonth()
-  const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
-  const daysInMonth = lastDay.getDate()
-  const startingDayOfWeek = firstDay.getDay()
-  return { daysInMonth, startingDayOfWeek, year, month }
-}
-
-const calculateMonthStats = (data: Record<string, DailyPartnerPnL>): MonthStats => {
+const calculateOverallStats = (data: Record<string, DailyPartnerPnL>): OverallStats => {
   const values = Object.values(data)
   if (values.length === 0) {
     return { totalPnL: 0, winDays: 0, lossDays: 0, totalTrades: 0, bestDay: 0, worstDay: 0 }
@@ -71,6 +61,16 @@ const calculateMonthStats = (data: Record<string, DailyPartnerPnL>): MonthStats 
   return { totalPnL, winDays, lossDays, totalTrades, bestDay, worstDay }
 }
 
+const getDaysInMonth = (date: Date) => {
+  const year = date.getFullYear()
+  const month = date.getMonth()
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const daysInMonth = lastDay.getDate()
+  const startingDayOfWeek = firstDay.getDay()
+  return { daysInMonth, startingDayOfWeek, year, month }
+}
+
 export default function TradingPartnerGroupPnLPage() {
   const router = useRouter()
   const params = useParams<{ groupId: string }>()
@@ -81,7 +81,7 @@ export default function TradingPartnerGroupPnLPage() {
   const [group, setGroup] = useState<TradingPartnerGroup | null>(null)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [dailyData, setDailyData] = useState<Record<string, DailyPartnerPnL>>({})
-  const [monthStats, setMonthStats] = useState<MonthStats>({
+  const [overallStats, setOverallStats] = useState<OverallStats>({
     totalPnL: 0,
     winDays: 0,
     lossDays: 0,
@@ -93,6 +93,21 @@ export default function TradingPartnerGroupPnLPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({ amount: '', trades: '', note: '' })
+  const selectedEntry = selectedDate ? dailyData[selectedDate] : null
+  const totalCapital = useMemo(() => {
+    if (!group?.capitalByUid) return 0
+    return Object.values(group.capitalByUid).reduce((sum, n) => sum + (Number(n) || 0), 0)
+  }, [group?.capitalByUid])
+  const monthDailyData = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+    const prefix = `${year}-${month}-`
+    const filtered: Record<string, DailyPartnerPnL> = {}
+    Object.values(dailyData).forEach(entry => {
+      if (entry.date.startsWith(prefix)) filtered[entry.date] = entry
+    })
+    return filtered
+  }, [currentDate, dailyData])
 
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => {
@@ -105,36 +120,27 @@ export default function TradingPartnerGroupPnLPage() {
     const user = auth.currentUser
     if (!user || !groupId) return
     const db = getFirestore()
-    const snap = await getDocs(query(collection(db, 'tradingPartnerGroups'), where('__name__', '==', groupId)))
-    if (snap.empty) {
+    const ref = doc(db, 'tradingPartnerGroups', groupId)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) {
       setGroup({ partners: [] })
       return
     }
-    const data = snap.docs[0].data() as TradingPartnerGroup
+    const data = snap.data() as TradingPartnerGroup
     const partners = Array.isArray(data.partners) ? data.partners : []
     setGroup({ ...data, partners })
   }, [groupId])
 
-  const fetchMonthData = useCallback(async (date: Date) => {
+  const fetchAllData = useCallback(async () => {
     const user = auth.currentUser
     if (!user || !groupId) return
 
     const db = getFirestore()
-    const year = date.getFullYear()
-    const month = date.getMonth()
-    const startDate = formatLocalDate(new Date(year, month, 1))
-    const endDate = formatLocalDate(new Date(year, month + 1, 0))
 
     const entriesRef = collection(db, 'tradingPartnerGroups', groupId, 'entries')
 
     try {
-      const q = query(
-        entriesRef,
-        where('date', '>=', startDate),
-        where('date', '<=', endDate)
-      )
-
-      const snap = await getDocs(q)
+      const snap = await getDocs(entriesRef)
       const map: Record<string, DailyPartnerPnL> = {}
 
       snap.docs.forEach(d => {
@@ -148,7 +154,7 @@ export default function TradingPartnerGroupPnLPage() {
       })
 
       setDailyData(map)
-      setMonthStats(calculateMonthStats(map))
+      setOverallStats(calculateOverallStats(map))
     } catch (e) {
       console.error('Error fetching partner PnL data:', e)
     }
@@ -160,7 +166,7 @@ export default function TradingPartnerGroupPnLPage() {
       try {
         if (roleLoading) return
         await fetchGroup()
-        await fetchMonthData(currentDate)
+        await fetchAllData()
         if (!cancelled) setIsLoading(false)
       } catch (e) {
         console.error('Partner group PnL load error:', e)
@@ -168,7 +174,7 @@ export default function TradingPartnerGroupPnLPage() {
       }
     })()
     return () => { cancelled = true }
-  }, [currentDate, fetchGroup, fetchMonthData, roleLoading])
+  }, [fetchAllData, fetchGroup, roleLoading])
 
   const changeMonth = (direction: number) => {
     const newDate = new Date(currentDate)
@@ -180,7 +186,10 @@ export default function TradingPartnerGroupPnLPage() {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     const dateStr = formatLocalDate(new Date(year, month, day))
+    openEntry(dateStr)
+  }
 
+  const openEntry = (dateStr: string) => {
     const existing = dailyData[dateStr]
     if (existing) {
       setFormData({
@@ -193,8 +202,14 @@ export default function TradingPartnerGroupPnLPage() {
       setFormData({ amount: '', trades: '', note: '' })
       setIsEditing(true)
     }
-
     setSelectedDate(dateStr)
+  }
+
+  const handleAddEntry = () => {
+    const today = formatLocalDate(new Date())
+    setFormData({ amount: '', trades: '', note: '' })
+    setIsEditing(true)
+    setSelectedDate(today)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -225,7 +240,7 @@ export default function TradingPartnerGroupPnLPage() {
       setSelectedDate(null)
       setIsEditing(false)
       setFormData({ amount: '', trades: '', note: '' })
-      await fetchMonthData(currentDate)
+      await fetchAllData()
     } catch (e) {
       console.error('Error saving partner PnL:', e)
       alert('Failed to save data')
@@ -233,7 +248,6 @@ export default function TradingPartnerGroupPnLPage() {
   }
 
   if (isLoading || roleLoading) return <Loading />
-
   const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
@@ -244,14 +258,14 @@ export default function TradingPartnerGroupPnLPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-            Partner Daily Trading Tracker
+            Partner Trading Tracker
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
             <span>{group?.name || 'Trading Partner P&L'}</span>
             <FaChartLine className="w-10 h-10 text-yellow-400" />
           </h1>
           <p className="text-xl text-gray-300 font-medium">
-            Same format as your personal P&amp;L: amount, trades, and note only
+            All-time performance with daily entries and notes
           </p>
 
           <div className="mt-6 flex items-center justify-center gap-3">
@@ -283,7 +297,7 @@ export default function TradingPartnerGroupPnLPage() {
               <div>
                 <div className="text-xs text-gray-400">Account Capital (manual)</div>
                 <div className="text-2xl font-bold text-blue-400">
-                  ${Object.values(group.capitalByUid).reduce((s, n) => s + (Number(n) || 0), 0).toFixed(2)}
+                  ${totalCapital.toFixed(2)}
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -305,15 +319,20 @@ export default function TradingPartnerGroupPnLPage() {
           {[
             {
               label: 'Total P&L',
-              value: `$${monthStats.totalPnL.toFixed(2)}`,
-              gradient: monthStats.totalPnL >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600',
+              value: `$${overallStats.totalPnL.toFixed(2)}`,
+              gradient: overallStats.totalPnL >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600',
               isMain: true,
             },
-            { label: 'Win Days', value: monthStats.winDays.toString(), gradient: 'from-green-500 to-green-600' },
-            { label: 'Loss Days', value: monthStats.lossDays.toString(), gradient: 'from-red-500 to-red-600' },
-            { label: 'Total Trades', value: monthStats.totalTrades.toString(), gradient: 'from-blue-500 to-blue-600' },
-            { label: 'Best Day', value: `$${monthStats.bestDay.toFixed(0)}`, gradient: 'from-purple-500 to-purple-600' },
-            { label: 'Worst Day', value: `$${monthStats.worstDay.toFixed(0)}`, gradient: 'from-orange-500 to-orange-600' },
+            {
+              label: 'Balance',
+              value: `$${(totalCapital + overallStats.totalPnL).toFixed(2)}`,
+              gradient: (totalCapital + overallStats.totalPnL) >= 0 ? 'from-blue-500 to-blue-600' : 'from-red-500 to-red-600',
+            },
+            { label: 'Win Days', value: overallStats.winDays.toString(), gradient: 'from-green-500 to-green-600' },
+            { label: 'Loss Days', value: overallStats.lossDays.toString(), gradient: 'from-red-500 to-red-600' },
+            { label: 'Total Trades', value: overallStats.totalTrades.toString(), gradient: 'from-blue-500 to-blue-600' },
+            { label: 'Best Day', value: `$${overallStats.bestDay.toFixed(0)}`, gradient: 'from-purple-500 to-purple-600' },
+            { label: 'Worst Day', value: `$${overallStats.worstDay.toFixed(0)}`, gradient: 'from-orange-500 to-orange-600' },
           ].map((stat, idx) => (
             <div key={stat.label} className="group relative animate-slide-in-up" style={{ animationDelay: `${idx * 0.05}s` }}>
               <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-xl transform group-hover:scale-105 transition-all duration-300" />
@@ -322,8 +341,8 @@ export default function TradingPartnerGroupPnLPage() {
                   <div className="w-6 h-6" />
                 </div>
                 <div className={`font-bold ${stat.isMain ? 'text-xl' : 'text-lg'} ${
-                  stat.isMain && monthStats.totalPnL >= 0 ? 'text-emerald-400' :
-                  stat.isMain && monthStats.totalPnL < 0 ? 'text-red-400' :
+                  stat.isMain && overallStats.totalPnL >= 0 ? 'text-emerald-400' :
+                  stat.isMain && overallStats.totalPnL < 0 ? 'text-red-400' :
                   'text-yellow-400'
                 } mb-1`}>
                   {stat.value}
@@ -334,21 +353,32 @@ export default function TradingPartnerGroupPnLPage() {
           ))}
         </div>
 
-        {/* Calendar (same behavior as personal PnL) */}
+        {/* Calendar (monthly view, overall stats) */}
         <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
           <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors">
                 <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h2 className="text-2xl font-bold text-white">{monthName}</h2>
-              <button onClick={() => changeMonth(1)} className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors">
-                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-white">{monthName}</h2>
+                <p className="text-xs text-gray-400">Monthly view, overall totals above</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleAddEntry}
+                  className="px-4 py-2 rounded-lg bg-yellow-500 text-black font-semibold hover:bg-yellow-400 transition-colors text-sm"
+                >
+                  Add Entry
+                </button>
+                <button onClick={() => changeMonth(1)} className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors">
+                  <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -372,7 +402,7 @@ export default function TradingPartnerGroupPnLPage() {
                 const dayOfWeek = dateObj.getDay()
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
                 const dateStr = formatLocalDate(dateObj)
-                const dayData = dailyData[dateStr]
+                const dayData = monthDailyData[dateStr]
                 const isToday = dateStr === formatLocalDate(new Date())
 
                 return (
@@ -444,25 +474,25 @@ export default function TradingPartnerGroupPnLPage() {
                 </button>
               </div>
 
-              {!isEditing && dailyData[selectedDate] ? (
+              {!isEditing && selectedEntry ? (
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
                       <div className="text-xs text-gray-400 mb-1">P&amp;L</div>
-                      <div className={`text-2xl font-bold ${dailyData[selectedDate].amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        ${dailyData[selectedDate].amount.toFixed(2)}
+                      <div className={`text-2xl font-bold ${selectedEntry.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        ${selectedEntry.amount.toFixed(2)}
                       </div>
                     </div>
                     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
                       <div className="text-xs text-gray-400 mb-1">Trades</div>
                       <div className="text-2xl font-bold text-yellow-400">
-                        {dailyData[selectedDate].trades}
+                        {selectedEntry.trades}
                       </div>
                     </div>
                     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
                       <div className="text-xs text-gray-400 mb-1">Note</div>
                       <div className="text-sm text-gray-200 line-clamp-3">
-                        {dailyData[selectedDate].note || '—'}
+                        {selectedEntry.note || '—'}
                       </div>
                     </div>
                   </div>
@@ -478,6 +508,25 @@ export default function TradingPartnerGroupPnLPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                  <div>
+                    <label className="flex items-center space-x-2 text-sm font-bold text-yellow-400 mb-3">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>Date</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      disabled={Boolean(selectedEntry)}
+                      className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 disabled:opacity-60"
+                      required
+                    />
+                    {selectedEntry && (
+                      <div className="mt-2 text-xs text-gray-500">Date cannot be changed for existing entries.</div>
+                    )}
+                  </div>
                   <div>
                     <label className="flex items-center space-x-2 text-sm font-bold text-yellow-400 mb-3">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
