@@ -37,6 +37,14 @@ service cloud.firestore {
     match /trading_pnl/{document} {
       allow read, write, delete, create: if request.auth != null;
     }
+
+    // Trading Accounts - users can only access their own
+    match /tradingAccounts/{accountId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+    }
     
     // Projects - authenticated users can access
     match /projects/{document} {
@@ -83,11 +91,6 @@ service cloud.firestore {
             && request.resource.data.role == resource.data.role
           )
         );
-    }
-
-    // Notification settings - users can only access their own settings
-    match /notificationSettings/{userId} {
-      allow read, write, delete, create: if request.auth != null && request.auth.uid == userId;
     }
 
     // School Classes - users can only access their own classes

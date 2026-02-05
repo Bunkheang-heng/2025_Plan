@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { auth } from '../../../../../../firebase'
-import { collection, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
 import { Loading } from '@/components'
 import { useUserRole } from '@/hooks/useUserRole'
 import { FaArrowLeft, FaPlus, FaSave, FaTimes } from 'react-icons/fa'
@@ -43,6 +43,8 @@ export default function TradingPartnerGroupSettingsPage() {
   const [message, setMessage] = useState('')
   const [users, setUsers] = useState<UserOption[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => {
@@ -153,15 +155,37 @@ export default function TradingPartnerGroupSettingsPage() {
         { merge: true }
       )
 
-      setMessage('✅ Saved')
+      setMessage('Saved.')
       await fetchGroup()
     } catch (e: any) {
       console.error('Error saving group settings:', e)
-      setMessage(`❌ Failed (${e?.code || 'unknown'}): ${e?.message || ''}`)
+      setMessage(`Failed (${e?.code || 'unknown'}): ${e?.message || ''}`)
     } finally {
       setIsSaving(false)
     }
   }, [fetchGroup, groupId, groupNameDraft, partnerDraft, role])
+
+  const deleteGroup = useCallback(async () => {
+    const user = auth.currentUser
+    if (!user || role !== 'admin' || !groupId) return
+
+    setIsDeleting(true)
+    setMessage('')
+    try {
+      const db = getFirestore()
+      const entriesRef = collection(db, 'tradingPartnerGroups', groupId, 'entries')
+      const snap = await getDocs(entriesRef)
+      await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
+      await deleteDoc(doc(db, 'tradingPartnerGroups', groupId))
+      setIsDeleteModalOpen(false)
+      router.push('/trading_partner/groups')
+    } catch (e: any) {
+      console.error('Error deleting group:', e)
+      setMessage(`Failed (${e?.code || 'unknown'}): ${e?.message || ''}`)
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [groupId, role, router])
 
   if (isLoading || roleLoading) return <Loading />
 
@@ -291,16 +315,60 @@ export default function TradingPartnerGroupSettingsPage() {
           <div className="mt-5 flex items-center justify-between gap-3">
             <div className="text-sm text-gray-300">{message}</div>
             {role === 'admin' && (
-              <button
-                onClick={save}
-                disabled={isSaving}
-                className="px-5 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center gap-2"
-              >
-                <FaSave /> {isSaving ? 'Saving...' : 'Save'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  disabled={isDeleting}
+                  className="px-5 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-all disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete Group'}
+                </button>
+                <button
+                  onClick={save}
+                  disabled={isSaving}
+                  className="px-5 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                  <FaSave /> {isSaving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
             )}
           </div>
         </div>
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+            <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="p-6 border-b border-gray-700/60">
+                <h3 className="text-xl font-bold text-white">Delete group</h3>
+                <p className="text-sm text-gray-400 mt-1">
+                  This removes the group and all entries. This action cannot be undone.
+                </p>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="text-sm text-gray-300">
+                  <span className="text-gray-400">Group:</span>{' '}
+                  <span className="font-semibold text-white">{group?.name || groupId}</span>
+                </div>
+                <div className="text-xs text-gray-500 font-mono break-all">{groupId}</div>
+              </div>
+              <div className="p-6 border-t border-gray-700/60 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={deleteGroup}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

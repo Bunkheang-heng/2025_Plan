@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { auth } from '../../../../../firebase'
-import { collection, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
 import { Loading } from '@/components'
 import { useUserRole } from '@/hooks/useUserRole'
 import { FaArrowLeft, FaChartLine, FaCog, FaWallet } from 'react-icons/fa'
@@ -75,7 +75,7 @@ export default function TradingPartnerGroupPnLPage() {
   const router = useRouter()
   const params = useParams<{ groupId: string }>()
   const groupId = params?.groupId
-  const { isLoading: roleLoading } = useUserRole()
+  const { role, isLoading: roleLoading } = useUserRole()
 
   const [isLoading, setIsLoading] = useState(true)
   const [group, setGroup] = useState<TradingPartnerGroup | null>(null)
@@ -93,6 +93,8 @@ export default function TradingPartnerGroupPnLPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({ amount: '', trades: '', note: '' })
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const selectedEntry = selectedDate ? dailyData[selectedDate] : null
   const totalCapital = useMemo(() => {
     if (!group?.capitalByUid) return 0
@@ -247,6 +249,36 @@ export default function TradingPartnerGroupPnLPage() {
     }
   }
 
+  const resetAllEntries = useCallback(async () => {
+    const user = auth.currentUser
+    if (!user || role !== 'admin' || !groupId) return
+    setIsResetting(true)
+    try {
+      const db = getFirestore()
+      const entriesRef = collection(db, 'tradingPartnerGroups', groupId, 'entries')
+      const snap = await getDocs(entriesRef)
+      await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
+      setDailyData({})
+      setOverallStats({
+        totalPnL: 0,
+        winDays: 0,
+        lossDays: 0,
+        totalTrades: 0,
+        bestDay: 0,
+        worstDay: 0,
+      })
+      setSelectedDate(null)
+      setIsEditing(false)
+      setFormData({ amount: '', trades: '', note: '' })
+      setIsResetModalOpen(false)
+    } catch (e) {
+      console.error('Error resetting partner PnL:', e)
+      alert('Failed to reset data')
+    } finally {
+      setIsResetting(false)
+    }
+  }, [groupId, role])
+
   if (isLoading || roleLoading) return <Loading />
   const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -367,6 +399,14 @@ export default function TradingPartnerGroupPnLPage() {
                 <p className="text-xs text-gray-400">Monthly view, overall totals above</p>
               </div>
               <div className="flex items-center gap-3">
+                {role === 'admin' && (
+                  <button
+                    onClick={() => setIsResetModalOpen(true)}
+                    className="px-4 py-2 rounded-lg bg-red-500/20 text-red-200 border border-red-500/40 hover:bg-red-500/30 transition-colors text-sm"
+                  >
+                    Reset PnL
+                  </button>
+                )}
                 <button
                   onClick={handleAddEntry}
                   className="px-4 py-2 rounded-lg bg-yellow-500 text-black font-semibold hover:bg-yellow-400 transition-colors text-sm"
@@ -602,6 +642,42 @@ export default function TradingPartnerGroupPnLPage() {
                   </div>
                 </form>
               )}
+            </div>
+          </div>
+        )}
+
+        {isResetModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+            <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="p-6 border-b border-gray-700/60">
+                <h3 className="text-xl font-bold text-white">Reset PnL</h3>
+                <p className="text-sm text-gray-400 mt-1">
+                  This deletes all entries for this group. This action cannot be undone.
+                </p>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="text-sm text-gray-300">
+                  <span className="text-gray-400">Group:</span>{' '}
+                  <span className="font-semibold text-white">{group?.name || groupId}</span>
+                </div>
+                <div className="text-xs text-gray-500 font-mono break-all">{groupId}</div>
+              </div>
+              <div className="p-6 border-t border-gray-700/60 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setIsResetModalOpen(false)}
+                  disabled={isResetting}
+                  className="px-4 py-2 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={resetAllEntries}
+                  disabled={isResetting}
+                  className="px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                >
+                  {isResetting ? 'Resetting...' : 'Reset'}
+                </button>
+              </div>
             </div>
           </div>
         )}

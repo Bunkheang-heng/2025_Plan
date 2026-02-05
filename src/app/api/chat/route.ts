@@ -47,7 +47,7 @@ Current Time & Location Context:
 Current User App Context (source of truth from the app database/UI):
 ${JSON.stringify({ planContext, userContext }, null, 2)}
 
-Use this context to provide helpful, specific advice. If Bunkheang asks about trading, use the trading context (PnL, news, reminders). If he asks about savings/projects/business ideas, use those modules. You can reference current time when giving advice about schedules or reminders.
+Use this context to provide helpful, specific advice. If Bunkheang asks about trading, use the trading context (PnL, news). If he asks about savings/projects/business ideas, use those modules. You can reference current time when giving advice about schedules.
 ` : `
 Current Time & Location Context:
 - Current time in Cambodia (Phnom Penh): ${cambodiaTime}

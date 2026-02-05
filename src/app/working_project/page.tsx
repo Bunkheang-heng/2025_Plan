@@ -271,6 +271,7 @@ export default function WorkingProjectPage() {
               <ProjectCard
                 key={project.id}
                 project={project}
+                onOpen={(p) => router.push(`/working_project/${p.id}`)}
                 onEdit={handleOpenModal}
                 onDelete={handleDelete}
                 getTypeIcon={getTypeIcon}

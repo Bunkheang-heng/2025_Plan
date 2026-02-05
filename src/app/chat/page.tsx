@@ -15,8 +15,6 @@ import {
   where,
   getDocs,
   addDoc,
-  doc,
-  getDoc,
   orderBy,
   limit
 } from 'firebase/firestore'
@@ -62,12 +60,6 @@ type JarvisContext = {
       funded?: { totalPnL: number; winDays: number; lossDays: number; totalTrades: number; bestDay: number; worstDay: number }
       real?: { totalPnL: number; winDays: number; lossDays: number; totalTrades: number; bestDay: number; worstDay: number }
     }
-  }
-  notifications?: {
-    enabled?: boolean
-    chatId?: string
-    lastReminder?: string
-    messageTemplatePreview?: string
   }
   coupleSavings?: {
     month: string
@@ -254,23 +246,6 @@ export default function ChatPage() {
         }
       }
 
-      const fetchNotificationSettings = async () => {
-        try {
-          const snap = await getDoc(doc(db, 'notificationSettings', user.uid))
-          if (!snap.exists()) return undefined
-          const d = snap.data() as any
-          const preview = typeof d.messageTemplate === 'string' ? d.messageTemplate.trim().slice(0, 180) : ''
-          return {
-            enabled: Boolean(d.enabled),
-            chatId: typeof d.chatId === 'string' ? d.chatId : undefined,
-            lastReminder: typeof d.lastReminder === 'string' ? d.lastReminder : undefined,
-            messageTemplatePreview: preview || undefined
-          }
-        } catch {
-          return undefined
-        }
-      }
-
       const fetchCoupleSavings = async () => {
         try {
           const q = query(
@@ -341,10 +316,9 @@ export default function ChatPage() {
         }
       }
 
-      const [funded, real, notifications, coupleSavings, businessIdeas, projects] = await Promise.all([
+      const [funded, real, coupleSavings, businessIdeas, projects] = await Promise.all([
         fetchPnLForAccount('funded'),
         fetchPnLForAccount('real'),
-        fetchNotificationSettings(),
         fetchCoupleSavings(),
         fetchBusinessIdeas(),
         fetchProjects()
@@ -353,7 +327,6 @@ export default function ChatPage() {
       return {
         user: { uid: user.uid },
         trading: { pnl: { month: yyyyMm, funded, real } },
-        notifications,
         coupleSavings,
         businessIdeas,
         projects
@@ -428,7 +401,7 @@ export default function ChatPage() {
         completedToday: stats.daily.completed + stats.weekly.completed + stats.monthly.completed
       }
 
-      // Prepare full app context snapshot (trading/savings/projects/ideas/notifications...)
+      // Prepare full app context snapshot (trading/savings/projects/ideas)
       const userContext = await buildJarvisContext()
 
       const response = await fetch('/api/chat', {

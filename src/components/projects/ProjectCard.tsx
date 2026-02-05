@@ -6,6 +6,7 @@ interface ProjectCardProps {
   project: Project
   onEdit: (project: Project) => void
   onDelete: (projectId: string) => void
+  onOpen?: (project: Project) => void
   getTypeIcon: (type: ProjectType) => React.ReactNode
   getStatusColor: (status: ProjectStatus) => string
   getFeatureStatusColor: (status: FeatureStatus) => string
@@ -15,12 +16,18 @@ export default function ProjectCard({
   project,
   onEdit,
   onDelete,
+  onOpen,
   getTypeIcon,
   getStatusColor,
   getFeatureStatusColor
 }: ProjectCardProps) {
   return (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all duration-300">
+    <div
+      onClick={onOpen ? () => onOpen(project) : undefined}
+      className={`bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all duration-300 ${
+        onOpen ? 'cursor-pointer' : ''
+      }`}
+    >
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
@@ -38,7 +45,10 @@ export default function ProjectCard({
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => onEdit(project)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit(project)
+              }}
               className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
               title="Edit"
             >
@@ -47,7 +57,10 @@ export default function ProjectCard({
               </svg>
             </button>
             <button
-              onClick={() => onDelete(project.id)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(project.id)
+              }}
               className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
               title="Delete"
             >
