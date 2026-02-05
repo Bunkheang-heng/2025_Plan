@@ -5,6 +5,171 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   THEME VARIABLES - Dark Mode (Default)
+   ======================================== */
+:root {
+  /* Background colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Text colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-muted: #64748b;
+  
+  /* Border colors */
+  --border-primary: rgba(234, 179, 8, 0.2);
+  --border-secondary: #334155;
+  --border-tertiary: #475569;
+  
+  /* Accent colors (Gold/Yellow theme) */
+  --accent-primary: #eab308;
+  --accent-secondary: #ca8a04;
+  --accent-gradient-from: #eab308;
+  --accent-gradient-to: #ca8a04;
+  
+  /* Status colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-accent: 0 4px 14px rgba(234, 179, 8, 0.25);
+  
+  /* Nav specific */
+  --nav-bg: linear-gradient(to bottom, #111827, #000000);
+  --nav-border: rgba(234, 179, 8, 0.2);
+  
+  /* Input colors */
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --input-focus-border: #eab308;
+}
+
+/* ========================================
+   THEME VARIABLES - Light Mode
+   ======================================== */
+[data-theme="light"] {
+  /* Background colors */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-overlay: rgba(255, 255, 255, 0.8);
+  
+  /* Text colors */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #475569;
+  --text-muted: #64748b;
+  
+  /* Border colors */
+  --border-primary: rgba(234, 179, 8, 0.3);
+  --border-secondary: #e2e8f0;
+  --border-tertiary: #cbd5e1;
+  
+  /* Accent colors (Gold/Yellow theme - slightly darker for light mode) */
+  --accent-primary: #ca8a04;
+  --accent-secondary: #a16207;
+  --accent-gradient-from: #eab308;
+  --accent-gradient-to: #ca8a04;
+  
+  /* Status colors (slightly adjusted for light bg) */
+  --success: #16a34a;
+  --warning: #d97706;
+  --error: #dc2626;
+  --info: #2563eb;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  --shadow-accent: 0 4px 14px rgba(234, 179, 8, 0.2);
+  
+  /* Nav specific */
+  --nav-bg: linear-gradient(to bottom, #ffffff, #f8fafc);
+  --nav-border: rgba(234, 179, 8, 0.3);
+  
+  /* Input colors */
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-focus-border: #ca8a04;
+}
+
+/* ========================================
+   BASE STYLES WITH THEME VARIABLES
+   ======================================== */
+html {
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Theme-aware utility classes */
+@layer utilities {
+  .bg-theme-primary {
+    background-color: var(--bg-primary);
+  }
+  .bg-theme-secondary {
+    background-color: var(--bg-secondary);
+  }
+  .bg-theme-tertiary {
+    background-color: var(--bg-tertiary);
+  }
+  .bg-theme-card {
+    background-color: var(--bg-card);
+  }
+  .text-theme-primary {
+    color: var(--text-primary);
+  }
+  .text-theme-secondary {
+    color: var(--text-secondary);
+  }
+  .text-theme-tertiary {
+    color: var(--text-tertiary);
+  }
+  .text-theme-muted {
+    color: var(--text-muted);
+  }
+  .border-theme-primary {
+    border-color: var(--border-primary);
+  }
+  .border-theme-secondary {
+    border-color: var(--border-secondary);
+  }
+  .accent-gradient {
+    background: linear-gradient(to right, var(--accent-gradient-from), var(--accent-gradient-to));
+  }
+  .text-accent {
+    color: var(--accent-primary);
+  }
+  .shadow-theme {
+    box-shadow: var(--shadow-md);
+  }
+  .shadow-theme-accent {
+    box-shadow: var(--shadow-accent);
+  }
+}
+
 /* Custom animations */
 @keyframes float {
   0%, 100% {

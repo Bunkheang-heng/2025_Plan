@@ -1,8 +1,9 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { canAccessRoute } from '@/utils/userRole'
 
 interface AuthButtonProps {
@@ -25,33 +26,9 @@ export default function Nav() {
   const router = useRouter()
   const pathname = usePathname()
   const { isAuthenticated, role, isLoading: roleLoading, signOut } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const stored = window.localStorage.getItem('theme')
-    if (stored === 'light' || stored === 'dark') {
-      setTheme(stored)
-      document.documentElement.setAttribute('data-theme', stored)
-      return
-    }
-    const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches
-    const nextTheme: 'dark' | 'light' = prefersLight ? 'light' : 'dark'
-    setTheme(nextTheme)
-    document.documentElement.setAttribute('data-theme', nextTheme)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    document.documentElement.setAttribute('data-theme', theme)
-    window.localStorage.setItem('theme', theme)
-  }, [theme])
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
-  }
 
   const allNavLinks: NavLink[] = [
     { path: '/', label: 'Dashboard', icon: DashboardIcon },
@@ -255,11 +232,11 @@ export default function Nav() {
             className={`w-full flex items-center justify-between px-4 py-3 rounded-r-lg transition-colors duration-200 text-sm font-medium ${
               isSubLinkActive
                 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
-                : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800/50'
+                : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
             }`}
           >
             <div className="flex items-center space-x-3">
-              <span className={`flex items-center justify-center w-6 h-6 ${isSubLinkActive ? 'text-black' : 'text-gray-300'}`}>
+              <span className={`flex items-center justify-center w-6 h-6 ${isSubLinkActive ? 'text-black' : 'text-theme-secondary'}`}>
                 <link.icon />
               </span>
               <span>{link.label}</span>
@@ -283,7 +260,7 @@ export default function Nav() {
                   className={`w-full text-left px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
                     pathname === subLink.path
                       ? 'bg-yellow-500/20 text-yellow-400 border-l-2 border-yellow-400'
-                      : 'text-gray-400 hover:text-yellow-400 hover:bg-gray-800/30'
+                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
                   }`}
                 >
                   {subLink.label}
@@ -301,10 +278,10 @@ export default function Nav() {
         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-r-lg transition-colors duration-200 text-sm font-medium ${
           active
             ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
-            : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800/50'
+            : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
         }`}
       >
-        <span className={`flex items-center justify-center w-6 h-6 ${active ? 'text-black' : 'text-gray-300'}`}>
+        <span className={`flex items-center justify-center w-6 h-6 ${active ? 'text-black' : 'text-theme-secondary'}`}>
           <link.icon />
         </span>
         <span>{link.label}</span>
@@ -322,7 +299,7 @@ export default function Nav() {
           <button
             onClick={() => setOpenDropdown(isOpen ? null : link.label)}
             className={`w-full text-left px-4 py-3 rounded-lg transition-colors duration-150 ${
-              isSubLinkActive ? 'text-yellow-400 bg-gray-800/50' : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800/50'
+              isSubLinkActive ? 'text-yellow-400 bg-theme-tertiary/50' : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -353,8 +330,8 @@ export default function Nav() {
                   }}
                   className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-150 text-sm ${
                     pathname === subLink.path
-                      ? 'text-yellow-400 bg-gray-800/50'
-                      : 'text-gray-400 hover:text-yellow-400 hover:bg-gray-800/30'
+                      ? 'text-yellow-400 bg-theme-tertiary/50'
+                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
                   }`}
                 >
                   {subLink.label}
@@ -372,7 +349,7 @@ export default function Nav() {
           router.push(link.path!)
           setMobileOpen(false)
         }}
-        className="w-full text-left px-4 py-3 rounded-lg transition-colors duration-150 text-gray-300 hover:text-yellow-400 hover:bg-gray-800/50"
+        className="w-full text-left px-4 py-3 rounded-lg transition-colors duration-150 text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50"
       >
         <div className="flex items-center space-x-3">
           <span className="w-6 h-6"><link.icon /></span>
@@ -394,7 +371,7 @@ export default function Nav() {
       }
       className={`w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
         isLoggedIn
-          ? 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800/50'
+          ? 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
           : 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
       }`}
     >
@@ -405,7 +382,7 @@ export default function Nav() {
   const ThemeToggle = () => (
     <button
       onClick={toggleTheme}
-      className="w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-yellow-400 hover:bg-gray-800/50 flex items-center justify-between"
+      className="w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50 flex items-center justify-between"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
@@ -426,7 +403,12 @@ export default function Nav() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-72 z-50 flex-col bg-gradient-to-b from-gray-900 to-black border-r border-yellow-500/20 shadow-xl p-4">
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-72 z-50 flex-col border-r shadow-xl p-4 transition-colors duration-300"
+        style={{ 
+          background: 'var(--nav-bg)', 
+          borderColor: 'var(--nav-border)' 
+        }}
+      >
         <div className="flex items-center space-x-3 mb-6 cursor-pointer" onClick={() => router.push('/')}>
           <div className="p-3 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg shadow-lg border border-yellow-300">
             <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,7 +417,7 @@ export default function Nav() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">J.A.R.V.I.S</h1>
-            <p className="text-xs text-gray-400">Personal Assistant</p>
+            <p className="text-xs text-theme-muted">Personal Assistant</p>
           </div>
         </div>
 
@@ -452,7 +434,12 @@ export default function Nav() {
       </aside>
 
       {/* Mobile Top Bar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-900 to-black border-b border-yellow-500/20 shadow-md">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 border-b shadow-md transition-colors duration-300"
+        style={{ 
+          background: 'var(--nav-bg)', 
+          borderColor: 'var(--nav-border)' 
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push('/')}>
             <div className="p-2 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg shadow-sm">
@@ -466,7 +453,7 @@ export default function Nav() {
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md text-gray-300 hover:text-yellow-400 focus:outline-none"
+              className="p-2 rounded-md text-theme-secondary hover:text-accent focus:outline-none transition-colors"
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
               {theme === 'dark' ? (
@@ -481,7 +468,7 @@ export default function Nav() {
             </button>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-md text-gray-300 hover:text-yellow-400 focus:outline-none"
+              className="p-2 rounded-md text-theme-secondary hover:text-accent focus:outline-none transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileOpen ? (
@@ -500,7 +487,12 @@ export default function Nav() {
 
       {/* Mobile slide-down menu */}
       {mobileOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-gradient-to-b from-gray-900 to-black border-t border-yellow-500/10 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="md:hidden fixed top-16 left-0 right-0 z-40 border-t shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto transition-colors duration-300"
+          style={{ 
+            background: 'var(--nav-bg)', 
+            borderColor: 'var(--nav-border)' 
+          }}
+        >
           <div className="p-4 space-y-2">
             {isAuthenticated && navLinks.map((l) => <MobileNavItem key={l.label} link={l} />)}
           </div>

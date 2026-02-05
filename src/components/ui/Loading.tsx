@@ -16,7 +16,7 @@ export default function Loading() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center transition-colors duration-300">
       <div className="max-w-md w-full mx-auto p-8">
         <div className="text-center space-y-10">
           {/* Logo */}
@@ -31,13 +31,13 @@ export default function Loading() {
           {/* Loading Text */}
           <div className="space-y-4">
             <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">J.A.R.V.I.S</h2>
-            <p className="text-lg text-gray-300 font-medium">Initializing AI systems...</p>
+            <p className="text-lg text-theme-secondary font-medium">Initializing AI systems...</p>
           </div>
 
           {/* Spinner */}
           <div className="flex justify-center">
             <div className="relative">
-              <div className="w-12 h-12 border-4 border-gray-700 rounded-full"></div>
+              <div className="w-12 h-12 border-4 border-theme-tertiary rounded-full"></div>
               <div className="absolute inset-0 w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           </div>
@@ -45,10 +45,10 @@ export default function Loading() {
           {/* Progress Bar */}
           <div className="w-full space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-gray-300">System Status</span>
+              <span className="text-sm font-semibold text-theme-secondary">System Status</span>
               <span className="text-sm font-bold text-yellow-400">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden border border-gray-600">
+            <div className="w-full bg-theme-tertiary rounded-full h-3 overflow-hidden border border-theme-secondary">
               <div 
                 className="h-full bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full transition-all duration-500 ease-out shadow-lg"
                 style={{ width: `${progress}%` }}
@@ -58,7 +58,7 @@ export default function Loading() {
 
           {/* Status */}
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-theme-muted font-medium">
               Preparing your mission control center...
             </p>
             <div className="flex items-center justify-center space-x-2">
