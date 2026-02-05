@@ -13,6 +13,7 @@ export { default as Container } from './layout/Container'
 export { default as Nav } from './layout/Nav'
 export { default as HomeHeader } from './layout/HomeHeader'
 export { default as RouteProtection } from './layout/RouteProtection'
+export { default as AuthGate } from './layout/AuthGate'
 
 // Business Components
 export { default as PlanItem } from './business/PlanItem'

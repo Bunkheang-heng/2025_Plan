@@ -1,35 +1,11 @@
-import { useState, useEffect } from 'react'
-import { auth } from '../../firebase'
-import { getUserRole, UserRole } from '@/utils/userRole'
+import { useAuth } from '@/contexts/AuthContext'
 
+/**
+ * Hook to get user role from the centralized auth context
+ * This is a wrapper around useAuth for backward compatibility
+ */
 export function useUserRole() {
-  const [role, setRole] = useState<UserRole>('restricted')
-  const [isLoading, setIsLoading] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        setUserId(user.uid)
-        try {
-          const userRole = await getUserRole(user.uid)
-          setRole(userRole)
-        } catch (error) {
-          console.error('Error loading user role:', error)
-          setRole('restricted') // Default to restricted on error
-        } finally {
-          setIsLoading(false)
-        }
-      } else {
-        setUserId(null)
-        setRole('restricted')
-        setIsLoading(false)
-      }
-    })
-
-    return () => unsubscribe()
-  }, [])
-
+  const { role, isLoading, userId } = useAuth()
   return { role, isLoading, userId }
 }
 

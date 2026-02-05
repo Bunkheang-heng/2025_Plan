@@ -1,9 +1,8 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { auth } from '../../../firebase'
 import { useEffect, useState, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
-import { useUserRole } from '@/hooks/useUserRole'
+import { useAuth } from '@/contexts/AuthContext'
 import { canAccessRoute } from '@/utils/userRole'
 
 interface AuthButtonProps {
@@ -25,18 +24,10 @@ interface NavLink {
 export default function Nav() {
   const router = useRouter()
   const pathname = usePathname()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { isAuthenticated, role, isLoading: roleLoading, signOut } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-  const { role, isLoading: roleLoading } = useUserRole()
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setIsLoggedIn(!!user)
-    })
-    return () => unsubscribe()
-  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -396,7 +387,7 @@ export default function Nav() {
       onClick={
         isLoggedIn
           ? async () => {
-              await auth.signOut()
+              await signOut()
               router.push('/login')
             }
           : () => router.push('/login')
@@ -449,11 +440,11 @@ export default function Nav() {
         </div>
 
         <nav className="flex-1 space-y-2 overflow-y-auto">
-          {isLoggedIn && navLinks.map((l) => <NavItem key={l.label} link={l} />)}
+          {isAuthenticated && navLinks.map((l) => <NavItem key={l.label} link={l} />)}
         </nav>
 
         <div className="mt-4">
-          <AuthButton isLoggedIn={isLoggedIn} />
+          <AuthButton isLoggedIn={isAuthenticated} />
           <div className="mt-2">
             <ThemeToggle />
           </div>
@@ -501,7 +492,7 @@ export default function Nav() {
               </svg>
             </button>
             <div>
-              <AuthButton isLoggedIn={isLoggedIn} />
+              <AuthButton isLoggedIn={isAuthenticated} />
             </div>
           </div>
         </div>
@@ -511,7 +502,7 @@ export default function Nav() {
       {mobileOpen && (
         <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-gradient-to-b from-gray-900 to-black border-t border-yellow-500/10 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
           <div className="p-4 space-y-2">
-            {isLoggedIn && navLinks.map((l) => <MobileNavItem key={l.label} link={l} />)}
+            {isAuthenticated && navLinks.map((l) => <MobileNavItem key={l.label} link={l} />)}
           </div>
         </div>
       )}
