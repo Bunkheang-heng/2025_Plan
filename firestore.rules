@@ -56,6 +56,12 @@ service cloud.firestore {
       allow read, write, delete, create: if request.auth != null;
     }
     
+    // User setups (multiple per user: image + description)
+    match /setups/{setupId} {
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
     // Couple Savings - authenticated users can access
     match /coupleSavings/{document} {
       allow read, write, delete, create: if request.auth != null;

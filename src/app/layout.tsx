@@ -47,7 +47,7 @@ export default function RootLayout({
           <AuthProvider>
             <AuthGate />
             <Nav/>
-            <main className="flex-1 md:pl-72 pt-0">
+            <main className="flex-1 md:pl-72 pt-0 bg-theme-primary text-theme-primary">
               {children}
             </main>
           </AuthProvider>

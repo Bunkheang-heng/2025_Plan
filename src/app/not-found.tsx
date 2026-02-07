@@ -5,7 +5,7 @@ export default function NotFound() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center px-6">
       {/* Animated Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl animate-float" />
@@ -36,10 +36,10 @@ export default function NotFound() {
           </div>
 
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold text-white mb-4">
+            <h2 className="text-3xl font-bold text-theme-primary mb-4">
               Page Not Found
             </h2>
-            <p className="text-gray-300 text-lg mb-6">
+            <p className="text-theme-secondary text-lg mb-6">
               Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
             </p>
 
@@ -48,7 +48,7 @@ export default function NotFound() {
                 <svg className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="text-gray-300">
+                <div className="text-theme-secondary">
                   <p className="font-semibold text-yellow-400 mb-2">What happened?</p>
                   <p className="text-sm">
                     The URL you entered might be incorrect, or the page may have been deleted or moved to a new location.
@@ -71,7 +71,7 @@ export default function NotFound() {
 
               <button
                 onClick={() => router.back()}
-                className="flex items-center justify-center space-x-2 px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl transition-all duration-300 border border-yellow-500/30 hover:border-yellow-500/50"
+                className="flex items-center justify-center space-x-2 px-8 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl transition-all duration-300 border border-yellow-500/30 hover:border-yellow-500/50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -84,7 +84,7 @@ export default function NotFound() {
 
         {/* Quick Links */}
         <div className="animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
-          <p className="text-gray-400 text-sm mb-4">Quick Links:</p>
+          <p className="text-theme-tertiary text-sm mb-4">Quick Links:</p>
           <div className="flex flex-wrap justify-center gap-3">
             {[
               { label: 'Dashboard', path: '/', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -95,7 +95,7 @@ export default function NotFound() {
               <button
                 key={link.path}
                 onClick={() => router.push(link.path)}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-yellow-500/20 hover:border-yellow-500/50 rounded-lg text-gray-300 hover:text-yellow-400 transition-all duration-200 text-sm"
+                className="flex items-center space-x-2 px-4 py-2 bg-theme-secondary hover:bg-gray-700/50 border border-yellow-500/20 hover:border-yellow-500/50 rounded-lg text-theme-secondary hover:text-yellow-400 transition-all duration-200 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />

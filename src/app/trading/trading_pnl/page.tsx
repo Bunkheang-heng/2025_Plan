@@ -3,17 +3,21 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
-import { addDoc, collection, deleteDoc, doc, getDocs, getFirestore, orderBy, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDocs, getFirestore, orderBy, query, where } from 'firebase/firestore'
 import { FaChartLine, FaPlus, FaWallet } from 'react-icons/fa'
 
 type AccountType = 'real' | 'funded'
+type CurrencyType = 'usd' | 'cent'
 
 type TradingAccount = {
   id: string
   name: string
   type: AccountType
+  currency: CurrencyType
   userId: string
   capital?: number
+  strategy?: string
+  rules?: string
   createdAt?: string
 }
 
@@ -21,18 +25,11 @@ export default function TradingPnLAccountsPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [accounts, setAccounts] = useState<TradingAccount[]>([])
-  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, capital: '' })
+  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, currency: 'usd' as CurrencyType, capital: '', strategy: '', rules: '' })
   const [isCreating, setIsCreating] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [editingAccount, setEditingAccount] = useState<TradingAccount | null>(null)
-  const [isSavingEdit, setIsSavingEdit] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState<TradingAccount | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [editForm, setEditForm] = useState({
-    name: '',
-    type: 'real' as AccountType,
-    capital: '',
-  })
 
   const fetchAccounts = useCallback(async () => {
     const user = auth.currentUser
@@ -97,10 +94,13 @@ export default function TradingPnLAccountsPage() {
         userId: user.uid,
         name,
         type: formData.type,
+        currency: formData.currency,
         capital: Number.isFinite(capital) ? capital : 0,
+        strategy: formData.strategy.trim() || null,
+        rules: formData.rules.trim() || null,
         createdAt: new Date().toISOString(),
       })
-      setFormData({ name: '', type: formData.type, capital: '' })
+      setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', strategy: '', rules: '' })
       await fetchAccounts()
       router.push(`/trading/trading_pnl/${ref.id}`)
     } catch (e) {
@@ -111,62 +111,21 @@ export default function TradingPnLAccountsPage() {
     }
   }
 
-  const openEditModal = (account: TradingAccount) => {
-    setEditingAccount(account)
-    setEditForm({
-      name: account.name,
-      type: account.type,
-      capital: String(account.capital ?? 0),
-    })
-    setIsEditModalOpen(true)
-  }
-
   const openDeleteModal = (account: TradingAccount) => {
-    setEditingAccount(account)
+    setDeletingAccount(account)
     setIsDeleteModalOpen(true)
-  }
-
-  const handleUpdate = async () => {
-    const user = auth.currentUser
-    if (!user || !editingAccount) return
-    const name = editForm.name.trim()
-    if (!name) return
-    const capital = Number(editForm.capital)
-    if (editForm.capital && Number.isNaN(capital)) {
-      alert('Please enter a valid capital amount')
-      return
-    }
-
-    setIsSavingEdit(true)
-    try {
-      const db = getFirestore()
-      await updateDoc(doc(db, 'tradingAccounts', editingAccount.id), {
-        name,
-        type: editForm.type,
-        capital: Number.isFinite(capital) ? capital : 0,
-        updatedAt: new Date().toISOString(),
-      })
-      await fetchAccounts()
-      setIsEditModalOpen(false)
-      setEditingAccount(null)
-    } catch (e) {
-      console.error('Error updating account:', e)
-      alert('Failed to update account')
-    } finally {
-      setIsSavingEdit(false)
-    }
   }
 
   const handleDelete = async () => {
     const user = auth.currentUser
-    if (!user || !editingAccount) return
+    if (!user || !deletingAccount) return
     setIsDeleting(true)
     try {
       const db = getFirestore()
-      await deleteDoc(doc(db, 'tradingAccounts', editingAccount.id))
+      await deleteDoc(doc(db, 'tradingAccounts', deletingAccount.id))
       await fetchAccounts()
       setIsDeleteModalOpen(false)
-      setEditingAccount(null)
+      setDeletingAccount(null)
     } catch (e) {
       console.error('Error deleting account:', e)
       alert('Failed to delete account')
@@ -182,10 +141,10 @@ export default function TradingPnLAccountsPage() {
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Trading Accounts
           </div>
@@ -193,29 +152,29 @@ export default function TradingPnLAccountsPage() {
             <span>Your Accounts</span>
             <FaChartLine className="w-10 h-10 text-yellow-400" />
           </h1>
-          <p className="text-xl text-gray-300 font-medium">
+          <p className="text-xl text-theme-secondary font-medium">
             Choose an account to view the P&amp;L calendar
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 bg-gray-800/40 border border-gray-700 rounded-2xl overflow-hidden">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+          <div className="lg:col-span-7 bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-theme-secondary flex items-center justify-between">
               <div>
-                <h2 className="text-white font-semibold">Accounts</h2>
-                <p className="text-xs text-gray-400">Click to open P&amp;L</p>
+                <h2 className="text-theme-primary font-semibold">Accounts</h2>
+                <p className="text-xs text-theme-tertiary">Click to open P&amp;L</p>
               </div>
-              <span className="text-xs text-gray-500">{sortedAccounts.length}</span>
+              <span className="text-xs text-theme-muted">{sortedAccounts.length}</span>
             </div>
 
             <div className="p-4 space-y-3">
               {sortedAccounts.length === 0 ? (
-                <div className="text-sm text-gray-400">No accounts yet. Create one to start.</div>
+                <div className="text-sm text-theme-tertiary">No accounts yet. Create one to start.</div>
               ) : (
                 sortedAccounts.map(acc => (
                   <div
                     key={acc.id}
-                    className="w-full text-left px-4 py-4 rounded-xl border bg-black/20 border-gray-700 text-gray-200 hover:bg-black/30 hover:border-gray-600 transition-colors"
+                    className="w-full text-left px-4 py-4 rounded-xl border bg-black/20 border-theme-secondary text-gray-200 hover:bg-black/30 hover:border-gray-600 transition-colors"
                   >
                     <button
                       onClick={() => router.push(`/trading/trading_pnl/${acc.id}`)}
@@ -223,26 +182,38 @@ export default function TradingPnLAccountsPage() {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <div className="font-semibold text-white">{acc.name}</div>
-                          <div className="text-[11px] text-gray-500 font-mono break-all">{acc.id}</div>
-                          <div className="text-xs text-gray-400 mt-1">
-                            Capital: ${Number(acc.capital || 0).toFixed(2)}
+                          <div className="font-semibold text-theme-primary">{acc.name}</div>
+                          {acc.strategy && (
+                            <div className="text-xs text-cyan-400 mt-0.5">📊 {acc.strategy}</div>
+                          )}
+                          <div className="text-[11px] text-theme-muted font-mono break-all">{acc.id}</div>
+                          <div className="text-xs text-theme-tertiary mt-1">
+                            Capital: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.capital || 0).toFixed(2)}
                           </div>
                         </div>
-                        <div className={`text-xs px-3 py-1 rounded-full border ${
-                          acc.type === 'real'
-                            ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                            : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-                        }`}>
-                          {acc.type === 'real' ? 'Real' : 'Funded'}
+                        <div className="flex flex-col gap-1 items-end">
+                          <div className={`text-xs px-3 py-1 rounded-full border ${
+                            acc.type === 'real'
+                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                          }`}>
+                            {acc.type === 'real' ? 'Real' : 'Funded'}
+                          </div>
+                          <div className={`text-xs px-3 py-1 rounded-full border ${
+                            acc.currency === 'cent'
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                              : 'bg-green-500/20 text-green-300 border-green-500/30'
+                          }`}>
+                            {acc.currency === 'cent' ? '¢ Cent' : '$ USD'}
+                          </div>
                         </div>
                       </div>
                       <div className="mt-2 text-xs text-yellow-300">Open P&amp;L →</div>
                     </button>
                     <div className="mt-3 flex items-center gap-2">
                       <button
-                        onClick={() => openEditModal(acc)}
-                        className="px-3 py-1.5 rounded-lg bg-gray-800/60 border border-gray-700 text-gray-200 hover:bg-gray-800 transition-colors text-xs"
+                        onClick={() => router.push(`/trading/trading_pnl/${acc.id}/edit`)}
+                        className="px-3 py-1.5 rounded-lg bg-theme-card/60 border border-theme-secondary text-gray-200 hover:bg-theme-card transition-colors text-xs"
                       >
                         Edit
                       </button>
@@ -259,39 +230,65 @@ export default function TradingPnLAccountsPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 bg-gray-800/40 border border-yellow-500/20 rounded-2xl p-5">
-            <h2 className="text-lg font-semibold text-white mb-2">Create Account</h2>
-            <p className="text-xs text-gray-400 mb-4">
+          <div className="lg:col-span-5 bg-theme-card border border-yellow-500/20 rounded-2xl p-5">
+            <h2 className="text-lg font-semibold text-theme-primary mb-2">Create Account</h2>
+            <p className="text-xs text-theme-tertiary mb-4">
               Add each trading account you want to track.
             </p>
 
-            <label className="block text-xs text-gray-400 mb-2">Account name</label>
+            <label className="block text-xs text-theme-tertiary mb-2">Account name</label>
             <input
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Example: Apex 50K, Personal MT5"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
             />
 
-            <label className="block text-xs text-gray-400 mt-4 mb-2">Capital ($)</label>
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Currency</label>
+            <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, currency: 'usd' }))}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                  formData.currency === 'usd'
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-theme-primary'
+                    : 'text-theme-tertiary hover:text-theme-secondary'
+                }`}
+              >
+                $ USD
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, currency: 'cent' }))}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                  formData.currency === 'cent'
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-theme-primary'
+                    : 'text-theme-tertiary hover:text-theme-secondary'
+                }`}
+              >
+                ¢ Cent
+              </button>
+            </div>
+
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Capital ({formData.currency === 'cent' ? '¢' : '$'})</label>
             <input
               type="number"
               step="0.01"
               value={formData.capital}
               onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
               placeholder="0.00"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
             />
 
-            <label className="block text-xs text-gray-400 mt-4 mb-2">Account type</label>
-            <div className="inline-flex items-center bg-gray-900/60 border border-gray-700 rounded-xl p-1 w-full">
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Account type</label>
+            <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, type: 'real' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.type === 'real'
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary'
+                    : 'text-theme-tertiary hover:text-theme-secondary'
                 }`}
               >
                 <FaWallet className="w-4 h-4" />
@@ -302,14 +299,31 @@ export default function TradingPnLAccountsPage() {
                 onClick={() => setFormData(prev => ({ ...prev, type: 'funded' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.type === 'funded'
-                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white'
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary'
+                    : 'text-theme-tertiary hover:text-theme-secondary'
                 }`}
               >
                 <FaChartLine className="w-4 h-4" />
                 Funded
               </button>
             </div>
+
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Strategy</label>
+            <input
+              value={formData.strategy}
+              onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
+              placeholder="Example: ICT, SMC, Price Action, Scalping"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+            />
+
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Trading Rules</label>
+            <textarea
+              value={formData.rules}
+              onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
+              placeholder="Define your trading rules for this account...&#10;Example:&#10;• Max 2 trades per day&#10;• Risk 1% per trade&#10;• No trading on Fridays"
+              rows={4}
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 resize-none"
+            />
 
             <button
               onClick={handleCreate}
@@ -322,101 +336,28 @@ export default function TradingPnLAccountsPage() {
           </div>
         </div>
       </div>
-      {isEditModalOpen && editingAccount && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-gray-700/60">
-              <h3 className="text-xl font-bold text-white">Edit account</h3>
-              <p className="text-sm text-gray-400 mt-1">Update name, type, and capital.</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs text-gray-400 mb-2">Account name</label>
-                <input
-                  value={editForm.name}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-yellow-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-400 mb-2">Capital ($)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={editForm.capital}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, capital: e.target.value }))}
-                  className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-yellow-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-400 mb-2">Account type</label>
-                <div className="inline-flex items-center bg-gray-900/60 border border-gray-700 rounded-xl p-1 w-full">
-                  <button
-                    type="button"
-                    onClick={() => setEditForm(prev => ({ ...prev, type: 'real' }))}
-                    className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                      editForm.type === 'real'
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                        : 'text-gray-400 hover:text-gray-300'
-                    }`}
-                  >
-                    Real
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditForm(prev => ({ ...prev, type: 'funded' }))}
-                    className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                      editForm.type === 'funded'
-                        ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white'
-                        : 'text-gray-400 hover:text-gray-300'
-                    }`}
-                  >
-                    Funded
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 border-t border-gray-700/60 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                disabled={isSavingEdit}
-                className="px-4 py-2 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdate}
-                disabled={isSavingEdit}
-                className="px-4 py-2 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50"
-              >
-                {isSavingEdit ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {isDeleteModalOpen && editingAccount && (
+      {isDeleteModalOpen && deletingAccount && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-gray-700/60">
-              <h3 className="text-xl font-bold text-white">Delete account</h3>
-              <p className="text-sm text-gray-400 mt-1">
+            <div className="p-6 border-b border-theme-secondary/60">
+              <h3 className="text-xl font-bold text-theme-primary">Delete account</h3>
+              <p className="text-sm text-theme-tertiary mt-1">
                 This deletes the account. P&amp;L entries under it will remain.
               </p>
             </div>
             <div className="p-6 space-y-3">
-              <div className="text-sm text-gray-300">
-                <span className="text-gray-400">Account:</span>{' '}
-                <span className="font-semibold text-white">{editingAccount.name}</span>
+              <div className="text-sm text-theme-secondary">
+                <span className="text-theme-tertiary">Account:</span>{' '}
+                <span className="font-semibold text-theme-primary">{deletingAccount.name}</span>
               </div>
-              <div className="text-xs text-gray-500 font-mono break-all">{editingAccount.id}</div>
+              <div className="text-xs text-theme-muted font-mono break-all">{deletingAccount.id}</div>
             </div>
-            <div className="p-6 border-t border-gray-700/60 flex items-center justify-end gap-3">
+            <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

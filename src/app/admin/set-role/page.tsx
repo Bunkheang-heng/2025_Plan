@@ -81,14 +81,14 @@ export default function SetRolePage() {
   return (
     <RouteProtection>
       {currentUserRole !== 'admin' ? (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-theme-primary flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
-            <p className="text-gray-400">Only administrators can access this page.</p>
+            <p className="text-theme-tertiary">Only administrators can access this page.</p>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-8">
+        <div className="min-h-screen bg-theme-primary p-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
             <button
@@ -98,14 +98,14 @@ export default function SetRolePage() {
               Create New Account
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-8">User Role Management</h1>
+          <h1 className="text-3xl font-bold text-theme-primary mb-8">User Role Management</h1>
 
-        <div className="bg-gray-800/50 border border-yellow-500/30 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Set Role for User ID</h2>
+        <div className="bg-theme-secondary border border-yellow-500/30 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold text-theme-primary mb-4">Set Role for User ID</h2>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-theme-secondary mb-2">
                 User ID (from Firebase Auth)
               </label>
               <input
@@ -113,12 +113,12 @@ export default function SetRolePage() {
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="Enter Firebase User UID"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-theme-secondary mb-2">
                 Email (optional)
               </label>
               <input
@@ -126,12 +126,12 @@ export default function SetRolePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-theme-secondary mb-2">
                 Name (optional)
               </label>
               <input
@@ -139,18 +139,18 @@ export default function SetRolePage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="User's name"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-theme-secondary mb-2">
                 Role
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
               >
                 <option value="admin">Admin (Full Access)</option>
                 <option value="restricted">Restricted (Couple Saving Only)</option>
@@ -169,7 +169,7 @@ export default function SetRolePage() {
               <button
                 onClick={handleGetRole}
                 disabled={loading}
-                className="px-6 py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50"
+                className="px-6 py-3 bg-gray-700 text-theme-primary font-semibold rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50"
               >
                 Get Role
               </button>
@@ -178,15 +178,15 @@ export default function SetRolePage() {
         </div>
 
         {currentUser && (
-          <div className="bg-gray-800/50 border border-blue-500/30 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Set Role for Current User</h2>
-            <p className="text-sm text-gray-400 mb-4">
+          <div className="bg-theme-secondary border border-blue-500/30 rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold text-theme-primary mb-4">Set Role for Current User</h2>
+            <p className="text-sm text-theme-tertiary mb-4">
               Current User: {currentUser.email} ({currentUser.uid})
             </p>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-theme-secondary mb-2">
                   Name (optional)
                 </label>
                 <input
@@ -194,18 +194,18 @@ export default function SetRolePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="User's name"
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-theme-secondary mb-2">
                   Role
                 </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
                 >
                   <option value="admin">Admin (Full Access)</option>
                   <option value="restricted">Restricted (Couple Saving Only)</option>
@@ -216,7 +216,7 @@ export default function SetRolePage() {
               <button
                 onClick={handleSetCurrentUserRole}
                 disabled={loading}
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50"
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary font-bold rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50"
               >
                 {loading ? 'Setting...' : 'Set Current User Role'}
               </button>
@@ -234,9 +234,9 @@ export default function SetRolePage() {
           </div>
         )}
 
-        <div className="mt-8 bg-gray-800/30 border border-gray-700 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Instructions</h3>
-          <ol className="list-decimal list-inside space-y-2 text-gray-300 text-sm">
+        <div className="mt-8 bg-theme-card/30 border border-theme-secondary rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-theme-primary mb-4">Instructions</h3>
+          <ol className="list-decimal list-inside space-y-2 text-theme-secondary text-sm">
             <li>To set Monika's role as restricted:
               <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
                 <li>Go to Firebase Console → Authentication</li>

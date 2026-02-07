@@ -91,30 +91,30 @@ export default function TradingAIPredication() {
   if (loading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-blue-500/30 rounded-full text-blue-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-400 text-sm font-semibold mb-6">
             AI Forecast
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 mb-3">
             Gold Trend Prediction (Today)
           </h1>
-          <p className="text-gray-300">
+          <p className="text-theme-secondary">
             Based on the latest news from your News page.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={runAgain}
               disabled={isRunning}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50"
             >
               {isRunning ? 'Analyzing...' : 'Analyze Latest News Again'}
             </button>
             <button
               onClick={() => router.push('/trading/trading_news')}
-              className="px-6 py-3 bg-gray-800/60 border border-gray-700 text-white font-bold rounded-xl hover:bg-gray-700/60 transition-all"
+              className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-theme-primary font-bold rounded-xl hover:bg-gray-700/60 transition-all"
             >
               Back to News
             </button>
@@ -125,9 +125,9 @@ export default function TradingAIPredication() {
         </div>
 
         {!payload ? (
-          <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-10 text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">No prediction yet</h2>
-            <p className="text-gray-400 mb-6">
+          <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-10 text-center">
+            <h2 className="text-2xl font-bold text-theme-primary mb-2">No prediction yet</h2>
+            <p className="text-theme-tertiary mb-6">
               Go to the News page and click <b>AI Predict Today Trend</b>, or click “Analyze Latest News Again” above.
             </p>
           </div>
@@ -137,72 +137,72 @@ export default function TradingAIPredication() {
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10">
               <div className="p-6 border-b border-blue-500/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <p className="text-gray-400 text-sm">Prediction</p>
-                  <div className={`inline-flex items-center px-4 py-2 rounded-xl bg-gradient-to-r ${trendColor} text-white font-extrabold text-2xl`}>
+                  <p className="text-theme-tertiary text-sm">Prediction</p>
+                  <div className={`inline-flex items-center px-4 py-2 rounded-xl bg-gradient-to-r ${trendColor} text-theme-primary font-extrabold text-2xl`}>
                     {payload.prediction.trend}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-gray-400 text-sm">Confidence</p>
-                  <p className="text-white font-extrabold text-3xl">{payload.prediction.confidence}%</p>
-                  <p className="text-gray-500 text-xs mt-1">
+                  <p className="text-theme-tertiary text-sm">Confidence</p>
+                  <p className="text-theme-primary font-extrabold text-3xl">{payload.prediction.confidence}%</p>
+                  <p className="text-theme-muted text-xs mt-1">
                     Sources used: {payload.prediction.sourcesUsed} • Generated: {new Date(payload.generatedAt).toLocaleString()}
                   </p>
                 </div>
               </div>
               <div className="p-6">
                 <p className="text-gray-200 font-semibold mb-3">Summary</p>
-                <p className="text-gray-300 leading-relaxed">{payload.prediction.summary}</p>
+                <p className="text-theme-secondary leading-relaxed">{payload.prediction.summary}</p>
               </div>
             </div>
 
             {/* Details grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-3">Rationale</h3>
-                <ul className="space-y-2 text-gray-300 text-sm">
+              <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-theme-primary mb-3">Rationale</h3>
+                <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.rationale?.length ? payload.prediction.rationale.map((x, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="text-blue-400">•</span>
                       <span>{x}</span>
                     </li>
-                  )) : <li className="text-gray-500">No details.</li>}
+                  )) : <li className="text-theme-muted">No details.</li>}
                 </ul>
               </div>
 
-              <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-3">Key Watch Items</h3>
-                <ul className="space-y-2 text-gray-300 text-sm">
+              <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-theme-primary mb-3">Key Watch Items</h3>
+                <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.keyWatchItems?.length ? payload.prediction.keyWatchItems.map((x, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="text-yellow-400">•</span>
                       <span>{x}</span>
                     </li>
-                  )) : <li className="text-gray-500">No items.</li>}
+                  )) : <li className="text-theme-muted">No items.</li>}
                 </ul>
               </div>
 
-              <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-3">Bullish Drivers</h3>
-                <ul className="space-y-2 text-gray-300 text-sm">
+              <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-theme-primary mb-3">Bullish Drivers</h3>
+                <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.bullishDrivers?.length ? payload.prediction.bullishDrivers.map((x, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="text-emerald-400">•</span>
                       <span>{x}</span>
                     </li>
-                  )) : <li className="text-gray-500">None.</li>}
+                  )) : <li className="text-theme-muted">None.</li>}
                 </ul>
               </div>
 
-              <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-3">Bearish Drivers</h3>
-                <ul className="space-y-2 text-gray-300 text-sm">
+              <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-theme-primary mb-3">Bearish Drivers</h3>
+                <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.bearishDrivers?.length ? payload.prediction.bearishDrivers.map((x, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="text-red-400">•</span>
                       <span>{x}</span>
                     </li>
-                  )) : <li className="text-gray-500">None.</li>}
+                  )) : <li className="text-theme-muted">None.</li>}
                 </ul>
               </div>
             </div>

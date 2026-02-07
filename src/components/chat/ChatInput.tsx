@@ -56,7 +56,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
-                className="relative w-full px-5 py-4 pr-12 border-2 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 placeholder-gray-500 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm transition-all duration-200 resize-none min-h-[60px] max-h-[120px] shadow-xl border-yellow-500/30 hover:border-yellow-500/50"
+                className="relative w-full px-5 py-4 pr-12 border-2 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-theme-primary placeholder-theme-muted bg-theme-secondary backdrop-blur-sm transition-all duration-200 resize-none min-h-[60px] max-h-[120px] shadow-xl border-yellow-500/30 hover:border-yellow-500/50"
                 rows={1}
                 disabled={isLoading}
               />
@@ -82,7 +82,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 disabled={!message.trim() || isLoading}
                 className={`group relative px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 overflow-hidden ${
                   !message.trim() || isLoading
-                    ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-gray-400 border-2 border-gray-600/30'
+                    ? 'bg-theme-tertiary text-theme-tertiary border-2 border-theme-secondary'
                     : 'bg-gradient-to-r from-yellow-500 via-yellow-500 to-yellow-600 hover:from-yellow-600 hover:via-yellow-600 hover:to-yellow-700 text-black border-2 border-yellow-400/50 shadow-yellow-500/30'
                 }`}
               >
@@ -115,11 +115,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {/* Input hints */}
           <div className="mt-4 flex items-center justify-between text-xs">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="flex items-center space-x-1 text-gray-400">
+              <span className="flex items-center space-x-1 text-theme-tertiary">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span>Press <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs font-mono text-yellow-400">Enter</kbd> to send • <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs font-mono text-yellow-400">Shift + Enter</kbd> for new line</span>
+                <span>Press <kbd className="px-1.5 py-0.5 bg-theme-secondary border border-theme-secondary rounded text-xs font-mono text-yellow-400">Enter</kbd> to send • <kbd className="px-1.5 py-0.5 bg-theme-secondary border border-theme-secondary rounded text-xs font-mono text-yellow-400">Shift + Enter</kbd> for new line</span>
               </span>
             </div>
             <span className="hidden sm:flex items-center space-x-1 text-yellow-400 font-medium">

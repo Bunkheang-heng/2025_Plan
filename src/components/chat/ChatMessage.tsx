@@ -36,9 +36,9 @@ const formatMessage = (message: string) => {
   const addCurrentList = () => {
     if (currentList.length > 0) {
       elements.push(
-        <ul key={`list-${elementIndex++}`} className="list-disc list-inside space-y-2 my-4 ml-4 text-gray-200">
+        <ul key={`list-${elementIndex++}`} className="list-disc list-inside space-y-2 my-4 ml-4 text-theme-secondary">
           {currentList.map((item, i) => (
-            <li key={i} className="text-sm leading-relaxed text-gray-200 marker:text-yellow-400">{formatBoldText(item.trim())}</li>
+            <li key={i} className="text-sm leading-relaxed text-theme-secondary marker:text-yellow-400">{formatBoldText(item.trim())}</li>
           ))}
         </ul>
       )
@@ -60,7 +60,7 @@ const formatMessage = (message: string) => {
       // Add regular line (if not empty)
       if (trimmedLine) {
         elements.push(
-          <p key={`line-${elementIndex++}`} className="text-sm leading-relaxed mb-3 text-gray-200">
+          <p key={`line-${elementIndex++}`} className="text-sm leading-relaxed mb-3 text-theme-secondary">
             {formatBoldText(trimmedLine)}
           </p>
         )
@@ -116,7 +116,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           <div className={`relative rounded-2xl px-6 py-5 shadow-2xl border-2 backdrop-blur-sm transition-all duration-300 group-hover:scale-[1.01] ${
             isUser 
               ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 border-blue-400/40 text-white shadow-blue-900/40 hover:shadow-blue-900/60 overflow-hidden' 
-              : 'bg-gradient-to-br from-gray-800/95 via-gray-850/95 to-gray-900/95 border-yellow-500/40 text-gray-100 shadow-yellow-900/30 hover:shadow-yellow-900/40 hover:border-yellow-500/60'
+              : 'bg-theme-card border-yellow-500/40 text-theme-primary shadow-yellow-900/30 hover:shadow-yellow-900/40 hover:border-yellow-500/60'
           }`}>
             {/* Animated gradient overlay for user messages */}
             {isUser && (

@@ -79,7 +79,7 @@ const IdeaCard = React.memo(({
       <div className={`relative h-full bg-gradient-to-br ${idea.color} p-6 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-105 hover:rotate-1 hover:shadow-2xl`}>
         {/* Pin */}
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <div className="w-8 h-8 bg-gray-800 rounded-full border-4 border-gray-700 shadow-lg"></div>
+          <div className="w-8 h-8 bg-theme-card rounded-full border-4 border-theme-secondary shadow-lg"></div>
         </div>
 
         {/* Delete Button */}
@@ -94,7 +94,7 @@ const IdeaCard = React.memo(({
         {/* Category Badge */}
         {category && CategoryIcon && (
           <div className="mb-3">
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold text-white">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold text-theme-primary">
               <CategoryIcon className="w-4 h-4" />
               <span>{category.label}</span>
             </span>
@@ -102,12 +102,12 @@ const IdeaCard = React.memo(({
         )}
 
         {/* Title */}
-        <h3 className="text-xl font-bold text-white mb-3 line-clamp-2">
+        <h3 className="text-xl font-bold text-theme-primary mb-3 line-clamp-2">
           {idea.title}
         </h3>
 
         {/* Description */}
-        <p className="text-white/90 text-sm mb-4 line-clamp-3">
+        <p className="text-theme-primary/90 text-sm mb-4 line-clamp-3">
           {idea.description}
         </p>
 
@@ -117,13 +117,13 @@ const IdeaCard = React.memo(({
             {idea.tags.slice(0, 3).map((tag, tagIndex) => (
               <span
                 key={tagIndex}
-                className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs font-medium text-white"
+                className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs font-medium text-theme-primary"
               >
                 #{tag}
               </span>
             ))}
             {idea.tags.length > 3 && (
-              <span className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs font-medium text-white">
+              <span className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs font-medium text-theme-primary">
                 +{idea.tags.length - 3}
               </span>
             )}
@@ -131,7 +131,7 @@ const IdeaCard = React.memo(({
         )}
 
         {/* Date */}
-        <div className="text-xs text-white/70 font-medium">
+        <div className="text-xs text-theme-primary/70 font-medium">
           {new Date(idea.createdAt).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -267,7 +267,7 @@ export default function BusinessIdeaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+    <div className="min-h-screen bg-theme-primary relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl animate-float"></div>
@@ -278,7 +278,7 @@ export default function BusinessIdeaPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 relative z-10">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Business Brainstorming
           </div>
@@ -287,7 +287,7 @@ export default function BusinessIdeaPage() {
             <span>Idea Board</span>
             <FaLightbulb className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-400" />
           </h1>
-          <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">
+          <p className="text-xl text-theme-secondary font-medium max-w-2xl mx-auto">
             Capture, organize, and develop your business ideas in one creative space
           </p>
         </div>
@@ -299,8 +299,8 @@ export default function BusinessIdeaPage() {
               onClick={() => setSelectedCategory('all')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                 selectedCategory === 'all'
-                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/50 scale-105'
-                  : 'bg-gray-800/50 text-gray-300 border border-gray-700 hover:border-yellow-500/50 hover:text-yellow-400'
+                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary shadow-lg shadow-yellow-500/50 scale-105'
+                  : 'bg-theme-secondary text-theme-secondary border border-theme-secondary hover:border-yellow-500/50 hover:text-yellow-400'
               }`}
             >
               All Ideas
@@ -313,8 +313,8 @@ export default function BusinessIdeaPage() {
                   onClick={() => setSelectedCategory(cat.value)}
                   className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
                     selectedCategory === cat.value
-                      ? `bg-gradient-to-r ${cat.color} text-white shadow-lg scale-105`
-                      : 'bg-gray-800/50 text-gray-300 border border-gray-700 hover:border-gray-600'
+                      ? `bg-gradient-to-r ${cat.color} text-theme-primary shadow-lg scale-105`
+                      : 'bg-theme-secondary text-theme-secondary border border-theme-secondary hover:border-gray-600'
                   }`}
                 >
                   <IconComponent className="w-5 h-5" />
@@ -329,7 +329,7 @@ export default function BusinessIdeaPage() {
         <div className="mb-8 text-center animate-fade-in-delayed">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold text-lg rounded-xl shadow-lg shadow-yellow-500/50 hover:shadow-xl hover:shadow-yellow-500/60 transform hover:scale-105 transition-all duration-300"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary font-bold text-lg rounded-xl shadow-lg shadow-yellow-500/50 hover:shadow-xl hover:shadow-yellow-500/60 transform hover:scale-105 transition-all duration-300"
           >
             <FaPlus className="w-6 h-6" />
             Add New Idea
@@ -339,15 +339,15 @@ export default function BusinessIdeaPage() {
         {/* Ideas Grid */}
         {filteredIdeas.length === 0 ? (
           <div className="text-center py-20 animate-fade-in-delayed">
-            <div className="inline-block p-8 bg-gray-800/30 rounded-3xl border border-gray-700">
+            <div className="inline-block p-8 bg-theme-card/30 rounded-3xl border border-theme-secondary">
               <div className="flex justify-center mb-4">
                 <FaCommentDots className="w-20 h-20 text-yellow-400" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-300 mb-2">No ideas yet</h3>
-              <p className="text-gray-400 mb-6">Start brainstorming and add your first business idea!</p>
+              <h3 className="text-2xl font-bold text-theme-secondary mb-2">No ideas yet</h3>
+              <p className="text-theme-tertiary mb-6">Start brainstorming and add your first business idea!</p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary font-semibold rounded-xl hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
               >
                 Create Your First Idea
               </button>
@@ -370,7 +370,7 @@ export default function BusinessIdeaPage() {
       {/* Add Idea Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl border border-gray-700 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-up">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl border border-theme-secondary max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
@@ -378,15 +378,15 @@ export default function BusinessIdeaPage() {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 bg-theme-card hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
                 >
-                  <FaTimes className="w-6 h-6 text-gray-400" />
+                  <FaTimes className="w-6 h-6 text-theme-tertiary" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  <label className="block text-sm font-semibold text-theme-secondary mb-2">
                     Idea Title *
                   </label>
                   <input
@@ -395,12 +395,12 @@ export default function BusinessIdeaPage() {
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
                     placeholder="e.g., AI-Powered Fitness App"
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  <label className="block text-sm font-semibold text-theme-secondary mb-2">
                     Description *
                   </label>
                   <textarea
@@ -409,22 +409,22 @@ export default function BusinessIdeaPage() {
                     required
                     rows={5}
                     placeholder="Describe your business idea in detail..."
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  <label className="block text-sm font-semibold text-theme-secondary mb-2">
                     Category *
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     required
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
                   >
                     {categories.map((cat) => (
-                      <option key={cat.value} value={cat.value} className="bg-gray-800">
+                      <option key={cat.value} value={cat.value} className="bg-theme-card">
                         {cat.label}
                       </option>
                     ))}
@@ -432,7 +432,7 @@ export default function BusinessIdeaPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  <label className="block text-sm font-semibold text-theme-secondary mb-2">
                     Tags (comma-separated)
                   </label>
                   <input
@@ -440,7 +440,7 @@ export default function BusinessIdeaPage() {
                     value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                     placeholder="e.g., AI, fitness, mobile, subscription"
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
                   />
                 </div>
 
@@ -448,13 +448,13 @@ export default function BusinessIdeaPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-xl transition-colors"
+                    className="flex-1 px-6 py-3 bg-theme-card hover:bg-gray-700 text-theme-secondary font-semibold rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold rounded-xl shadow-lg shadow-yellow-500/50 hover:shadow-xl hover:shadow-yellow-500/60 transform hover:scale-105 transition-all duration-300"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary font-semibold rounded-xl shadow-lg shadow-yellow-500/50 hover:shadow-xl hover:shadow-yellow-500/60 transform hover:scale-105 transition-all duration-300"
                   >
                     Save Idea
                   </button>

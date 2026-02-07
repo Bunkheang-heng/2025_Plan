@@ -1,0 +1,307 @@
+'use client'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { Loading } from '@/components'
+import Icon from '@/components/ui/Icon'
+import { auth } from '../../../../../../firebase'
+import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore'
+
+type AccountType = 'real' | 'funded'
+type CurrencyType = 'usd' | 'cent'
+
+type TradingAccount = {
+  id: string
+  name: string
+  type: AccountType
+  currency: CurrencyType
+  userId: string
+  capital?: number
+  strategy?: string
+  rules?: string
+}
+
+export default function EditTradingAccountPage() {
+  const router = useRouter()
+  const params = useParams<{ accountId: string }>()
+  const accountId = params?.accountId
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [account, setAccount] = useState<TradingAccount | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'real' as AccountType,
+    currency: 'usd' as CurrencyType,
+    capital: '',
+    strategy: '',
+    rules: '',
+  })
+
+  const fetchAccount = useCallback(async () => {
+    const user = auth.currentUser
+    if (!user || !accountId) return
+    const db = getFirestore()
+    try {
+      const ref = doc(db, 'tradingAccounts', accountId)
+      const snap = await getDoc(ref)
+      if (!snap.exists()) {
+        router.push('/trading/trading_pnl')
+        return
+      }
+      const data = snap.data() as Omit<TradingAccount, 'id'>
+      if (data.userId !== user.uid) {
+        router.push('/trading/trading_pnl')
+        return
+      }
+      const acc = { id: snap.id, ...data }
+      setAccount(acc)
+      setFormData({
+        name: acc.name,
+        type: acc.type,
+        currency: acc.currency || 'usd',
+        capital: String(acc.capital ?? 0),
+        strategy: acc.strategy || '',
+        rules: acc.rules || '',
+      })
+    } catch (e) {
+      console.error('Error fetching account:', e)
+      router.push('/trading/trading_pnl')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [accountId, router])
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        router.push('/login')
+      } else {
+        fetchAccount()
+      }
+    })
+    return () => unsubscribe()
+  }, [fetchAccount, router])
+
+  const handleSave = async () => {
+    const user = auth.currentUser
+    if (!user || !accountId) return
+    const name = formData.name.trim()
+    if (!name) {
+      alert('Please enter an account name')
+      return
+    }
+    const capital = Number(formData.capital)
+    if (formData.capital && Number.isNaN(capital)) {
+      alert('Please enter a valid capital amount')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const db = getFirestore()
+      await updateDoc(doc(db, 'tradingAccounts', accountId), {
+        name,
+        type: formData.type,
+        currency: formData.currency,
+        capital: Number.isFinite(capital) ? capital : 0,
+        strategy: formData.strategy.trim() || null,
+        rules: formData.rules.trim() || null,
+        updatedAt: new Date().toISOString(),
+      })
+      router.push(`/trading/trading_pnl/${accountId}`)
+    } catch (e) {
+      console.error('Error updating account:', e)
+      alert('Failed to update account')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (isLoading) return <Loading />
+
+  if (!account) {
+    return (
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+        <div className="text-theme-tertiary">Account not found</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-theme-primary">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => router.push(`/trading/trading_pnl/${accountId}`)}
+            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+          >
+            <Icon name="arrow-left" size="sm" /> Back
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !formData.name.trim()}
+            className="px-5 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center gap-2 text-sm"
+          >
+            <Icon name="save" size="sm" />
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+
+        <div className="mb-10">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-4">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+            Edit Account
+          </div>
+          <h1 className="text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-2">
+            {account.name}
+          </h1>
+          <p className="text-theme-secondary font-medium">
+            Update your account details, strategy, and rules
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - Basic Info */}
+          <div className="space-y-6">
+            <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
+                <Icon name="wallet" size="md" className="text-blue-400" /> Account Details
+              </h2>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">Account Name</label>
+                  <input
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Example: Apex 50K, Personal MT5"
+                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">Currency</label>
+                  <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, currency: 'usd' }))}
+                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                        formData.currency === 'usd'
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-theme-primary'
+                          : 'text-theme-tertiary hover:text-theme-secondary'
+                      }`}
+                    >
+                      $ USD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, currency: 'cent' }))}
+                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                        formData.currency === 'cent'
+                          ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-theme-primary'
+                          : 'text-theme-tertiary hover:text-theme-secondary'
+                      }`}
+                    >
+                      ¢ Cent
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">
+                    Capital ({formData.currency === 'cent' ? '¢' : '$'})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.capital}
+                    onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">Account Type</label>
+                  <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, type: 'real' }))}
+                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                        formData.type === 'real'
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary'
+                          : 'text-theme-tertiary hover:text-theme-secondary'
+                      }`}
+                    >
+                      <Icon name="wallet" size="sm" />
+                      Real
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, type: 'funded' }))}
+                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                        formData.type === 'funded'
+                          ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary'
+                          : 'text-theme-tertiary hover:text-theme-secondary'
+                      }`}
+                    >
+                      <Icon name="chart-line" size="sm" />
+                      Funded
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Strategy & Rules */}
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/30 rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-cyan-400 mb-4 flex items-center gap-2">
+                <Icon name="strategy" size="md" /> Strategy
+              </h2>
+              <input
+                value={formData.strategy}
+                onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
+                placeholder="Example: ICT, SMC, Price Action, Scalping"
+                className="w-full px-4 py-3 bg-gray-900/60 border border-cyan-500/30 rounded-xl text-theme-primary focus:outline-none focus:border-cyan-500"
+              />
+              <p className="text-xs text-theme-muted mt-3">Define the trading strategy you use for this account</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-orange-400 mb-4 flex items-center gap-2">
+                <Icon name="rules" size="md" /> Trading Rules
+              </h2>
+              <textarea
+                value={formData.rules}
+                onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
+                placeholder="Define your trading rules for this account...&#10;&#10;Example:&#10;• Max 2 trades per day&#10;• Risk 1% per trade&#10;• No trading on Fridays&#10;• Only trade during London/NY session&#10;• Wait for confirmation before entry"
+                rows={10}
+                className="w-full px-4 py-3 bg-gray-900/60 border border-orange-500/30 rounded-xl text-theme-primary focus:outline-none focus:border-orange-500 resize-none"
+              />
+              <p className="text-xs text-theme-muted mt-3">Set specific rules to follow when trading this account</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Action Buttons */}
+        <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-theme-secondary">
+          <button
+            onClick={() => router.push(`/trading/trading_pnl/${accountId}`)}
+            disabled={isSaving}
+            className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-xl hover:bg-theme-card transition-colors disabled:opacity-50 font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !formData.name.trim()}
+            className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <Icon name="save" size="sm" />
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

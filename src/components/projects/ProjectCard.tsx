@@ -24,7 +24,7 @@ export default function ProjectCard({
   return (
     <div
       onClick={onOpen ? () => onOpen(project) : undefined}
-      className={`bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all duration-300 ${
+      className={`bg-theme-card border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all duration-300 ${
         onOpen ? 'cursor-pointer' : ''
       }`}
     >
@@ -34,13 +34,13 @@ export default function ProjectCard({
             <div className={`p-2 rounded-lg ${
               project.type === 'website' ? 'bg-blue-500/20 text-blue-400' :
               project.type === 'mobile' ? 'bg-purple-500/20 text-purple-400' :
-              'bg-gray-500/20 text-gray-400'
+              'bg-gray-500/20 text-theme-tertiary'
             }`}>
               {getTypeIcon(project.type)}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white">{project.name}</h3>
-              <p className="text-sm text-gray-400 capitalize">{project.type}</p>
+              <h3 className="text-xl font-bold text-theme-primary">{project.name}</h3>
+              <p className="text-sm text-theme-tertiary capitalize">{project.type}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -49,10 +49,10 @@ export default function ProjectCard({
                 e.stopPropagation()
                 onEdit(project)
               }}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="p-2 hover:bg-theme-tertiary/50 rounded-lg transition-colors"
               title="Edit"
             >
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </button>
@@ -71,7 +71,7 @@ export default function ProjectCard({
           </div>
         </div>
 
-        <p className="text-gray-300 text-sm mb-4 overflow-hidden text-ellipsis" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+        <p className="text-theme-secondary text-sm mb-4 overflow-hidden text-ellipsis" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {project.description}
         </p>
 
@@ -87,13 +87,13 @@ export default function ProjectCard({
               {project.techStack.slice(0, 3).map((tech, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded-lg border border-gray-600/50"
+                  className="px-2 py-1 bg-theme-tertiary/50 text-theme-secondary text-xs rounded-lg border border-theme-secondary"
                 >
                   {tech}
                 </span>
               ))}
               {project.techStack.length > 3 && (
-                <span className="px-2 py-1 bg-gray-700/50 text-gray-400 text-xs rounded-lg">
+                <span className="px-2 py-1 bg-theme-tertiary/50 text-theme-tertiary text-xs rounded-lg">
                   +{project.techStack.length - 3}
                 </span>
               )}
@@ -102,24 +102,24 @@ export default function ProjectCard({
         )}
 
         {project.features && project.features.length > 0 && (
-          <div className="mb-4 pt-4 border-t border-gray-700/50">
+          <div className="mb-4 pt-4 border-t border-theme-secondary">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-yellow-400">Features</span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-theme-tertiary">
                 {project.features.filter(f => f.status === 'done').length}/{project.features.length}
               </span>
             </div>
             <div className="space-y-2">
               {project.features.slice(0, 3).map((feature) => (
                 <div key={feature.id} className="flex items-center justify-between">
-                  <span className="text-xs text-gray-300 truncate flex-1">{feature.name}</span>
+                  <span className="text-xs text-theme-secondary truncate flex-1">{feature.name}</span>
                   <span className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold border ${getFeatureStatusColor(feature.status)}`}>
                     {feature.status === 'in-progress' ? 'In Progress' : feature.status.charAt(0).toUpperCase() + feature.status.slice(1)}
                   </span>
                 </div>
               ))}
               {project.features.length > 3 && (
-                <div className="text-xs text-gray-400 text-center pt-1">
+                <div className="text-xs text-theme-tertiary text-center pt-1">
                   +{project.features.length - 3} more features
                 </div>
               )}
@@ -127,7 +127,7 @@ export default function ProjectCard({
           </div>
         )}
 
-        <div className="space-y-2 text-xs text-gray-400">
+        <div className="space-y-2 text-xs text-theme-tertiary">
           <div className="flex items-center space-x-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -145,7 +145,7 @@ export default function ProjectCard({
         </div>
 
         {(project.repositoryUrl || project.liveUrl) && (
-          <div className="mt-4 pt-4 border-t border-gray-700/50 flex items-center space-x-4">
+          <div className="mt-4 pt-4 border-t border-theme-secondary flex items-center space-x-4">
             {project.repositoryUrl && (
               <a
                 href={project.repositoryUrl}

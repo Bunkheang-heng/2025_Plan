@@ -84,14 +84,16 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
     return true // Admins can access everything
   }
   
-  // Restricted users can only access couple saving page
+  // Restricted users can only access couple saving and setup pages
   if (role === 'restricted') {
     return path === '/couple_saving' || path.startsWith('/couple_saving')
+      || path === '/setup' || path.startsWith('/setup')
   }
 
-  // Trading partners can only access trading partner page
+  // Trading partners can access trading partner and setup pages
   if (role === 'partner') {
     return path === '/trading_partner' || path.startsWith('/trading_partner')
+      || path === '/setup' || path.startsWith('/setup')
   }
   
   return false

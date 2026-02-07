@@ -284,11 +284,11 @@ export default function TradingPartnerGroupPnLPage() {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Partner Trading Tracker
           </div>
@@ -296,14 +296,14 @@ export default function TradingPartnerGroupPnLPage() {
             <span>{group?.name || 'Trading Partner P&L'}</span>
             <FaChartLine className="w-10 h-10 text-yellow-400" />
           </h1>
-          <p className="text-xl text-gray-300 font-medium">
+          <p className="text-xl text-theme-secondary font-medium">
             All-time performance with daily entries and notes
           </p>
 
           <div className="mt-6 flex items-center justify-center gap-3">
             <button
               onClick={() => router.push('/trading_partner/groups')}
-              className="px-5 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-200 hover:bg-gray-700/50 transition-colors flex items-center gap-2"
+              className="px-5 py-3 rounded-xl bg-theme-secondary border border-theme-secondary text-gray-200 hover:bg-gray-700/50 transition-colors flex items-center gap-2"
             >
               <FaArrowLeft /> Groups
             </button>
@@ -324,19 +324,19 @@ export default function TradingPartnerGroupPnLPage() {
 
         {/* Capital summary (manual input on Capital page) */}
         {group?.capitalByUid && Object.keys(group.capitalByUid).length > 0 && (
-          <div className="bg-gray-800/40 border border-gray-700 rounded-2xl p-5 mb-8">
+          <div className="bg-theme-card border border-theme-secondary rounded-2xl p-5 mb-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
-                <div className="text-xs text-gray-400">Account Capital (manual)</div>
+                <div className="text-xs text-theme-tertiary">Account Capital (manual)</div>
                 <div className="text-2xl font-bold text-blue-400">
                   ${totalCapital.toFixed(2)}
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
                 {(group.partners || []).map(p => (
-                  <div key={p.uid} className="px-4 py-2 bg-black/20 border border-gray-700 rounded-xl">
-                    <div className="text-xs text-gray-400">{p.name}</div>
-                    <div className="text-sm font-bold text-white">
+                  <div key={p.uid} className="px-4 py-2 bg-black/20 border border-theme-secondary rounded-xl">
+                    <div className="text-xs text-theme-tertiary">{p.name}</div>
+                    <div className="text-sm font-bold text-theme-primary">
                       ${(Number(group.capitalByUid?.[p.uid] || 0)).toFixed(2)}
                     </div>
                   </div>
@@ -379,7 +379,7 @@ export default function TradingPartnerGroupPnLPage() {
                 } mb-1`}>
                   {stat.value}
                 </div>
-                <div className="text-xs text-gray-400 font-medium">{stat.label}</div>
+                <div className="text-xs text-theme-tertiary font-medium">{stat.label}</div>
               </div>
             </div>
           ))}
@@ -395,8 +395,8 @@ export default function TradingPartnerGroupPnLPage() {
                 </svg>
               </button>
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white">{monthName}</h2>
-                <p className="text-xs text-gray-400">Monthly view, overall totals above</p>
+                <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
+                <p className="text-xs text-theme-tertiary">Monthly view, overall totals above</p>
               </div>
               <div className="flex items-center gap-3">
                 {role === 'admin' && (
@@ -452,31 +452,31 @@ export default function TradingPartnerGroupPnLPage() {
                     disabled={isWeekend}
                     className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
                       isWeekend
-                        ? 'border-gray-600/30 bg-gray-800/30 opacity-50 cursor-not-allowed'
+                        ? 'border-gray-600/30 bg-theme-card/30 opacity-50 cursor-not-allowed'
                         : isToday
                           ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105'
                           : dayData
                             ? dayData.amount >= 0
                               ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
                               : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
-                            : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 hover:scale-105'
+                            : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
-                        isWeekend ? 'text-gray-500' : isToday ? 'text-yellow-400' : 'text-gray-300'
+                        isWeekend ? 'text-theme-muted' : isToday ? 'text-yellow-400' : 'text-theme-secondary'
                       }`}>
                         {day}
                       </div>
 
                       {isWeekend ? (
-                        <div className="text-[10px] text-gray-500 text-center leading-tight">Market Closed</div>
+                        <div className="text-[10px] text-theme-muted text-center leading-tight">Market Closed</div>
                       ) : dayData ? (
                         <>
                           <div className={`text-xs font-bold ${dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             ${dayData.amount.toFixed(0)}
                           </div>
-                          <div className="text-[10px] text-gray-400 mt-0.5">
+                          <div className="text-[10px] text-theme-tertiary mt-0.5">
                             {dayData.trades} trades
                           </div>
                           {dayData.note && (
@@ -488,7 +488,7 @@ export default function TradingPartnerGroupPnLPage() {
                           )}
                         </>
                       ) : (
-                        <div className="text-[10px] text-gray-500">No Data</div>
+                        <div className="text-[10px] text-theme-muted">No Data</div>
                       )}
                     </div>
                   </button>
@@ -504,11 +504,11 @@ export default function TradingPartnerGroupPnLPage() {
             <div className="w-full max-w-2xl bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-2xl">
               <div className="flex items-center justify-between p-6 border-b border-gray-600/50">
                 <div>
-                  <h3 className="text-2xl font-bold text-white">{selectedDate}</h3>
-                  <p className="text-gray-400 text-sm">Daily P&amp;L Entry</p>
+                  <h3 className="text-2xl font-bold text-theme-primary">{selectedDate}</h3>
+                  <p className="text-theme-tertiary text-sm">Daily P&amp;L Entry</p>
                 </div>
                 <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors">
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -517,20 +517,20 @@ export default function TradingPartnerGroupPnLPage() {
               {!isEditing && selectedEntry ? (
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
-                      <div className="text-xs text-gray-400 mb-1">P&amp;L</div>
+                    <div className="bg-theme-secondary border border-theme-secondary rounded-xl p-4 text-center">
+                      <div className="text-xs text-theme-tertiary mb-1">P&amp;L</div>
                       <div className={`text-2xl font-bold ${selectedEntry.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         ${selectedEntry.amount.toFixed(2)}
                       </div>
                     </div>
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
-                      <div className="text-xs text-gray-400 mb-1">Trades</div>
+                    <div className="bg-theme-secondary border border-theme-secondary rounded-xl p-4 text-center">
+                      <div className="text-xs text-theme-tertiary mb-1">Trades</div>
                       <div className="text-2xl font-bold text-yellow-400">
                         {selectedEntry.trades}
                       </div>
                     </div>
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 text-center">
-                      <div className="text-xs text-gray-400 mb-1">Note</div>
+                    <div className="bg-theme-secondary border border-theme-secondary rounded-xl p-4 text-center">
+                      <div className="text-xs text-theme-tertiary mb-1">Note</div>
                       <div className="text-sm text-gray-200 line-clamp-3">
                         {selectedEntry.note || '—'}
                       </div>
@@ -560,11 +560,11 @@ export default function TradingPartnerGroupPnLPage() {
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
                       disabled={Boolean(selectedEntry)}
-                      className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 disabled:opacity-60"
+                      className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 disabled:opacity-60"
                       required
                     />
                     {selectedEntry && (
-                      <div className="mt-2 text-xs text-gray-500">Date cannot be changed for existing entries.</div>
+                      <div className="mt-2 text-xs text-theme-muted">Date cannot be changed for existing entries.</div>
                     )}
                   </div>
                   <div>
@@ -582,7 +582,7 @@ export default function TradingPartnerGroupPnLPage() {
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                         placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-4 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                        className="w-full pl-8 pr-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
                         required
                       />
                     </div>
@@ -600,7 +600,7 @@ export default function TradingPartnerGroupPnLPage() {
                       value={formData.trades}
                       onChange={(e) => setFormData({ ...formData, trades: e.target.value })}
                       placeholder="0"
-                      className="w-full px-4 py-4 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                      className="w-full px-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
                       required
                       min={0}
                     />
@@ -618,7 +618,7 @@ export default function TradingPartnerGroupPnLPage() {
                       onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                       placeholder="Any note for today..."
                       rows={4}
-                      className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
+                      className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
                     />
                   </div>
 
@@ -629,7 +629,7 @@ export default function TradingPartnerGroupPnLPage() {
                         setSelectedDate(null)
                         setIsEditing(false)
                       }}
-                      className="px-6 py-3 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-xl hover:bg-gray-800 transition-colors"
+                      className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-xl hover:bg-theme-card transition-colors"
                     >
                       Cancel
                     </button>
@@ -649,24 +649,24 @@ export default function TradingPartnerGroupPnLPage() {
         {isResetModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="p-6 border-b border-gray-700/60">
-                <h3 className="text-xl font-bold text-white">Reset PnL</h3>
-                <p className="text-sm text-gray-400 mt-1">
+              <div className="p-6 border-b border-theme-secondary/60">
+                <h3 className="text-xl font-bold text-theme-primary">Reset PnL</h3>
+                <p className="text-sm text-theme-tertiary mt-1">
                   This deletes all entries for this group. This action cannot be undone.
                 </p>
               </div>
               <div className="p-6 space-y-3">
-                <div className="text-sm text-gray-300">
-                  <span className="text-gray-400">Group:</span>{' '}
-                  <span className="font-semibold text-white">{group?.name || groupId}</span>
+                <div className="text-sm text-theme-secondary">
+                  <span className="text-theme-tertiary">Group:</span>{' '}
+                  <span className="font-semibold text-theme-primary">{group?.name || groupId}</span>
                 </div>
-                <div className="text-xs text-gray-500 font-mono break-all">{groupId}</div>
+                <div className="text-xs text-theme-muted font-mono break-all">{groupId}</div>
               </div>
-              <div className="p-6 border-t border-gray-700/60 flex items-center justify-end gap-3">
+              <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
                 <button
                   onClick={() => setIsResetModalOpen(false)}
                   disabled={isResetting}
-                  className="px-4 py-2 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

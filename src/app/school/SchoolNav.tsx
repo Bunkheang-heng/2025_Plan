@@ -22,17 +22,17 @@ export function SchoolNav() {
   const current = normalizeSchoolRoute(pathname)
 
   return (
-    <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-5">
+    <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-gray-400 text-xs">School</p>
-          <p className="text-white font-extrabold text-xl">Planner</p>
+          <p className="text-theme-tertiary text-xs">School</p>
+          <p className="text-theme-primary font-extrabold text-xl">Planner</p>
         </div>
         <div className="w-full sm:w-[320px]">
           <select
             value={current}
             onChange={(e) => router.push(e.target.value as SchoolRoute)}
-            className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-indigo-500"
+            className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary text-sm font-semibold focus:outline-none focus:border-indigo-500"
           >
             {options.map((o) => (
               <option key={o.value} value={o.value}>
@@ -40,7 +40,7 @@ export function SchoolNav() {
               </option>
             ))}
           </select>
-          <p className="text-gray-400 text-xs mt-2">
+          <p className="text-theme-tertiary text-xs mt-2">
             {options.find(o => o.value === current)?.description}
           </p>
         </div>

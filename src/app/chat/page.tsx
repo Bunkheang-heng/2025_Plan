@@ -565,7 +565,7 @@ export default function ChatPage() {
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 animate-text-glow">
                   J.A.R.V.I.S
                 </h1>
-                <p className="text-sm text-gray-400 font-medium tracking-wide">Just A Rather Very Intelligent System</p>
+                <p className="text-sm text-theme-tertiary font-medium tracking-wide">Just A Rather Very Intelligent System</p>
                 <div className="flex items-center space-x-2 mt-1">
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                   <span className="text-xs text-green-400 font-semibold tracking-wider">ONLINE • READY</span>
@@ -578,17 +578,17 @@ export default function ChatPage() {
               <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-xl px-4 py-3 shadow-lg">
                 <div className="flex items-center space-x-6">
                   <div className="text-center">
-                    <p className="text-xs text-gray-400 mb-1">Daily</p>
+                    <p className="text-xs text-theme-tertiary mb-1">Daily</p>
                     <p className="text-lg font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</p>
                   </div>
                   <div className="w-px h-8 bg-gray-700"></div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-400 mb-1">Weekly</p>
+                    <p className="text-xs text-theme-tertiary mb-1">Weekly</p>
                     <p className="text-lg font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</p>
                   </div>
                   <div className="w-px h-8 bg-gray-700"></div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-400 mb-1">Monthly</p>
+                    <p className="text-xs text-theme-tertiary mb-1">Monthly</p>
                     <p className="text-lg font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</p>
                   </div>
                 </div>
@@ -600,17 +600,17 @@ export default function ChatPage() {
           <div className="lg:hidden mt-4 bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-3 shadow-lg">
             <div className="flex items-center justify-around">
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Daily</p>
+                <p className="text-xs text-theme-tertiary mb-1">Daily</p>
                 <p className="text-sm font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</p>
               </div>
               <div className="w-px h-8 bg-gray-700"></div>
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Weekly</p>
+                <p className="text-xs text-theme-tertiary mb-1">Weekly</p>
                 <p className="text-sm font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</p>
               </div>
               <div className="w-px h-8 bg-gray-700"></div>
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Monthly</p>
+                <p className="text-xs text-theme-tertiary mb-1">Monthly</p>
                 <p className="text-sm font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</p>
               </div>
             </div>

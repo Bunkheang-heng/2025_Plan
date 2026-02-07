@@ -4,15 +4,19 @@ import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../../firebase'
 import { collection, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
-import { FaArrowLeft } from 'react-icons/fa'
+import { FaArrowLeft, FaEdit } from 'react-icons/fa'
 
 type AccountType = 'real' | 'funded'
+type CurrencyType = 'usd' | 'cent'
 
 type TradingAccount = {
   name: string
   type: AccountType
+  currency?: CurrencyType
   userId: string
   capital?: number
+  strategy?: string
+  rules?: string
 }
 
 type DailyPnL = {
@@ -32,6 +36,7 @@ type MonthStats = {
   totalTrades: number
   bestDay: number
   worstDay: number
+  winRate: number
 }
 
 // Helper function to format date in local timezone (YYYY-MM-DD)
@@ -55,7 +60,7 @@ const getDaysInMonth = (date: Date) => {
 const calculateMonthStats = (data: Record<string, DailyPnL>): MonthStats => {
   const values = Object.values(data)
   if (values.length === 0) {
-    return { totalPnL: 0, winDays: 0, lossDays: 0, totalTrades: 0, bestDay: 0, worstDay: 0 }
+    return { totalPnL: 0, winDays: 0, lossDays: 0, totalTrades: 0, bestDay: 0, worstDay: 0, winRate: 0 }
   }
 
   const totalPnL = values.reduce((sum, d) => sum + d.amount, 0)
@@ -65,8 +70,10 @@ const calculateMonthStats = (data: Record<string, DailyPnL>): MonthStats => {
   const amounts = values.map(d => d.amount)
   const bestDay = amounts.length > 0 ? Math.max(...amounts) : 0
   const worstDay = amounts.length > 0 ? Math.min(...amounts) : 0
+  const totalTradingDays = winDays + lossDays
+  const winRate = totalTradingDays > 0 ? (winDays / totalTradingDays) * 100 : 0
 
-  return { totalPnL, winDays, lossDays, totalTrades, bestDay, worstDay }
+  return { totalPnL, winDays, lossDays, totalTrades, bestDay, worstDay, winRate }
 }
 
 export default function TradingPnLAccountPage() {
@@ -83,7 +90,8 @@ export default function TradingPnLAccountPage() {
       lossDays: 0,
       totalTrades: 0,
       bestDay: 0,
-      worstDay: 0
+      worstDay: 0,
+      winRate: 0
     } as MonthStats
   })
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -95,6 +103,7 @@ export default function TradingPnLAccountPage() {
     lessons: ''
   })
   const capitalAmount = useMemo(() => Number(account?.capital || 0), [account?.capital])
+  const currencySymbol = useMemo(() => account?.currency === 'cent' ? '¢' : '$', [account?.currency])
   const balanceAmount = useMemo(() => {
     return capitalAmount + (state.monthStats?.totalPnL || 0)
   }, [capitalAmount, state.monthStats?.totalPnL])
@@ -280,26 +289,41 @@ export default function TradingPnLAccountPage() {
   const accountTypeLabel = account?.type === 'real' ? 'Real' : account?.type === 'funded' ? 'Funded' : 'Account'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => router.push('/trading/trading_pnl')}
-            className="px-4 py-2 bg-gray-900/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
           >
             <FaArrowLeft /> Accounts
           </button>
-          <div className={`text-xs px-3 py-1 rounded-full border ${
-            account?.type === 'real'
-              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-          }`}>
-            {accountTypeLabel}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push(`/trading/trading_pnl/${accountId}/edit`)}
+              className="px-3 py-1.5 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-1.5 text-xs"
+            >
+              <FaEdit className="w-3 h-3" /> Edit
+            </button>
+            <div className={`text-xs px-3 py-1 rounded-full border ${
+              account?.type === 'real'
+                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+            }`}>
+              {accountTypeLabel}
+            </div>
+            <div className={`text-xs px-3 py-1 rounded-full border ${
+              account?.currency === 'cent'
+                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                : 'bg-green-500/20 text-green-300 border-green-500/30'
+            }`}>
+              {account?.currency === 'cent' ? '¢ Cent' : '$ USD'}
+            </div>
           </div>
         </div>
 
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Daily Trading Tracker
           </div>
@@ -309,35 +333,58 @@ export default function TradingPnLAccountPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </h1>
-          <p className="text-xl text-gray-300 font-medium">
+          <p className="text-xl text-theme-secondary font-medium">
             Track your daily profit &amp; loss
           </p>
         </div>
 
-        <div className="bg-gray-800/40 border border-gray-700 rounded-2xl p-5 mb-8">
+        <div className="bg-theme-card border border-theme-secondary rounded-2xl p-5 mb-8">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <div className="text-xs text-gray-400">Account Capital</div>
+              <div className="text-xs text-theme-tertiary">Account Capital</div>
               <div className="text-2xl font-bold text-blue-400">
-                ${capitalAmount.toFixed(2)}
+                {currencySymbol}{capitalAmount.toFixed(2)}
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-gray-400">Balance (Capital + P&amp;L)</div>
+              <div className="text-xs text-theme-tertiary">Balance (Capital + P&amp;L)</div>
               <div className={`text-2xl font-bold ${balanceAmount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                ${balanceAmount.toFixed(2)}
+                {currencySymbol}{balanceAmount.toFixed(2)}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {(account?.strategy || account?.rules) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {account?.strategy && (
+              <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/30 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">📊</span>
+                  <h3 className="text-sm font-bold text-cyan-400">Strategy</h3>
+                </div>
+                <p className="text-theme-primary font-medium">{account.strategy}</p>
+              </div>
+            )}
+            {account?.rules && (
+              <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">📋</span>
+                  <h3 className="text-sm font-bold text-orange-400">Trading Rules</h3>
+                </div>
+                <p className="text-theme-secondary text-sm whitespace-pre-wrap leading-relaxed">{account.rules}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
           {[
             {
               label: 'Total P&L',
-              value: `$${state.monthStats.totalPnL.toFixed(2)}`,
+              value: `${currencySymbol}${state.monthStats.totalPnL.toFixed(2)}`,
               icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ),
@@ -348,7 +395,7 @@ export default function TradingPnLAccountPage() {
               label: 'Win Days',
               value: state.monthStats.winDays.toString(),
               icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ),
@@ -358,7 +405,7 @@ export default function TradingPnLAccountPage() {
               label: 'Loss Days',
               value: state.monthStats.lossDays.toString(),
               icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ),
@@ -368,17 +415,27 @@ export default function TradingPnLAccountPage() {
               label: 'Total Trades',
               value: state.monthStats.totalTrades.toString(),
               icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               ),
               gradient: 'from-blue-500 to-blue-600'
             },
             {
-              label: 'Best Day',
-              value: `$${state.monthStats.bestDay.toFixed(0)}`,
+              label: 'Win Rate',
+              value: `${state.monthStats.winRate.toFixed(1)}%`,
               icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              ),
+              gradient: state.monthStats.winRate >= 50 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'
+            },
+            {
+              label: 'Best Day',
+              value: `${currencySymbol}${state.monthStats.bestDay.toFixed(0)}`,
+              icon: (
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               ),
@@ -386,9 +443,9 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Worst Day',
-              value: `$${state.monthStats.worstDay.toFixed(0)}`,
+              value: `${currencySymbol}${state.monthStats.worstDay.toFixed(0)}`,
               icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                 </svg>
               ),
@@ -416,7 +473,7 @@ export default function TradingPnLAccountPage() {
                   } mb-1`}>
                     {stat.value}
                   </div>
-                  <div className="text-xs text-gray-400 font-medium">{stat.label}</div>
+                  <div className="text-xs text-theme-tertiary font-medium">{stat.label}</div>
                 </div>
               </div>
             </div>
@@ -435,7 +492,7 @@ export default function TradingPnLAccountPage() {
                 </svg>
               </button>
 
-              <h2 className="text-2xl font-bold text-white">{monthName}</h2>
+              <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
 
               <button
                 onClick={() => changeMonth(1)}
@@ -478,28 +535,28 @@ export default function TradingPnLAccountPage() {
                     disabled={isWeekend}
                     className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
                       isWeekend
-                        ? 'border-gray-600/30 bg-gray-800/30 opacity-50 cursor-not-allowed'
+                        ? 'border-gray-600/30 bg-theme-card/30 opacity-50 cursor-not-allowed'
                         : isToday
                           ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105'
                           : dayData
                             ? dayData.amount >= 0
                               ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
                               : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
-                            : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 hover:scale-105'
+                            : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
                         isWeekend
-                          ? 'text-gray-500'
+                          ? 'text-theme-muted'
                           : isToday
                             ? 'text-yellow-400'
-                            : 'text-gray-300'
+                            : 'text-theme-secondary'
                       }`}>
                         {day}
                       </div>
                       {isWeekend ? (
-                        <div className="text-[10px] text-gray-500 font-semibold mt-1 text-center leading-tight">
+                        <div className="text-[10px] text-theme-muted font-semibold mt-1 text-center leading-tight">
                           Market<br />Closed
                         </div>
                       ) : dayData ? (
@@ -507,9 +564,9 @@ export default function TradingPnLAccountPage() {
                           <div className={`text-xs font-bold ${
                             dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'
                           }`}>
-                            ${dayData.amount >= 0 ? '+' : ''}{dayData.amount.toFixed(0)}
+                            {currencySymbol}{dayData.amount >= 0 ? '+' : ''}{dayData.amount.toFixed(0)}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-theme-tertiary">
                             {dayData.trades} {dayData.trades === 1 ? 'trade' : 'trades'}
                           </div>
                           {dayData.lessons && (
@@ -545,7 +602,7 @@ export default function TradingPnLAccountPage() {
                       {account?.type === 'real' ? 'Real Account' : 'Funded Account'}
                     </span>
                   </div>
-                  <h2 className="text-2xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-theme-primary">
                     {new Date(selectedDate).toLocaleDateString('en-US', {
                       weekday: 'long',
                       month: 'long',
@@ -553,7 +610,7 @@ export default function TradingPnLAccountPage() {
                       year: 'numeric'
                     })}
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-theme-tertiary mt-1">
                     {!isEditing && formData.amount ? 'Trading Summary' : isEditing && formData.amount ? 'Edit Entry' : 'New Entry'}
                   </p>
                 </div>
@@ -564,7 +621,7 @@ export default function TradingPnLAccountPage() {
                   }}
                   className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
                 >
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -576,15 +633,15 @@ export default function TradingPnLAccountPage() {
                 <div className="bg-gray-700/30 border border-yellow-500/20 rounded-xl p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-sm text-gray-400 mb-1">Profit/Loss</div>
+                      <div className="text-sm text-theme-tertiary mb-1">Profit/Loss</div>
                       <div className={`text-4xl font-bold ${
                         parseFloat(formData.amount) >= 0 ? 'text-emerald-400' : 'text-red-400'
                       }`}>
-                        ${parseFloat(formData.amount) >= 0 ? '+' : ''}{parseFloat(formData.amount).toFixed(2)}
+                        {currencySymbol}{parseFloat(formData.amount) >= 0 ? '+' : ''}{parseFloat(formData.amount).toFixed(2)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-gray-400 mb-1">Number of Trades</div>
+                      <div className="text-sm text-theme-tertiary mb-1">Number of Trades</div>
                       <div className="text-4xl font-bold text-blue-400">{formData.trades}</div>
                     </div>
                   </div>
@@ -597,7 +654,7 @@ export default function TradingPnLAccountPage() {
                         </svg>
                         <div>
                           <div className="text-sm font-bold text-yellow-400 mb-2">Lessons Learned</div>
-                          <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{formData.lessons}</div>
+                          <div className="text-theme-secondary text-sm leading-relaxed whitespace-pre-wrap">{formData.lessons}</div>
                         </div>
                       </div>
                     </div>
@@ -618,7 +675,7 @@ export default function TradingPnLAccountPage() {
                       setSelectedDate(null)
                       setIsEditing(false)
                     }}
-                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl transition-colors"
+                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl transition-colors"
                   >
                     Close
                   </button>
@@ -631,10 +688,10 @@ export default function TradingPnLAccountPage() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>How much did you earn/lose?</span>
+                    <span>How much did you earn/lose? ({currencySymbol})</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-bold">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-tertiary text-lg font-bold">{currencySymbol}</span>
                     <input
                       type="number"
                       required
@@ -642,10 +699,10 @@ export default function TradingPnLAccountPage() {
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                       placeholder="0.00"
-                      className="w-full pl-8 pr-4 py-4 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                      className="w-full pl-8 pr-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
                     />
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">Use negative numbers for losses (e.g., -50)</p>
+                  <p className="text-xs text-theme-tertiary mt-2">Use negative numbers for losses (e.g., -50)</p>
                 </div>
 
                 <div>
@@ -662,7 +719,7 @@ export default function TradingPnLAccountPage() {
                     value={formData.trades}
                     onChange={(e) => setFormData({ ...formData, trades: e.target.value })}
                     placeholder="0"
-                    className="w-full px-4 py-4 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                    className="w-full px-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
                   />
                 </div>
 
@@ -678,9 +735,9 @@ export default function TradingPnLAccountPage() {
                     onChange={(e) => setFormData({ ...formData, lessons: e.target.value })}
                     placeholder="What did you learn today? Any insights or mistakes to remember..."
                     rows={4}
-                    className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
+                    className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
                   />
-                  <p className="text-xs text-gray-400 mt-2">Optional: Document your trading insights and mistakes</p>
+                  <p className="text-xs text-theme-tertiary mt-2">Optional: Document your trading insights and mistakes</p>
                 </div>
 
                 <div className="flex space-x-4 pt-4">
@@ -696,7 +753,7 @@ export default function TradingPnLAccountPage() {
                       setSelectedDate(null)
                       setIsEditing(false)
                     }}
-                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl transition-colors"
+                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl transition-colors"
                   >
                     Cancel
                   </button>

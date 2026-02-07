@@ -68,14 +68,14 @@ export default function CreateAccountPage() {
   return (
     <RouteProtection>
       {currentUserRole !== 'admin' ? (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-theme-primary flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
-            <p className="text-gray-400">Only administrators can access this page.</p>
+            <p className="text-theme-tertiary">Only administrators can access this page.</p>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-8">
+        <div className="min-h-screen bg-theme-primary p-8">
           <div className="max-w-2xl mx-auto">
             <div className="mb-6">
               <button
@@ -87,14 +87,14 @@ export default function CreateAccountPage() {
                 </svg>
                 Back to Role Management
               </button>
-              <h1 className="text-3xl font-bold text-white">Create New Account</h1>
-              <p className="text-gray-400 mt-2">Create accounts for new users. Only admins can access this page.</p>
+              <h1 className="text-3xl font-bold text-theme-primary">Create New Account</h1>
+              <p className="text-theme-tertiary mt-2">Create accounts for new users. Only admins can access this page.</p>
             </div>
 
-            <div className="bg-gray-800/50 border border-yellow-500/30 rounded-lg p-6 mb-6">
+            <div className="bg-theme-secondary border border-yellow-500/30 rounded-lg p-6 mb-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-theme-secondary mb-2">
                     Email Address <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -102,13 +102,13 @@ export default function CreateAccountPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@example.com"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-theme-secondary mb-2">
                     Password <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -116,15 +116,15 @@ export default function CreateAccountPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
                     required
                     minLength={6}
                   />
-                  <p className="mt-1 text-xs text-gray-400">Password must be at least 6 characters long</p>
+                  <p className="mt-1 text-xs text-theme-tertiary">Password must be at least 6 characters long</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-theme-secondary mb-2">
                     Full Name (Optional)
                   </label>
                   <input
@@ -132,24 +132,24 @@ export default function CreateAccountPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="User's full name"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-theme-secondary mb-2">
                     Role <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as UserRole)}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
                   >
                     <option value="admin">Admin (Full Access)</option>
                     <option value="restricted">Restricted (Couple Saving Only)</option>
                     <option value="partner">Partner (Trading Partner Only)</option>
                   </select>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-theme-tertiary">
                     {role === 'admin' 
                       ? 'Admin users have full access to all pages' 
                       : role === 'partner'
@@ -176,16 +176,16 @@ export default function CreateAccountPage() {
               }`}>
                 {message}
                 {createdUid && (
-                  <div className="mt-2 text-xs text-gray-300">
-                    UID: <span className="font-mono text-white">{createdUid}</span>
+                  <div className="mt-2 text-xs text-theme-secondary">
+                    UID: <span className="font-mono text-theme-primary">{createdUid}</span>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="mt-8 bg-gray-800/30 border border-gray-700 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Instructions</h3>
-              <ol className="list-decimal list-inside space-y-2 text-gray-300 text-sm">
+            <div className="mt-8 bg-theme-card/30 border border-theme-secondary rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-theme-primary mb-4">Instructions</h3>
+              <ol className="list-decimal list-inside space-y-2 text-theme-secondary text-sm">
                 <li>Enter the email address for the new user</li>
                 <li>Create a secure password (minimum 6 characters)</li>
                 <li>Optionally add the user's name</li>

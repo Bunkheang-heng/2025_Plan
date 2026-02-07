@@ -156,11 +156,11 @@ export default function TradingNews() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Gold Trading Intelligence
           </div>
@@ -170,7 +170,7 @@ export default function TradingNews() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
             </svg>
           </h1>
-          <p className="text-xl text-gray-300 font-medium mb-4">
+          <p className="text-xl text-theme-secondary font-medium mb-4">
             Stay ahead with real-time gold market updates
           </p>
 
@@ -190,7 +190,7 @@ export default function TradingNews() {
             <button
               onClick={predictTodayTrend}
               disabled={state.isLoading || state.isFetching || state.isPredicting || state.articles.length === 0}
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className={`w-5 h-5 ${state.isPredicting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1-1-3.5 0 2.25-2.25M15 3h6v6m0-6L10 14" />
@@ -200,7 +200,7 @@ export default function TradingNews() {
           </div>
 
           {state.nextUpdate && (
-            <p className="text-sm text-gray-400 mt-2">
+            <p className="text-sm text-theme-tertiary mt-2">
               Auto-refresh at {new Date(state.nextUpdate).toLocaleTimeString()}
             </p>
           )}
@@ -222,7 +222,7 @@ export default function TradingNews() {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                   selectedCategory === category
                     ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 shadow-lg'
-                    : 'bg-gray-800/50 text-gray-300 border border-yellow-500/20 hover:border-yellow-500/50 hover:text-yellow-400'
+                    : 'bg-theme-secondary text-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 hover:text-yellow-400'
                 }`}
               >
                 {category !== 'All' && (
@@ -248,18 +248,18 @@ export default function TradingNews() {
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-12 text-center">
             <div className="max-w-md mx-auto">
               <div className="p-4 bg-gray-700/50 rounded-xl inline-block mb-4 border border-yellow-500/20">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
               </div>
               <h3 className="text-2xl font-bold text-gray-200 mb-2">No news available</h3>
-              <p className="text-gray-400 mb-6">
+              <p className="text-theme-tertiary mb-6">
                 {state.articles.length === 0 
                   ? 'Please set up your NEWS_API_KEY to fetch gold market news.'
                   : 'No articles in this category.'}
               </p>
               {state.articles.length === 0 && (
-                <div className="bg-gray-700/30 border border-yellow-500/20 rounded-xl p-4 text-left text-sm text-gray-300">
+                <div className="bg-gray-700/30 border border-yellow-500/20 rounded-xl p-4 text-left text-sm text-theme-secondary">
                   <p className="font-semibold text-yellow-400 mb-2">Setup Instructions:</p>
                   <ol className="list-decimal list-inside space-y-1">
                     <li>Get a free API key from <a href="https://newsapi.org" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:underline">newsapi.org</a></li>
@@ -297,7 +297,7 @@ export default function TradingNews() {
                     
                     {/* Category Badge on Image */}
                     <div className="absolute top-3 left-3">
-                      <span className={`inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-white text-xs font-bold shadow-lg`}>
+                      <span className={`inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-theme-primary text-xs font-bold shadow-lg`}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={getCategoryIcon(article.category)} />
                         </svg>
@@ -309,17 +309,17 @@ export default function TradingNews() {
 
                 {/* Article Content */}
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
+                  <div className="flex items-center justify-between mb-3 text-xs text-theme-tertiary">
                     <span className="font-medium">{article.source.name}</span>
                     <span>{formatTimeAgo(article.publishedAt)}</span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-white mb-3 line-clamp-2 group-hover:text-yellow-400 transition-colors">
+                  <h3 className="text-lg font-bold text-theme-primary mb-3 line-clamp-2 group-hover:text-yellow-400 transition-colors">
                     {article.title}
                   </h3>
 
                   {article.description && (
-                    <p className="text-gray-400 text-sm line-clamp-3 mb-4">
+                    <p className="text-theme-tertiary text-sm line-clamp-3 mb-4">
                       {article.description}
                     </p>
                   )}

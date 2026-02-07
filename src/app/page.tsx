@@ -240,7 +240,7 @@ function HomeContent({
   const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+    <div className="min-h-screen bg-theme-primary relative overflow-hidden">
       {/* Animated Background Effects */}
       <AnimatedBackground />
 
@@ -250,24 +250,24 @@ function HomeContent({
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             {/* Greeting & Time */}
             <div>
-              <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-4">
+              <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-4">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
                 System Online
               </div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">
+              <h1 className="text-4xl lg:text-5xl font-bold text-theme-primary mb-2">
                 {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Commander</span>
               </h1>
-              <p className="text-gray-400 text-lg">{currentDate}</p>
+              <p className="text-theme-tertiary text-lg">{currentDate}</p>
             </div>
 
             {/* Digital Clock */}
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-6 shadow-lg shadow-yellow-500/10">
               <div className="text-center">
-                <div className="text-sm text-gray-400 mb-2">Current Time</div>
+                <div className="text-sm text-theme-tertiary mb-2">Current Time</div>
                 <div className="text-4xl font-bold text-yellow-400 font-mono tracking-wider animate-digital-pulse">
                   {mounted ? currentTime : '00:00:00'}
                 </div>
-                <div className="text-xs text-gray-500 mt-2">Asia/Phnom Penh</div>
+                <div className="text-xs text-theme-muted mt-2">Asia/Phnom Penh</div>
               </div>
             </div>
           </div>
@@ -278,11 +278,11 @@ function HomeContent({
           <div className="md:col-span-4 lg:col-span-1 bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="text-sm text-gray-400 mb-1">Overall Progress</div>
-                <div className="text-3xl font-bold text-white">{overallProgress}%</div>
+                <div className="text-sm text-theme-tertiary mb-1">Overall Progress</div>
+                <div className="text-3xl font-bold text-theme-primary">{overallProgress}%</div>
               </div>
               <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -293,17 +293,17 @@ function HomeContent({
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-            <div className="text-xs text-gray-400">{completedTasks} of {totalTasks} tasks completed</div>
+            <div className="text-xs text-theme-tertiary">{completedTasks} of {totalTasks} tasks completed</div>
           </div>
 
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-gray-400 mb-1">Today&apos;s Tasks</div>
+                <div className="text-sm text-theme-tertiary mb-1">Today&apos;s Tasks</div>
                 <div className="text-3xl font-bold text-blue-400">{stats.daily.completed}/{stats.daily.total}</div>
               </div>
               <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
                 </svg>
               </div>
@@ -313,11 +313,11 @@ function HomeContent({
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-gray-400 mb-1">This Week</div>
+                <div className="text-sm text-theme-tertiary mb-1">This Week</div>
                 <div className="text-3xl font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</div>
               </div>
               <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 10h18M3 21h18" />
                 </svg>
               </div>
@@ -327,11 +327,11 @@ function HomeContent({
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-gray-400 mb-1">This Month</div>
+                <div className="text-sm text-theme-tertiary mb-1">This Month</div>
                 <div className="text-3xl font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</div>
               </div>
               <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 8h18M3 21h18" />
                 </svg>
               </div>
@@ -341,7 +341,7 @@ function HomeContent({
 
         {/* Quick Actions Grid */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+          <h2 className="text-2xl font-bold text-theme-primary mb-6 flex items-center">
             <svg className="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -365,16 +365,16 @@ function HomeContent({
                 <div className="relative p-6 z-10">
                   <div className="flex items-start justify-between mb-4">
                     <div className={`p-3 bg-gradient-to-br ${action.gradient} rounded-xl shadow-lg`}>
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={action.icon} />
                       </svg>
                     </div>
                     {action.stats && (
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-white">
+                        <div className="text-2xl font-bold text-theme-primary">
                           {action.stats.total > 0 ? Math.round((action.stats.completed / action.stats.total) * 100) : 0}%
                         </div>
-                        <div className="text-xs text-gray-400">Complete</div>
+                        <div className="text-xs text-theme-tertiary">Complete</div>
                       </div>
                     )}
                     {action.badge && (
@@ -384,16 +384,16 @@ function HomeContent({
                     )}
                   </div>
                   
-                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">
+                  <h3 className="text-xl font-bold text-theme-primary mb-2 group-hover:text-yellow-400 transition-colors">
                     {action.title}
                   </h3>
-                  <p className="text-gray-400 text-sm mb-4">
+                  <p className="text-theme-tertiary text-sm mb-4">
                     {action.description}
                   </p>
                   
                   {action.stats && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">{action.stats.completed} / {action.stats.total} tasks</span>
+                      <span className="text-theme-tertiary">{action.stats.completed} / {action.stats.total} tasks</span>
                       <svg className="w-5 h-5 text-yellow-400 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
@@ -417,7 +417,7 @@ function HomeContent({
         {/* Upcoming Tasks Preview */}
         {recentTasks.length > 0 && (
           <div className="animate-slide-in-up" style={{ animationDelay: '0.8s' }}>
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-theme-primary mb-6 flex items-center">
               <svg className="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -435,9 +435,9 @@ function HomeContent({
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-white">{task.title}</h4>
+                          <h4 className="font-semibold text-theme-primary">{task.title}</h4>
                           <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-xs text-gray-400 capitalize">{task.type}</span>
+                            <span className="text-xs text-theme-tertiary capitalize">{task.type}</span>
                             {task.priority && (
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
                                 task.priority === 'high' ? 'bg-red-500/20 text-red-400 border border-red-400/50' :
@@ -450,14 +450,14 @@ function HomeContent({
                           </div>
                         </div>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="p-4 bg-gray-700/30 border-t border-gray-700/50">
+              <div className="p-4 bg-gray-700/30 border-t border-theme-secondary/50">
                 <button
                   onClick={() => router.push('/task/daily')}
                   className="w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50"

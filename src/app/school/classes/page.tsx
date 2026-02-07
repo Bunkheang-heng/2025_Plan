@@ -162,7 +162,7 @@ export default function SchoolClassesPage() {
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 space-y-6">
         <SchoolNav />
 
@@ -174,16 +174,16 @@ export default function SchoolClassesPage() {
 
         <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-indigo-500/30 rounded-2xl overflow-hidden shadow-lg shadow-indigo-500/10">
           <div className="p-6 border-b border-indigo-500/20">
-            <h1 className="text-2xl font-extrabold text-white">Manage Classes</h1>
-            <p className="text-gray-400 text-sm mt-1">Register your classes with schedule and semester dates.</p>
+            <h1 className="text-2xl font-extrabold text-theme-primary">Manage Classes</h1>
+            <p className="text-theme-tertiary text-sm mt-1">Register your classes with schedule and semester dates.</p>
           </div>
 
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* List */}
-              <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-5">
+              <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-5">
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <h2 className="text-lg font-bold text-white">All Classes</h2>
+                  <h2 className="text-lg font-bold text-theme-primary">All Classes</h2>
                   <button
                     onClick={resetForm}
                     className="text-indigo-300 hover:text-indigo-200 text-sm font-semibold"
@@ -200,18 +200,18 @@ export default function SchoolClassesPage() {
                         .join(', ')
                       
                       return (
-                      <div key={c.id} className="p-4 rounded-xl bg-gray-900/40 border border-gray-700">
+                      <div key={c.id} className="p-4 rounded-xl bg-gray-900/40 border border-theme-secondary">
                         <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                            <p className="text-white font-bold">{c.title}</p>
-                              <p className="text-gray-400 text-xs mt-1">
+                            <p className="text-theme-primary font-bold">{c.title}</p>
+                              <p className="text-theme-tertiary text-xs mt-1">
                                 {daysStr} • {c.startTime}–{c.endTime}
                               </p>
-                              <p className="text-gray-500 text-xs mt-1">
+                              <p className="text-theme-muted text-xs mt-1">
                                 {c.semesterStart} to {c.semesterEnd}
                               </p>
                               {(c.room || c.teacher) && (
-                                <p className="text-gray-500 text-xs mt-1">
+                                <p className="text-theme-muted text-xs mt-1">
                                   {c.room ? `Room ${c.room}` : ''}
                                   {c.room && c.teacher ? ' • ' : ''}
                                   {c.teacher || ''}
@@ -239,28 +239,28 @@ export default function SchoolClassesPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm">No classes registered yet.</p>
+                  <p className="text-theme-tertiary text-sm">No classes registered yet.</p>
                 )}
               </div>
 
               {/* Form */}
-              <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-5">
-                <h2 className="text-lg font-bold text-white mb-4">
+              <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-5">
+                <h2 className="text-lg font-bold text-theme-primary mb-4">
                   {editingId ? 'Edit Class' : 'Add New Class'}
                 </h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Class Name</label>
+                    <label className="text-xs text-theme-tertiary mb-1 block">Class Name</label>
                   <input
                     value={form.title}
                     onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="e.g., Mathematics, Physics"
-                    className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                   />
                   </div>
 
                   <div>
-                    <label className="text-xs text-gray-400 mb-2 block">Days of Week</label>
+                    <label className="text-xs text-theme-tertiary mb-2 block">Days of Week</label>
                     <div className="flex flex-wrap gap-2">
                       {weekdaysShort.map(w => (
                         <button
@@ -270,7 +270,7 @@ export default function SchoolClassesPage() {
                           className={`px-4 py-2 rounded-xl font-bold text-sm border transition-all ${
                             form.weekdays.includes(w.key)
                               ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-200'
-                              : 'bg-gray-900/60 border-gray-700 text-gray-300 hover:bg-gray-800/60'
+                              : 'bg-gray-900/60 border-theme-secondary text-theme-secondary hover:bg-theme-card/60'
                           }`}
                         >
                           {w.label}
@@ -284,63 +284,63 @@ export default function SchoolClassesPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Start Time</label>
+                      <label className="text-xs text-theme-tertiary mb-1 block">Start Time</label>
                       <input
                         type="time"
                         value={form.startTime}
                         onChange={(e) => setForm(prev => ({ ...prev, startTime: e.target.value }))}
-                        className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                        className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">End Time</label>
+                      <label className="text-xs text-theme-tertiary mb-1 block">End Time</label>
                       <input
                         type="time"
                         value={form.endTime}
                         onChange={(e) => setForm(prev => ({ ...prev, endTime: e.target.value }))}
-                        className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                        className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Semester Start</label>
+                      <label className="text-xs text-theme-tertiary mb-1 block">Semester Start</label>
                       <input
                         type="date"
                         value={form.semesterStart}
                         onChange={(e) => setForm(prev => ({ ...prev, semesterStart: e.target.value }))}
-                        className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                        className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Semester End</label>
+                      <label className="text-xs text-theme-tertiary mb-1 block">Semester End</label>
                       <input
                         type="date"
                         value={form.semesterEnd}
                         onChange={(e) => setForm(prev => ({ ...prev, semesterEnd: e.target.value }))}
-                        className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                        className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Room (optional)</label>
+                      <label className="text-xs text-theme-tertiary mb-1 block">Room (optional)</label>
                     <input
                       value={form.room}
                       onChange={(e) => setForm(prev => ({ ...prev, room: e.target.value }))}
                         placeholder="e.g., 101, A-205"
-                      className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                     />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Teacher (optional)</label>
+                      <label className="text-xs text-theme-tertiary mb-1 block">Teacher (optional)</label>
                     <input
                       value={form.teacher}
                       onChange={(e) => setForm(prev => ({ ...prev, teacher: e.target.value }))}
                         placeholder="Teacher name"
-                      className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-indigo-500"
                     />
                     </div>
                   </div>
@@ -349,14 +349,14 @@ export default function SchoolClassesPage() {
                     <button
                       onClick={save}
                       disabled={saving}
-                      className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-bold rounded-xl hover:from-indigo-400 hover:to-indigo-500 transition-all disabled:opacity-50"
+                      className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-theme-primary font-bold rounded-xl hover:from-indigo-400 hover:to-indigo-500 transition-all disabled:opacity-50"
                     >
                       {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Class'}
                     </button>
                     {editingId && (
                       <button
                         onClick={resetForm}
-                        className="px-6 py-3 bg-gray-800/60 border border-gray-700 text-white font-bold rounded-xl hover:bg-gray-700/60 transition-all"
+                        className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-theme-primary font-bold rounded-xl hover:bg-gray-700/60 transition-all"
                       >
                         Cancel Edit
                       </button>

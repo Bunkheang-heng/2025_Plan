@@ -96,7 +96,7 @@ export default function SchoolCalendarPage() {
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 space-y-6">
         <SchoolNav />
 
@@ -111,18 +111,18 @@ export default function SchoolCalendarPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => changeMonth(-1)}
-                className="w-10 h-10 rounded-xl bg-gray-800/70 border border-gray-700 text-white hover:bg-gray-700/60 transition-all"
+                className="w-10 h-10 rounded-xl bg-theme-card/70 border border-theme-secondary text-theme-primary hover:bg-gray-700/60 transition-all"
                 aria-label="Previous month"
               >
                 ‹
               </button>
               <div>
-                <p className="text-gray-400 text-sm">Month</p>
-                <p className="text-white font-extrabold text-2xl">{monthName}</p>
+                <p className="text-theme-tertiary text-sm">Month</p>
+                <p className="text-theme-primary font-extrabold text-2xl">{monthName}</p>
               </div>
               <button
                 onClick={() => changeMonth(1)}
-                className="w-10 h-10 rounded-xl bg-gray-800/70 border border-gray-700 text-white hover:bg-gray-700/60 transition-all"
+                className="w-10 h-10 rounded-xl bg-theme-card/70 border border-theme-secondary text-theme-primary hover:bg-gray-700/60 transition-all"
                 aria-label="Next month"
               >
                 ›
@@ -142,7 +142,7 @@ export default function SchoolCalendarPage() {
           {/* Weekdays */}
           <div className="grid grid-cols-7 gap-px bg-gray-700/40">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-              <div key={d} className="bg-gray-900/70 p-3 text-center text-xs font-semibold text-gray-300">
+              <div key={d} className="bg-gray-900/70 p-3 text-center text-xs font-semibold text-theme-secondary">
                 {d}
               </div>
             ))}
@@ -167,7 +167,7 @@ export default function SchoolCalendarPage() {
                 <button
                   key={dateStr}
                   onClick={() => openDate(dateStr)}
-                  className="text-left bg-gray-900/60 hover:bg-gray-800/70 transition-all min-h-[110px] p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                  className="text-left bg-gray-900/60 hover:bg-theme-card/70 transition-all min-h-[110px] p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
                 >
                   <div className="flex items-center justify-between">
                     <div className={`text-sm font-bold ${isToday ? 'text-indigo-300' : 'text-gray-200'}`}>
@@ -192,7 +192,7 @@ export default function SchoolCalendarPage() {
                           </div>
                         ))}
                         {classCount > 2 && (
-                          <div className="text-[10px] text-gray-400">
+                          <div className="text-[10px] text-theme-tertiary">
                             +{classCount - 2} more
                           </div>
                         )}
@@ -201,7 +201,7 @@ export default function SchoolCalendarPage() {
                     {classCount === 0 && (
                       <div className="flex gap-2 items-center">
                         <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-                        <div className="text-xs text-gray-500">No classes</div>
+                        <div className="text-xs text-theme-muted">No classes</div>
                       </div>
                     )}
                     {dueCount > 0 && (
@@ -212,7 +212,7 @@ export default function SchoolCalendarPage() {
                         </div>
                       </div>
                     )}
-                    <p className="text-[10px] text-gray-500 mt-1">Open details →</p>
+                    <p className="text-[10px] text-theme-muted mt-1">Open details →</p>
                   </div>
                 </button>
               )

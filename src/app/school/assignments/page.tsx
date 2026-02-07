@@ -169,7 +169,7 @@ export default function SchoolAssignmentsPage() {
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 space-y-6">
         <SchoolNav />
 
@@ -182,23 +182,23 @@ export default function SchoolAssignmentsPage() {
         <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-amber-500/30 rounded-2xl overflow-hidden shadow-lg shadow-amber-500/10">
           <div className="p-6 border-b border-amber-500/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-white">Manage Assignments</h1>
-              <p className="text-gray-400 text-sm mt-1">All deadlines for the selected month.</p>
+              <h1 className="text-2xl font-extrabold text-theme-primary">Manage Assignments</h1>
+              <p className="text-theme-tertiary text-sm mt-1">All deadlines for the selected month.</p>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => changeMonth(-1)}
-                className="w-10 h-10 rounded-xl bg-gray-800/70 border border-gray-700 text-white hover:bg-gray-700/60 transition-all"
+                className="w-10 h-10 rounded-xl bg-theme-card/70 border border-theme-secondary text-theme-primary hover:bg-gray-700/60 transition-all"
               >
                 ‹
               </button>
               <div className="text-center">
-                <p className="text-gray-400 text-xs">Month</p>
-                <p className="text-white font-bold">{monthName}</p>
+                <p className="text-theme-tertiary text-xs">Month</p>
+                <p className="text-theme-primary font-bold">{monthName}</p>
               </div>
               <button
                 onClick={() => changeMonth(1)}
-                className="w-10 h-10 rounded-xl bg-gray-800/70 border border-gray-700 text-white hover:bg-gray-700/60 transition-all"
+                className="w-10 h-10 rounded-xl bg-theme-card/70 border border-theme-secondary text-theme-primary hover:bg-gray-700/60 transition-all"
               >
                 ›
               </button>
@@ -207,16 +207,16 @@ export default function SchoolAssignmentsPage() {
 
           <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* List */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-5">
-              <h2 className="text-lg font-bold text-white mb-4">Deadlines</h2>
+            <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-5">
+              <h2 className="text-lg font-bold text-theme-primary mb-4">Deadlines</h2>
               {Object.keys(grouped).length === 0 ? (
-                <p className="text-gray-400 text-sm">No assignments in this month.</p>
+                <p className="text-theme-tertiary text-sm">No assignments in this month.</p>
               ) : (
                 <div className="space-y-4">
                   {Object.keys(grouped)
                     .sort((a, b) => b.localeCompare(a))
                     .map(date => (
-                      <div key={date} className="border border-gray-700 rounded-xl overflow-hidden">
+                      <div key={date} className="border border-theme-secondary rounded-xl overflow-hidden">
                         <div className="px-4 py-2 bg-gray-900/50 text-gray-200 font-semibold text-sm flex items-center justify-between">
                           <span>{date}</span>
                           <button
@@ -233,15 +233,15 @@ export default function SchoolAssignmentsPage() {
                               className={`p-4 rounded-xl border ${
                                 a.status === 'done'
                                   ? 'bg-emerald-500/5 border-emerald-500/20'
-                                  : 'bg-gray-900/40 border-gray-700'
+                                  : 'bg-gray-900/40 border-theme-secondary'
                               }`}
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
-                                  <p className={`font-bold ${a.status === 'done' ? 'text-emerald-200 line-through' : 'text-white'}`}>
+                                  <p className={`font-bold ${a.status === 'done' ? 'text-emerald-200 line-through' : 'text-theme-primary'}`}>
                                     {a.title}
                                   </p>
-                                  <p className="text-gray-400 text-xs">
+                                  <p className="text-theme-tertiary text-xs">
                                     {a.course ? `${a.course} • ` : ''}
                                     {a.dueTime ? `Due ${a.dueTime}` : 'No due time'}
                                   </p>
@@ -252,7 +252,7 @@ export default function SchoolAssignmentsPage() {
                                     disabled={saving}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all disabled:opacity-50 ${
                                       a.status === 'done'
-                                        ? 'bg-gray-800/60 border-gray-700 text-gray-200 hover:bg-gray-700/60'
+                                        ? 'bg-theme-card/60 border-theme-secondary text-gray-200 hover:bg-gray-700/60'
                                         : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/25'
                                     }`}
                                   >
@@ -273,7 +273,7 @@ export default function SchoolAssignmentsPage() {
                                 </div>
                               </div>
                               {a.notes && (
-                                <p className="text-gray-300 text-xs mt-2 whitespace-pre-wrap">{a.notes}</p>
+                                <p className="text-theme-secondary text-xs mt-2 whitespace-pre-wrap">{a.notes}</p>
                               )}
                             </div>
                           ))}
@@ -285,28 +285,28 @@ export default function SchoolAssignmentsPage() {
             </div>
 
             {/* Form */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-2xl p-5">
-              <h2 className="text-lg font-bold text-white mb-4">
+            <div className="bg-theme-card/30 border border-theme-secondary rounded-2xl p-5">
+              <h2 className="text-lg font-bold text-theme-primary mb-4">
                 {editingId ? 'Edit Assignment' : 'Add Assignment'}
               </h2>
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Due date</p>
+                    <p className="text-xs text-theme-tertiary mb-1">Due date</p>
                     <input
                       type="date"
                       value={form.dueDate}
                       onChange={(e) => setForm(prev => ({ ...prev, dueDate: e.target.value }))}
-                      className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                      className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-amber-500"
                     />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Due time (optional)</p>
+                    <p className="text-xs text-theme-tertiary mb-1">Due time (optional)</p>
                     <input
                       type="time"
                       value={form.dueTime}
                       onChange={(e) => setForm(prev => ({ ...prev, dueTime: e.target.value }))}
-                      className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                      className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-amber-500"
                     />
                   </div>
                 </div>
@@ -314,19 +314,19 @@ export default function SchoolAssignmentsPage() {
                   value={form.title}
                   onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Assignment title"
-                  className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-amber-500"
                 />
                 <input
                   value={form.course}
                   onChange={(e) => setForm(prev => ({ ...prev, course: e.target.value }))}
                   placeholder="Course (optional)"
-                  className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-amber-500"
                 />
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))}
                   placeholder="Notes (optional)"
-                  className="w-full min-h-[120px] px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                  className="w-full min-h-[120px] px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-amber-500"
                 />
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
@@ -339,7 +339,7 @@ export default function SchoolAssignmentsPage() {
                   {editingId && (
                     <button
                       onClick={resetForm}
-                      className="px-6 py-3 bg-gray-800/60 border border-gray-700 text-white font-bold rounded-xl hover:bg-gray-700/60 transition-all"
+                      className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-theme-primary font-bold rounded-xl hover:bg-gray-700/60 transition-all"
                     >
                       Cancel Edit
                     </button>

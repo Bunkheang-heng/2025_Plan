@@ -27,14 +27,14 @@ export default function HomeHeader({ currentTime, mounted }: HomeHeaderProps) {
       <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 animate-text-glow">
         Welcome back, Mr. Bunkheang 👋
       </h1>
-      <p className="text-xl text-gray-300 font-medium mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+      <p className="text-xl text-theme-secondary font-medium mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         J.A.R.V.I.S Productivity System - Track your goals and achieve more
       </p>
       
       {/* HUD Style Time Display */}
-      <div className="flex items-center justify-center space-x-4 text-gray-400 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-        <div className="bg-gray-800/50 border border-yellow-500/30 rounded-lg px-4 py-2 backdrop-blur-sm">
-          <span className="text-base">
+      <div className="flex items-center justify-center space-x-4 text-theme-tertiary animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+        <div className="bg-theme-card border border-yellow-500/30 rounded-lg px-4 py-2 backdrop-blur-sm">
+          <span className="text-base text-theme-primary">
             {mounted ? new Date().toLocaleDateString('en-US', { 
               timeZone: 'Asia/Phnom_Penh',
               weekday: 'long', 
@@ -45,7 +45,7 @@ export default function HomeHeader({ currentTime, mounted }: HomeHeaderProps) {
           </span>
         </div>
         <span className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></span>
-        <div className="bg-gray-800/50 border border-yellow-500/30 rounded-lg px-4 py-2 backdrop-blur-sm">
+        <div className="bg-theme-card border border-yellow-500/30 rounded-lg px-4 py-2 backdrop-blur-sm">
           <span className="font-mono text-base text-yellow-400 animate-digital-clock">
             {mounted ? currentTime : '--:--:--'}
           </span>

@@ -26,6 +26,9 @@ export default {
         'theme-muted': 'var(--text-muted)',
         'accent': 'var(--accent-primary)',
       },
+      placeholderColor: {
+        'theme-muted': 'var(--text-muted)',
+      },
       backgroundColor: {
         'theme-primary': 'var(--bg-primary)',
         'theme-secondary': 'var(--bg-secondary)',
@@ -36,6 +39,9 @@ export default {
         'theme-primary': 'var(--border-primary)',
         'theme-secondary': 'var(--border-secondary)',
         'theme-tertiary': 'var(--border-tertiary)',
+      },
+      ringColor: {
+        'theme-tertiary': 'var(--bg-tertiary)',
       },
       boxShadow: {
         'theme': 'var(--shadow-md)',

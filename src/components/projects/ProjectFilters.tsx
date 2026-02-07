@@ -18,7 +18,7 @@ export default function ProjectFilters({
   onCreateNew
 }: ProjectFiltersProps) {
   return (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 mb-8">
+    <div className="bg-theme-card border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 mb-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
@@ -26,12 +26,12 @@ export default function ProjectFilters({
             <select
               value={filterType}
               onChange={(e) => onTypeChange(e.target.value as ProjectType | 'all')}
-              className="px-4 py-2 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-semibold bg-gray-800/50"
+              className="px-4 py-2 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-theme-primary font-semibold bg-theme-secondary"
             >
-              <option value="all" className="bg-gray-800">All Types</option>
-              <option value="website" className="bg-gray-800">Website</option>
-              <option value="mobile" className="bg-gray-800">Mobile</option>
-              <option value="other" className="bg-gray-800">Other</option>
+              <option value="all" className="bg-theme-secondary text-theme-primary">All Types</option>
+              <option value="website" className="bg-theme-secondary text-theme-primary">Website</option>
+              <option value="mobile" className="bg-theme-secondary text-theme-primary">Mobile</option>
+              <option value="other" className="bg-theme-secondary text-theme-primary">Other</option>
             </select>
           </div>
           
@@ -40,14 +40,14 @@ export default function ProjectFilters({
             <select
               value={filterStatus}
               onChange={(e) => onStatusChange(e.target.value as ProjectStatus | 'all')}
-              className="px-4 py-2 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-semibold bg-gray-800/50"
+              className="px-4 py-2 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-theme-primary font-semibold bg-theme-secondary"
             >
-              <option value="all" className="bg-gray-800">All Status</option>
-              <option value="planning" className="bg-gray-800">Planning</option>
-              <option value="in-progress" className="bg-gray-800">In Progress</option>
-              <option value="testing" className="bg-gray-800">Testing</option>
-              <option value="completed" className="bg-gray-800">Completed</option>
-              <option value="on-hold" className="bg-gray-800">On Hold</option>
+              <option value="all" className="bg-theme-secondary text-theme-primary">All Status</option>
+              <option value="planning" className="bg-theme-secondary text-theme-primary">Planning</option>
+              <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
+              <option value="testing" className="bg-theme-secondary text-theme-primary">Testing</option>
+              <option value="completed" className="bg-theme-secondary text-theme-primary">Completed</option>
+              <option value="on-hold" className="bg-theme-secondary text-theme-primary">On Hold</option>
             </select>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { ProjectType, ProjectStatus, FeatureStatus } from './types'
 export const getStatusColor = (status: ProjectStatus): string => {
   switch (status) {
     case 'planning':
-      return 'bg-gray-500/20 text-gray-300 border-gray-400/50'
+      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
     case 'in-progress':
       return 'bg-blue-500/20 text-blue-300 border-blue-400/50'
     case 'testing':
@@ -14,7 +14,7 @@ export const getStatusColor = (status: ProjectStatus): string => {
     case 'on-hold':
       return 'bg-red-500/20 text-red-300 border-red-400/50'
     default:
-      return 'bg-gray-500/20 text-gray-300 border-gray-400/50'
+      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
   }
 }
 
@@ -25,9 +25,9 @@ export const getFeatureStatusColor = (status: FeatureStatus): string => {
     case 'in-progress':
       return 'bg-blue-500/20 text-blue-300 border-blue-400/50'
     case 'next':
-      return 'bg-gray-500/20 text-gray-300 border-gray-400/50'
+      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
     default:
-      return 'bg-gray-500/20 text-gray-300 border-gray-400/50'
+      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
   }
 }
 

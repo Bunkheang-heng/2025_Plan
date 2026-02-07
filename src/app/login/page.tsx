@@ -29,7 +29,7 @@ export default function Login() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="flex items-center space-x-3">
           <div className="w-4 h-4 bg-yellow-400 rounded-full animate-bounce"></div>
           <div className="w-4 h-4 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -41,7 +41,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-xl shadow-yellow-500/10 p-8 lg:p-10">
           {/* Header */}
@@ -56,7 +56,7 @@ export default function Login() {
             <h1 className="text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
               J.A.R.V.I.S Access
             </h1>
-            <p className="text-lg text-gray-300 font-medium">
+            <p className="text-lg text-theme-secondary font-medium">
               Sign in to your personal AI system
             </p>
           </div>
@@ -83,7 +83,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 placeholder-gray-400 transition-all duration-200"
+                className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-theme-secondary placeholder-gray-400 transition-all duration-200"
                 placeholder="Enter your email address"
                 required
               />
@@ -97,7 +97,7 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-gray-800/50 placeholder-gray-400 transition-all duration-200"
+                className="w-full px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 bg-theme-secondary placeholder-gray-400 transition-all duration-200"
                 placeholder="Enter your password"
                 required
               />
@@ -114,7 +114,7 @@ export default function Login() {
 
           {/* Admin Note */}
           <div className="mt-6 text-center">
-            <p className="text-gray-400 text-xs">
+            <p className="text-theme-tertiary text-xs">
               Need an account? Contact an administrator to create one for you.
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <div className="flex items-center justify-center space-x-2 text-gray-400">
+          <div className="flex items-center justify-center space-x-2 text-theme-tertiary">
             <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
             <span className="text-sm">Secure Access</span>
             <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>

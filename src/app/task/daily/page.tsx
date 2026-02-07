@@ -334,15 +334,15 @@ export default function DailyPlans() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {icon}
-              <h3 className="text-xl font-bold text-white">{title}</h3>
+              <h3 className="text-xl font-bold text-theme-primary">{title}</h3>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-white/90 text-sm font-semibold">{completed}/{total}</span>
+              <span className="text-theme-primary/90 text-sm font-semibold">{completed}/{total}</span>
               <button
                 onClick={() => router.push(`/create?type=daily&timePeriod=${timePeriod}&date=${dateStr}`)}
                 className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
               >
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -354,12 +354,12 @@ export default function DailyPlans() {
           {sortedPlans.length === 0 ? (
             <div className="p-8 text-center">
               <div className="p-3 bg-gray-700/50 rounded-xl inline-block mb-4 border border-yellow-500/20">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
               <h4 className="text-lg font-semibold text-gray-200 mb-2">No tasks for {title.toLowerCase()}</h4>
-              <p className="text-gray-400">Add a new task to get started</p>
+              <p className="text-theme-tertiary">Add a new task to get started</p>
             </div>
           ) : (
             sortedPlans.map((plan) => (
@@ -381,18 +381,18 @@ export default function DailyPlans() {
                     <select
                       value={plan.status}
                       onChange={(e) => updatePlanStatus(plan.id, e.target.value, dateStr)}
-                      className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-gray-800/50"
+                      className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-theme-secondary"
                     >
-                      <option value="Not Started" className="bg-gray-800">⏳ Not Started</option>
-                      <option value="Done" className="bg-gray-800">✅ Done</option>
-                      <option value="Missed" className="bg-gray-800">❌ Missed</option>
+                      <option value="Not Started" className="bg-theme-card">⏳ Not Started</option>
+                      <option value="Done" className="bg-theme-card">✅ Done</option>
+                      <option value="Missed" className="bg-theme-card">❌ Missed</option>
                     </select>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-3 mb-2">
                       <h4 className={`font-semibold text-lg ${
                         plan.status === 'Done' 
-                          ? 'text-gray-500 line-through' 
+                          ? 'text-theme-muted line-through' 
                           : 'text-gray-100'
                       }`}>
                         {plan.title}
@@ -401,7 +401,7 @@ export default function DailyPlans() {
                         plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
                         plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
                         plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
-                        'bg-gray-500/20 text-gray-300 border-gray-400/50'
+                        'bg-gray-500/20 text-theme-secondary border-gray-400/50'
                       }`}>
                         {getPriorityIcon(plan.priority)} {plan.priority?.toUpperCase() || 'MEDIUM'}
                       </span>
@@ -409,8 +409,8 @@ export default function DailyPlans() {
                     {plan.description && (
                       <p className={`text-sm leading-relaxed ${
                         plan.status === 'Done'
-                          ? 'text-gray-500'
-                          : 'text-gray-300'
+                          ? 'text-theme-muted'
+                          : 'text-theme-secondary'
                       }`}>
                         {plan.description}
                       </p>
@@ -422,7 +422,7 @@ export default function DailyPlans() {
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
                         : plan.status === 'Missed'
                         ? 'bg-red-500/20 text-red-300 border-red-400/50'
-                        : 'bg-gray-500/20 text-gray-300 border-gray-400/50'
+                        : 'bg-gray-500/20 text-theme-secondary border-gray-400/50'
                     }`}>
                       {plan.status}
                     </span>
@@ -444,11 +444,11 @@ export default function DailyPlans() {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             Daily Mission Planning
           </div>
@@ -458,7 +458,7 @@ export default function DailyPlans() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
             </svg>
           </h1>
-          <p className="text-xl text-gray-300 font-medium">
+          <p className="text-xl text-theme-secondary font-medium">
             Click on a day to view and manage your daily tasks
           </p>
         </div>
@@ -477,7 +477,7 @@ export default function DailyPlans() {
                 </svg>
               </button>
               
-              <h2 className="text-2xl font-bold text-white">{monthName}</h2>
+              <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
               
               <button
                 onClick={() => changeMonth(1)}
@@ -528,12 +528,12 @@ export default function DailyPlans() {
                         ? allCompleted
                           ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20'
                           : 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
-                        : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50'
+                        : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
-                        isToday ? 'text-yellow-400' : 'text-gray-300'
+                        isToday ? 'text-yellow-400' : 'text-theme-secondary'
                       }`}>
                         {day}
                       </div>
@@ -569,7 +569,7 @@ export default function DailyPlans() {
             <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-theme-primary">
                     {new Date(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'long',
                       month: 'long', 
@@ -577,7 +577,7 @@ export default function DailyPlans() {
                       year: 'numeric'
                     })}
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-theme-tertiary mt-1">
                     {state.selectedDayStats.totalTasks > 0 
                       ? `${state.selectedDayStats.completedTasks}/${state.selectedDayStats.totalTasks} tasks completed`
                       : 'No tasks planned for this day'}
@@ -590,7 +590,7 @@ export default function DailyPlans() {
                   }}
                   className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
                 >
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -605,7 +605,7 @@ export default function DailyPlans() {
                 dateStr={selectedDate}
             gradient="bg-gradient-to-r from-orange-500 to-orange-600"
             icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             }
@@ -618,7 +618,7 @@ export default function DailyPlans() {
                 dateStr={selectedDate}
             gradient="bg-gradient-to-r from-blue-500 to-blue-600"
             icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             }
@@ -631,7 +631,7 @@ export default function DailyPlans() {
                 dateStr={selectedDate}
             gradient="bg-gradient-to-r from-purple-500 to-purple-600"
             icon={
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             }

@@ -16,27 +16,27 @@ export default function FeatureItem({
   getFeatureStatusColor
 }: FeatureItemProps) {
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-700/30 border border-gray-600/50 rounded-lg">
+    <div className="flex items-center justify-between p-3 bg-theme-tertiary/30 border border-theme-secondary rounded-lg">
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-2 mb-1">
-          <span className="text-sm font-semibold text-white">{feature.name}</span>
+          <span className="text-sm font-semibold text-theme-primary">{feature.name}</span>
           <span className={`px-2 py-0.5 rounded text-xs font-semibold border ${getFeatureStatusColor(feature.status)}`}>
             {feature.status === 'in-progress' ? 'In Progress' : feature.status.charAt(0).toUpperCase() + feature.status.slice(1)}
           </span>
         </div>
         {feature.description && (
-          <p className="text-xs text-gray-400">{feature.description}</p>
+          <p className="text-xs text-theme-tertiary">{feature.description}</p>
         )}
       </div>
       <div className="flex items-center space-x-2 ml-4">
         <select
           value={feature.status}
           onChange={(e) => onStatusChange(feature.id, e.target.value as FeatureStatus)}
-          className="px-2 py-1 bg-gray-800/50 border border-yellow-500/30 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-yellow-500/50"
+          className="px-2 py-1 bg-theme-secondary border border-yellow-500/30 rounded text-theme-primary text-xs focus:outline-none focus:ring-1 focus:ring-yellow-500/50"
         >
-          <option value="next" className="bg-gray-800">Next</option>
-          <option value="in-progress" className="bg-gray-800">In Progress</option>
-          <option value="done" className="bg-gray-800">Done</option>
+          <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
+          <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
+          <option value="done" className="bg-theme-secondary text-theme-primary">Done</option>
         </select>
         <button
           type="button"

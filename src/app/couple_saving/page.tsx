@@ -302,7 +302,7 @@ export default function CoupleSavingPage() {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+    <div className="min-h-screen bg-theme-primary relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-pink-500/10 rounded-full blur-3xl animate-float"></div>
@@ -323,7 +323,7 @@ export default function CoupleSavingPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 relative z-10">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 border border-pink-500/30 rounded-full text-pink-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-pink-500/30 rounded-full text-pink-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-pink-500 rounded-full mr-2 animate-pulse"></div>
             Couple Savings Tracker
           </div>
@@ -345,7 +345,7 @@ export default function CoupleSavingPage() {
                   />
                 </div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500/90 to-rose-500/90 backdrop-blur-sm px-4 py-1 rounded-full border border-pink-400/50 shadow-lg">
-                  <span className="text-sm lg:text-base font-bold text-white">Bunkheang</span>
+                  <span className="text-sm lg:text-base font-bold text-theme-primary">Bunkheang</span>
                 </div>
               </div>
             </div>
@@ -376,7 +376,7 @@ export default function CoupleSavingPage() {
                   />
                 </div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-rose-500/90 to-pink-500/90 backdrop-blur-sm px-4 py-1 rounded-full border border-rose-400/50 shadow-lg">
-                  <span className="text-sm lg:text-base font-bold text-white">Monika</span>
+                  <span className="text-sm lg:text-base font-bold text-theme-primary">Monika</span>
                 </div>
               </div>
             </div>
@@ -387,7 +387,7 @@ export default function CoupleSavingPage() {
             <span>Our Savings Journey</span>
             <FaHeart className="w-10 h-10 lg:w-12 lg:h-12 text-pink-400" />
           </h1>
-          <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">
+          <p className="text-xl text-theme-secondary font-medium max-w-2xl mx-auto">
             Building our future together, one saving at a time 💕
           </p>
           
@@ -445,12 +445,12 @@ export default function CoupleSavingPage() {
                 <div className="relative p-4 z-10">
                   <div className="text-center">
                     <div className={`mb-2 p-2 bg-gradient-to-br ${stat.gradient} rounded-lg inline-block`}>
-                      <IconComponent className="w-5 h-5 text-white" />
+                      <IconComponent className="w-5 h-5 text-theme-primary" />
                     </div>
                     <div className={`font-bold ${stat.isMain ? 'text-xl' : 'text-lg'} ${stat.color} mb-1`}>
                       {stat.value}
                     </div>
-                    <div className="text-xs text-gray-400 font-medium">{stat.label}</div>
+                    <div className="text-xs text-theme-tertiary font-medium">{stat.label}</div>
                   </div>
                 </div>
               </div>
@@ -485,7 +485,7 @@ export default function CoupleSavingPage() {
               </button>
               
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white">{monthName}</h2>
+                <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
                 <p className="text-xs text-pink-300/70 mt-1">Bunkheang & Monika's Savings</p>
               </div>
               
@@ -534,12 +534,12 @@ export default function CoupleSavingPage() {
                         ? 'border-pink-400 bg-pink-400/10' 
                         : dayData && dayData.totalAmount > 0
                         ? 'border-pink-500/50 bg-pink-500/10 hover:bg-pink-500/20'
-                        : 'border-gray-700 bg-gray-800/50 hover:bg-gray-700/50'
+                        : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
-                        isToday ? 'text-pink-400' : 'text-gray-300'
+                        isToday ? 'text-pink-400' : 'text-theme-secondary'
                       }`}>
                         {day}
                       </div>
@@ -549,7 +549,7 @@ export default function CoupleSavingPage() {
                             ${dayData.totalAmount.toFixed(0)}
                           </div>
                           {dayData.entries.length > 1 && (
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-theme-tertiary">
                               {dayData.entries.length} entries
                             </div>
                           )}
@@ -569,19 +569,19 @@ export default function CoupleSavingPage() {
             <FaHeart className="w-5 h-5 text-pink-400 animate-pulse" />
             <div className="flex items-center gap-2">
               <span className="text-pink-400 font-semibold">Bunkheang</span>
-              <span className="text-gray-500">×</span>
+              <span className="text-theme-muted">×</span>
               <span className="text-rose-400 font-semibold">Phan Chan Monika</span>
             </div>
             <FaHeart className="w-5 h-5 text-rose-400 animate-pulse" style={{ animationDelay: '0.3s' }} />
           </div>
-          <p className="text-xs text-gray-500 mt-4">Building our dreams together, one day at a time</p>
+          <p className="text-xs text-theme-muted mt-4">Building our dreams together, one day at a time</p>
         </div>
       </div>
 
       {/* Add/Edit Entry Modal */}
       {isEntryModalOpen && selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl border border-gray-700 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up relative">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl border border-theme-secondary max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up relative">
             {/* Decorative hearts in modal */}
             <div className="absolute top-4 left-4 text-pink-400/20">
               <FaHeart className="w-6 h-6" />
@@ -595,7 +595,7 @@ export default function CoupleSavingPage() {
                   <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-600">
                     {isEditing ? 'Edit Savings' : dailyData[selectedDate]?.entries.length > 0 ? 'Savings for' : 'Add Savings'}
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-theme-tertiary mt-1">
                     {new Date(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'long',
                       month: 'long', 
@@ -612,29 +612,29 @@ export default function CoupleSavingPage() {
                     setIsEditing(false)
                     setEditingEntryId(null)
                   }}
-                  className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 bg-theme-card hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
                 >
-                  <FaTimes className="w-6 h-6 text-gray-400" />
+                  <FaTimes className="w-6 h-6 text-theme-tertiary" />
                 </button>
               </div>
 
               {/* Existing Entries - View Mode */}
               {!isEditing && dailyData[selectedDate] && dailyData[selectedDate].entries && dailyData[selectedDate].entries.length > 0 && (
                 <div className="mb-6 space-y-3">
-                  <h3 className="text-lg font-semibold text-white mb-3">Savings Entries</h3>
+                  <h3 className="text-lg font-semibold text-theme-primary mb-3">Savings Entries</h3>
                   {dailyData[selectedDate].entries.map((entry) => {
                     const fullEntry = entries.find(e => e.id === entry.id)
                     return (
-                      <div key={entry.id} className="bg-gray-800/50 border border-pink-500/30 rounded-xl p-4">
+                      <div key={entry.id} className="bg-theme-secondary border border-pink-500/30 rounded-xl p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold text-white">${entry.amount.toFixed(2)}</span>
+                          <span className="font-semibold text-theme-primary">${entry.amount.toFixed(2)}</span>
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleEdit(fullEntry!)}
                               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
                               aria-label="Edit entry"
                             >
-                              <FaEdit className="w-4 h-4 text-gray-400" />
+                              <FaEdit className="w-4 h-4 text-theme-tertiary" />
                             </button>
                             <button
                               onClick={() => handleDelete(entry.id)}
@@ -646,14 +646,14 @@ export default function CoupleSavingPage() {
                           </div>
                         </div>
                         {entry.note && (
-                          <p className="text-sm text-gray-400">{entry.note}</p>
+                          <p className="text-sm text-theme-tertiary">{entry.note}</p>
                         )}
                       </div>
                     )
                   })}
                   <div className="bg-gradient-to-r from-pink-500/20 to-rose-600/20 border border-pink-500/30 rounded-xl p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white">Total for this day:</span>
+                      <span className="font-bold text-theme-primary">Total for this day:</span>
                       <span className="text-pink-400 font-bold text-xl">
                         ${dailyData[selectedDate].totalAmount.toFixed(2)}
                       </span>
@@ -669,7 +669,7 @@ export default function CoupleSavingPage() {
                       setIsEditing(false)
                       setEditingEntryId(null)
                     }}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/50 hover:shadow-xl hover:shadow-pink-500/60 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 text-theme-primary font-semibold rounded-xl shadow-lg shadow-pink-500/50 hover:shadow-xl hover:shadow-pink-500/60 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
                   >
                     <FaPlus className="w-4 h-4" />
                     Add Another Entry
@@ -681,11 +681,11 @@ export default function CoupleSavingPage() {
               {(isEditing || !dailyData[selectedDate] || !dailyData[selectedDate]?.entries || dailyData[selectedDate].entries.length === 0) && (
                 <form onSubmit={handleEntrySubmit} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-sm font-semibold text-theme-secondary mb-2">
                       Amount ($) *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-bold">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-tertiary text-lg font-bold">$</span>
                       <input
                         type="number"
                         value={entryFormData.amount}
@@ -694,13 +694,13 @@ export default function CoupleSavingPage() {
                         min="0.01"
                         step="0.01"
                         placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
+                        className="w-full pl-8 pr-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-sm font-semibold text-theme-secondary mb-2">
                       Date *
                     </label>
                     <input
@@ -708,12 +708,12 @@ export default function CoupleSavingPage() {
                       value={entryFormData.date}
                       onChange={(e) => setEntryFormData({ ...entryFormData, date: e.target.value })}
                       required
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
+                      className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-sm font-semibold text-theme-secondary mb-2">
                       Note (Optional)
                     </label>
                     <textarea
@@ -721,7 +721,7 @@ export default function CoupleSavingPage() {
                       onChange={(e) => setEntryFormData({ ...entryFormData, note: e.target.value })}
                       rows={3}
                       placeholder="Add a note about this savings..."
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all resize-none"
+                      className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all resize-none"
                     />
                   </div>
 
@@ -734,13 +734,13 @@ export default function CoupleSavingPage() {
                         setIsEditing(false)
                         setEditingEntryId(null)
                       }}
-                      className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-xl transition-colors"
+                      className="flex-1 px-6 py-3 bg-theme-card hover:bg-gray-700 text-theme-secondary font-semibold rounded-xl transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/50 hover:shadow-xl hover:shadow-pink-500/60 transform hover:scale-105 transition-all duration-300"
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 text-theme-primary font-semibold rounded-xl shadow-lg shadow-pink-500/50 hover:shadow-xl hover:shadow-pink-500/60 transform hover:scale-105 transition-all duration-300"
                     >
                       {isEditing ? 'Update Savings' : 'Add Savings'}
                     </button>

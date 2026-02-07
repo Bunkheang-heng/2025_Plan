@@ -190,40 +190,40 @@ export default function TradingPartnerGroupSettingsPage() {
   if (isLoading || roleLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-theme-primary p-4 sm:p-6 lg:p-8">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Group Settings</h1>
-            <p className="text-gray-400 mt-2">
+            <h1 className="text-3xl font-bold text-theme-primary">Group Settings</h1>
+            <p className="text-theme-tertiary mt-2">
               Configure partners (admin only). Partners can view but not edit.
             </p>
           </div>
           <button
             onClick={() => router.push(`/trading_partner/group/${groupId}`)}
-            className="px-4 py-2 bg-gray-900/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
           >
             <FaArrowLeft /> Back
           </button>
         </div>
 
-        <div className="bg-gray-800/40 border border-gray-700 rounded-2xl p-5">
-          <div className="text-xs text-gray-500 font-mono break-all">Group ID: {groupId}</div>
+        <div className="bg-theme-card border border-theme-secondary rounded-2xl p-5">
+          <div className="text-xs text-theme-muted font-mono break-all">Group ID: {groupId}</div>
           <div className="mt-4">
-            <label className="block text-xs text-gray-400 mb-2">Group Name</label>
+            <label className="block text-xs text-theme-tertiary mb-2">Group Name</label>
             <input
               value={groupNameDraft}
               onChange={(e) => setGroupNameDraft(e.target.value)}
               disabled={role !== 'admin'}
-              className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-yellow-500 disabled:opacity-60"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 disabled:opacity-60"
               placeholder="Example: Bunkheang + Partner A"
             />
           </div>
         </div>
 
-        <div className="bg-gray-800/40 border border-yellow-500/20 rounded-2xl p-5">
+        <div className="bg-theme-card border border-yellow-500/20 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Partners</h2>
+            <h2 className="text-lg font-semibold text-theme-primary">Partners</h2>
             {role === 'admin' && (
               <button
                 onClick={() => setPartnerDraft(prev => [...prev, { uid: '', name: '' }])}
@@ -237,10 +237,10 @@ export default function TradingPartnerGroupSettingsPage() {
           {role === 'admin' ? (
             <div className="space-y-3">
               {partnerDraft.map((p, idx) => (
-                <div key={`${p.uid}-${idx}`} className="bg-black/30 border border-gray-700 rounded-xl p-4">
+                <div key={`${p.uid}-${idx}`} className="bg-black/30 border border-theme-secondary rounded-xl p-4">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-gray-400 mb-1">Select User</label>
+                      <label className="block text-xs text-theme-tertiary mb-1">Select User</label>
                       <select
                         value={p.uid}
                         onChange={(e) => {
@@ -252,7 +252,7 @@ export default function TradingPartnerGroupSettingsPage() {
                               : x
                           )))
                         }}
-                        className="w-full px-3 py-2 bg-gray-900/60 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 text-sm"
+                        className="w-full px-3 py-2 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500 text-sm"
                         disabled={usersLoading}
                       >
                         <option value="">-- Choose a user --</option>
@@ -266,20 +266,20 @@ export default function TradingPartnerGroupSettingsPage() {
                           )
                         })}
                       </select>
-                      <div className="mt-2 text-xs text-gray-500">
+                      <div className="mt-2 text-xs text-theme-muted">
                         {usersLoading ? 'Loading users...' : `Users loaded: ${users.length}`}
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="sm:col-span-2">
-                        <label className="block text-xs text-gray-400 mb-1">Name</label>
+                        <label className="block text-xs text-theme-tertiary mb-1">Name</label>
                         <input
                           value={p.name}
                           onChange={(e) => {
                             const v = e.target.value
                             setPartnerDraft(prev => prev.map((x, i) => (i === idx ? { ...x, name: v } : x)))
                           }}
-                          className="w-full px-3 py-2 bg-gray-900/60 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 text-sm"
+                          className="w-full px-3 py-2 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500 text-sm"
                           placeholder="Auto-filled from user profile (you can override)"
                         />
                       </div>
@@ -294,18 +294,18 @@ export default function TradingPartnerGroupSettingsPage() {
                 </div>
               ))}
               {partnerDraft.length === 0 && (
-                <div className="text-sm text-gray-400">No partners yet.</div>
+                <div className="text-sm text-theme-tertiary">No partners yet.</div>
               )}
             </div>
           ) : (
             <div className="space-y-3">
               {partners.length === 0 ? (
-                <div className="text-sm text-gray-400">No partners configured.</div>
+                <div className="text-sm text-theme-tertiary">No partners configured.</div>
               ) : (
                 partners.map(p => (
-                  <div key={p.uid} className="bg-black/30 border border-gray-700 rounded-xl p-4">
-                    <div className="text-white font-semibold">{p.name}</div>
-                    <div className="text-xs text-gray-500 font-mono break-all">{p.uid}</div>
+                  <div key={p.uid} className="bg-black/30 border border-theme-secondary rounded-xl p-4">
+                    <div className="text-theme-primary font-semibold">{p.name}</div>
+                    <div className="text-xs text-theme-muted font-mono break-all">{p.uid}</div>
                   </div>
                 ))
               )}
@@ -313,7 +313,7 @@ export default function TradingPartnerGroupSettingsPage() {
           )}
 
           <div className="mt-5 flex items-center justify-between gap-3">
-            <div className="text-sm text-gray-300">{message}</div>
+            <div className="text-sm text-theme-secondary">{message}</div>
             {role === 'admin' && (
               <div className="flex items-center gap-3">
                 <button
@@ -337,24 +337,24 @@ export default function TradingPartnerGroupSettingsPage() {
         {isDeleteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="p-6 border-b border-gray-700/60">
-                <h3 className="text-xl font-bold text-white">Delete group</h3>
-                <p className="text-sm text-gray-400 mt-1">
+              <div className="p-6 border-b border-theme-secondary/60">
+                <h3 className="text-xl font-bold text-theme-primary">Delete group</h3>
+                <p className="text-sm text-theme-tertiary mt-1">
                   This removes the group and all entries. This action cannot be undone.
                 </p>
               </div>
               <div className="p-6 space-y-3">
-                <div className="text-sm text-gray-300">
-                  <span className="text-gray-400">Group:</span>{' '}
-                  <span className="font-semibold text-white">{group?.name || groupId}</span>
+                <div className="text-sm text-theme-secondary">
+                  <span className="text-theme-tertiary">Group:</span>{' '}
+                  <span className="font-semibold text-theme-primary">{group?.name || groupId}</span>
                 </div>
-                <div className="text-xs text-gray-500 font-mono break-all">{groupId}</div>
+                <div className="text-xs text-theme-muted font-mono break-all">{groupId}</div>
               </div>
-              <div className="p-6 border-t border-gray-700/60 flex items-center justify-end gap-3">
+              <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
                   disabled={isDeleting}
-                  className="px-4 py-2 bg-gray-800/60 border border-gray-700 text-gray-200 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

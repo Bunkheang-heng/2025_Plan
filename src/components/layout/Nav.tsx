@@ -32,11 +32,16 @@ export default function Nav() {
 
   const allNavLinks: NavLink[] = [
     { path: '/', label: 'Dashboard', icon: DashboardIcon },
-    { path: '/task/daily', label: 'Daily', icon: CalendarDayIcon },
-    { path: '/task/weekly', label: 'Weekly', icon: CalendarWeekIcon },
-    { path: '/task/monthly', label: 'Monthly', icon: CalendarMonthIcon },
+    { 
+      label: 'Tasks', 
+      icon: CalendarDayIcon,
+      subLinks: [
+        { path: '/task/daily', label: 'Daily Tasks' },
+        { path: '/task/weekly', label: 'Weekly Tasks' },
+        { path: '/task/monthly', label: 'Monthly Tasks' }
+      ]
+    },
     { path: '/school', label: 'School', icon: SchoolIcon },
-    { path: '/trading_partner/groups', label: 'Trading Partner', icon: TradingPartnerIcon },
     { 
       label: 'Trading', 
       icon: TradingIcon,
@@ -44,15 +49,29 @@ export default function Nav() {
         { path: '/trading/trading_pnl', label: 'Trading P&L' },
         { path: '/trading/trading_news', label: 'Trading News' },
         { path: '/trading/trading_ai_predication', label: 'Trading AI Predication' },
-        { path: '/trading/gold_info', label: 'Gold Market Information' }
+        { path: '/trading/gold_info', label: 'Gold Market Information' },
+        { path: '/trading_partner/groups', label: 'Trading Partner' },
+        { path: '/setup', label: 'My Setup' }
+      ]
+    },
+    { 
+      label: 'Saving', 
+      icon: CoupleSavingIcon,
+      subLinks: [
+        { path: '/couple_saving', label: 'Couple Saving' },
+        { path: '/business_idea', label: 'Business Idea' }
       ]
     },
     { path: '/chat', label: 'AI Chat', icon: ChatIcon },
     { path: '/working_project', label: 'Working Project', icon: WorkingProjectIcon },
-    { path:'/business_idea', label: 'Business Idea', icon: BusinessIdeaIcon},
-    { path:'/couple_saving', label: 'Couple Saving', icon: CoupleSavingIcon},
-    { path:'/admin/set-role', label: 'Admin: Set Role', icon: AdminIcon},
-    { path:'/admin/create-account', label: 'Admin: Create Account', icon: AdminIcon},
+    { 
+      label: 'Admin', 
+      icon: AdminIcon,
+      subLinks: [
+        { path: '/admin/set-role', label: 'Set Role' },
+        { path: '/admin/create-account', label: 'Create Account' }
+      ]
+    },
   ]
 
   // Filter nav links based on user role
@@ -171,6 +190,15 @@ export default function Nav() {
           strokeWidth={2}
           d="M12 3a7 7 0 017 7c0 2.281-1.218 4.177-3.09 5.207A2.992 2.992 0 0112 21m0 0a2.992 2.992 0 01-3.91-5.793C6.218 14.177 5 12.281 5 10a7 7 0 017-7zm0 14v1m-3-1h6"
         />
+      </svg>
+    )
+  }
+
+  // SETUP = Desk / Monitor Icon
+  function SetupIcon() {
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     )
   }

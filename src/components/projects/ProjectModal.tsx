@@ -31,17 +31,17 @@ export default function ProjectModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in overflow-y-auto">
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-yellow-500/30 rounded-2xl max-w-2xl w-full shadow-2xl shadow-yellow-500/20 animate-slide-up my-8">
+      <div className="bg-theme-card border-2 border-yellow-500/30 rounded-2xl max-w-2xl w-full shadow-2xl shadow-yellow-500/20 animate-slide-up my-8">
         <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-theme-primary">
               {isEditing ? 'Edit Project' : 'Create New Project'}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="p-2 hover:bg-theme-tertiary/50 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -62,7 +62,7 @@ export default function ProjectModal({
               value={formData.name}
               onChange={(e) => onFormDataChange({ name: e.target.value })}
               placeholder="Enter project name"
-              className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
             />
           </div>
 
@@ -75,11 +75,11 @@ export default function ProjectModal({
                 required
                 value={formData.type}
                 onChange={(e) => onFormDataChange({ type: e.target.value as ProjectType })}
-                className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
               >
-                <option value="website" className="bg-gray-800">Website</option>
-                <option value="mobile" className="bg-gray-800">Mobile App</option>
-                <option value="other" className="bg-gray-800">Other</option>
+                <option value="website" className="bg-theme-secondary text-theme-primary">Website</option>
+                <option value="mobile" className="bg-theme-secondary text-theme-primary">Mobile App</option>
+                <option value="other" className="bg-theme-secondary text-theme-primary">Other</option>
               </select>
             </div>
 
@@ -91,13 +91,13 @@ export default function ProjectModal({
                 required
                 value={formData.status}
                 onChange={(e) => onFormDataChange({ status: e.target.value as ProjectStatus })}
-                className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
               >
-                <option value="planning" className="bg-gray-800">Planning</option>
-                <option value="in-progress" className="bg-gray-800">In Progress</option>
-                <option value="testing" className="bg-gray-800">Testing</option>
-                <option value="completed" className="bg-gray-800">Completed</option>
-                <option value="on-hold" className="bg-gray-800">On Hold</option>
+                <option value="planning" className="bg-theme-secondary text-theme-primary">Planning</option>
+                <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
+                <option value="testing" className="bg-theme-secondary text-theme-primary">Testing</option>
+                <option value="completed" className="bg-theme-secondary text-theme-primary">Completed</option>
+                <option value="on-hold" className="bg-theme-secondary text-theme-primary">On Hold</option>
               </select>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function ProjectModal({
               onChange={(e) => onFormDataChange({ description: e.target.value })}
               placeholder="Describe your project..."
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
+              className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
             />
           </div>
 
@@ -125,9 +125,9 @@ export default function ProjectModal({
               value={formData.techStack}
               onChange={(e) => onFormDataChange({ techStack: e.target.value })}
               placeholder="React, Node.js, MongoDB (comma separated)"
-              className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
             />
-            <p className="text-xs text-gray-400 mt-2">Separate technologies with commas</p>
+            <p className="text-xs text-theme-tertiary mt-2">Separate technologies with commas</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -143,7 +143,7 @@ export default function ProjectModal({
                 required
                 value={formData.startDate}
                 onChange={(e) => onFormDataChange({ startDate: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
               />
             </div>
 
@@ -158,7 +158,7 @@ export default function ProjectModal({
                 type="date"
                 value={formData.deadline}
                 onChange={(e) => onFormDataChange({ deadline: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+                className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function ProjectModal({
               value={formData.repositoryUrl}
               onChange={(e) => onFormDataChange({ repositoryUrl: e.target.value })}
               placeholder="https://github.com/username/repo"
-              className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
             />
           </div>
 
@@ -191,7 +191,7 @@ export default function ProjectModal({
               value={formData.liveUrl}
               onChange={(e) => onFormDataChange({ liveUrl: e.target.value })}
               placeholder="https://your-project.com"
-              className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
             />
           </div>
 
@@ -207,7 +207,7 @@ export default function ProjectModal({
               onChange={(e) => onFormDataChange({ notes: e.target.value })}
               placeholder="Additional notes about the project..."
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800/50 border-2 border-yellow-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
+              className="w-full px-4 py-3 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none"
             />
           </div>
 
@@ -227,7 +227,7 @@ export default function ProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl transition-colors"
+              className="px-6 py-4 bg-theme-tertiary hover:bg-theme-secondary text-theme-primary font-bold rounded-xl transition-colors"
             >
               Cancel
             </button>
