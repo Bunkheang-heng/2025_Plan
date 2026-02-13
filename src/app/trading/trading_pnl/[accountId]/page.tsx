@@ -4,7 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../../firebase'
 import { collection, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
-import { FaArrowLeft, FaEdit } from 'react-icons/fa'
+import { FaArrowLeft, FaEdit, FaChartLine, FaCalendarAlt } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -15,6 +16,7 @@ type TradingAccount = {
   currency?: CurrencyType
   userId: string
   capital?: number
+  target?: number
   strategy?: string
   rules?: string
 }
@@ -97,6 +99,7 @@ export default function TradingPnLAccountPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [formData, setFormData] = useState({
     amount: '',
     trades: '',
@@ -243,7 +246,7 @@ export default function TradingPnLAccountPage() {
     const trades = parseInt(formData.trades, 10)
 
     if (isNaN(amount) || isNaN(trades) || trades < 0) {
-      alert('Please enter valid numbers')
+      toast.error('Please enter valid numbers')
       return
     }
 
@@ -263,13 +266,14 @@ export default function TradingPnLAccountPage() {
         lessons: formData.lessons || null
       })
 
+      toast.success('P&L entry saved!')
       setSelectedDate(null)
       setIsEditing(false)
       setFormData({ amount: '', trades: '', lessons: '' })
       fetchMonthData(currentDate)
     } catch (error) {
       console.error('Error saving data:', error)
-      alert('Failed to save data')
+      toast.error('Failed to save data')
     }
   }
 
@@ -279,11 +283,40 @@ export default function TradingPnLAccountPage() {
     setCurrentDate(newDate)
   }
 
+  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
+
+  const calendarCells = useMemo(() => {
+    const leading = Array.from({ length: startingDayOfWeek }, () => null as number | null)
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+    return [...leading, ...days]
+  }, [startingDayOfWeek, daysInMonth])
+
+  const weekRows = useMemo(() => {
+    const rows: (number | null)[][] = []
+    for (let i = 0; i < calendarCells.length; i += 7) {
+      rows.push(calendarCells.slice(i, i + 7))
+    }
+    return rows
+  }, [calendarCells])
+
+  const getWeekTotal = useCallback((week: (number | null)[]) => {
+    let total = 0
+    week.forEach((day) => {
+      if (day === null) return
+      const dateObj = new Date(year, month, day)
+      const dayOfWeek = dateObj.getDay()
+      if (dayOfWeek === 0 || dayOfWeek === 6) return
+      const dateStr = formatLocalDate(dateObj)
+      const dayData = state.dailyData[dateStr]
+      if (dayData) total += dayData.amount
+    })
+    return total
+  }, [year, month, state.dailyData])
+
   if (state.isLoading) {
     return <Loading />
   }
 
-  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   const accountLabel = account?.name || 'Trading Account'
   const accountTypeLabel = account?.type === 'real' ? 'Real' : account?.type === 'funded' ? 'Funded' : 'Account'
@@ -322,6 +355,25 @@ export default function TradingPnLAccountPage() {
           </div>
         </div>
 
+        {/* Page Toggle */}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1">
+            <button
+              className="px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black"
+            >
+              <FaCalendarAlt className="w-4 h-4" />
+              P&L Calendar
+            </button>
+            <button
+              onClick={() => router.push(`/trading/trading_pnl/${accountId}/chart`)}
+              className="px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-theme-tertiary hover:text-theme-secondary"
+            >
+              <FaChartLine className="w-4 h-4" />
+              Trading Chart
+            </button>
+          </div>
+        </div>
+
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
@@ -355,27 +407,131 @@ export default function TradingPnLAccountPage() {
           </div>
         </div>
 
-        {(account?.strategy || account?.rules) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {account?.strategy && (
-              <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/30 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">📊</span>
-                  <h3 className="text-sm font-bold text-cyan-400">Strategy</h3>
-                </div>
-                <p className="text-theme-primary font-medium">{account.strategy}</p>
+        {account?.target && account.target > 0 && (
+          <div className="bg-theme-card border border-yellow-500/30 rounded-2xl p-5 mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎯</span>
+                <h3 className="text-sm font-bold text-yellow-400">Monthly Target Progress</h3>
               </div>
-            )}
-            {account?.rules && (
-              <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">📋</span>
-                  <h3 className="text-sm font-bold text-orange-400">Trading Rules</h3>
-                </div>
-                <p className="text-theme-secondary text-sm whitespace-pre-wrap leading-relaxed">{account.rules}</p>
+              <div className="text-sm text-theme-secondary">
+                <span className={`font-bold ${state.monthStats.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {currencySymbol}{state.monthStats.totalPnL.toFixed(2)}
+                </span>
+                <span className="text-theme-tertiary"> / </span>
+                <span className="font-bold text-yellow-400">{currencySymbol}{account.target.toFixed(2)}</span>
               </div>
-            )}
+            </div>
+            <div className="relative h-4 bg-theme-secondary rounded-full overflow-hidden">
+              <div
+                className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ${
+                  state.monthStats.totalPnL >= account.target
+                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                    : state.monthStats.totalPnL >= 0
+                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
+                      : 'bg-gradient-to-r from-red-600 to-red-500'
+                }`}
+                style={{
+                  width: `${Math.min(Math.max((state.monthStats.totalPnL / account.target) * 100, 0), 100)}%`
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-theme-tertiary">
+                {state.monthStats.totalPnL >= account.target
+                  ? '🎉 Target Achieved!'
+                  : state.monthStats.totalPnL >= 0
+                    ? `${((state.monthStats.totalPnL / account.target) * 100).toFixed(1)}% complete`
+                    : 'Below target'}
+              </span>
+              <span className="text-xs text-theme-tertiary">
+                {state.monthStats.totalPnL >= account.target
+                  ? `+${currencySymbol}${(state.monthStats.totalPnL - account.target).toFixed(2)} over target`
+                  : `${currencySymbol}${(account.target - state.monthStats.totalPnL).toFixed(2)} to go`}
+              </span>
+            </div>
           </div>
+        )}
+
+        {(account?.strategy || account?.rules) && (
+          <>
+            {/* Floating Strategy Button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-l from-yellow-500 to-yellow-600 text-black px-3 py-4 rounded-l-xl shadow-lg hover:from-yellow-400 hover:to-yellow-500 transition-all transform hover:scale-105 flex flex-col items-center gap-1"
+            >
+              <span className="text-lg">📊</span>
+              <span className="text-xs font-bold writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>Strategy</span>
+            </button>
+
+            {/* Sidebar Overlay */}
+            {isSidebarOpen && (
+              <div
+                className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
+                onClick={() => setIsSidebarOpen(false)}
+              />
+            )}
+
+            {/* Sliding Sidebar */}
+            <div
+              className={`fixed top-0 right-0 h-full w-full max-w-md bg-theme-primary border-l border-yellow-500/30 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+                isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+              }`}
+            >
+              <div className="h-full overflow-y-auto">
+                {/* Sidebar Header */}
+                <div className="sticky top-0 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-yellow-400 flex items-center gap-2">
+                    📊 Strategy & Rules
+                  </h2>
+                  <button
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-theme-tertiary hover:text-theme-primary"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Sidebar Content */}
+                <div className="p-5 space-y-6">
+                  {account?.strategy && (
+                    <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/30 rounded-2xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">📊</span>
+                        <h3 className="text-sm font-bold text-cyan-400">Strategy</h3>
+                      </div>
+                      <p className="text-theme-primary font-medium">{account.strategy}</p>
+                    </div>
+                  )}
+
+                  {account?.rules && (
+                    <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">📋</span>
+                        <h3 className="text-sm font-bold text-orange-400">Trading Rules</h3>
+                      </div>
+                      <p className="text-theme-secondary text-sm whitespace-pre-wrap leading-relaxed">{account.rules}</p>
+                    </div>
+                  )}
+
+                  {/* Quick Actions */}
+                  <div className="pt-4 border-t border-theme-secondary">
+                    <button
+                      onClick={() => {
+                        setIsSidebarOpen(false)
+                        router.push(`/trading/trading_pnl/${accountId}/edit`)
+                      }}
+                      className="w-full px-4 py-3 bg-theme-card border border-theme-secondary text-theme-primary rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <FaEdit className="w-4 h-4" /> Edit Strategy & Rules
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
@@ -515,73 +671,86 @@ export default function TradingPnLAccountPage() {
             </div>
 
             <div className="grid grid-cols-7 gap-2">
-              {Array.from({ length: startingDayOfWeek }).map((_, index) => (
-                <div key={`empty-${index}`} className="aspect-square" />
-              ))}
+              {weekRows.map((week, rowIndex) => (
+                <React.Fragment key={rowIndex}>
+                  {week.map((day, colIndex) => {
+                    if (day === null) {
+                      return <div key={`empty-${rowIndex}-${colIndex}`} className="aspect-square" />
+                    }
+                    const dateObj = new Date(year, month, day)
+                    const dayOfWeek = dateObj.getDay()
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                    const dateStr = formatLocalDate(dateObj)
+                    const dayData = state.dailyData[dateStr]
+                    const isToday = dateStr === formatLocalDate(new Date())
 
-              {Array.from({ length: daysInMonth }).map((_, index) => {
-                const day = index + 1
-                const dateObj = new Date(year, month, day)
-                const dayOfWeek = dateObj.getDay()
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-                const dateStr = formatLocalDate(dateObj)
-                const dayData = state.dailyData[dateStr]
-                const isToday = dateStr === formatLocalDate(new Date())
-
-                return (
-                  <button
-                    key={day}
-                    onClick={() => !isWeekend && handleDateClick(day)}
-                    disabled={isWeekend}
-                    className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
-                      isWeekend
-                        ? 'border-gray-600/30 bg-theme-card/30 opacity-50 cursor-not-allowed'
-                        : isToday
-                          ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105'
-                          : dayData
-                            ? dayData.amount >= 0
-                              ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
-                              : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
-                            : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className={`text-sm font-bold mb-1 ${
-                        isWeekend
-                          ? 'text-theme-muted'
-                          : isToday
-                            ? 'text-yellow-400'
-                            : 'text-theme-secondary'
-                      }`}>
-                        {day}
-                      </div>
-                      {isWeekend ? (
-                        <div className="text-[10px] text-theme-muted font-semibold mt-1 text-center leading-tight">
-                          Market<br />Closed
-                        </div>
-                      ) : dayData ? (
-                        <>
-                          <div className={`text-xs font-bold ${
-                            dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'
+                    return (
+                      <button
+                        key={day}
+                        onClick={() => !isWeekend && handleDateClick(day)}
+                        disabled={isWeekend}
+                        className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
+                          isWeekend
+                            ? 'border-gray-600/30 bg-theme-card/30 opacity-50 cursor-not-allowed'
+                            : isToday
+                              ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105'
+                              : dayData
+                                ? dayData.amount >= 0
+                                  ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
+                                  : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
+                                : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <div className={`text-sm font-bold mb-1 ${
+                            isWeekend
+                              ? 'text-theme-muted'
+                              : isToday
+                                ? 'text-yellow-400'
+                                : 'text-theme-secondary'
                           }`}>
-                            {currencySymbol}{dayData.amount >= 0 ? '+' : ''}{dayData.amount.toFixed(0)}
+                            {day}
                           </div>
-                          <div className="text-xs text-theme-tertiary">
-                            {dayData.trades} {dayData.trades === 1 ? 'trade' : 'trades'}
-                          </div>
-                          {dayData.lessons && (
-                            <div className="mt-1">
-                              <svg className="w-3 h-3 text-yellow-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
+                          {isWeekend ? (
+                            <div className="text-[10px] text-theme-muted font-semibold mt-1 text-center leading-tight">
+                              Market<br />Closed
                             </div>
-                          )}
-                        </>
-                      ) : null}
-                    </div>
-                  </button>
-                )
-              })}
+                          ) : dayData ? (
+                            <>
+                              <div className={`text-xs font-bold ${
+                                dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'
+                              }`}>
+                                {currencySymbol}{dayData.amount >= 0 ? '+' : ''}{dayData.amount.toFixed(0)}
+                              </div>
+                              <div className="text-xs text-theme-tertiary">
+                                {dayData.trades} {dayData.trades === 1 ? 'trade' : 'trades'}
+                              </div>
+                              {dayData.lessons && (
+                                <div className="mt-1">
+                                  <svg className="w-3 h-3 text-yellow-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                  </svg>
+                                </div>
+                              )}
+                            </>
+                          ) : null}
+                        </div>
+                      </button>
+                    )
+                  })}
+                  {(() => {
+                    const weekTotal = getWeekTotal(week)
+                    return (
+                      <div className="col-span-7 py-2 px-3 rounded-lg bg-theme-card/50 border border-theme-secondary text-right">
+                        <span className="text-xs text-theme-tertiary font-medium">Week total: </span>
+                        <span className={`text-sm font-bold ${weekTotal >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {currencySymbol}{weekTotal >= 0 ? '+' : ''}{weekTotal.toFixed(2)}
+                        </span>
+                      </div>
+                    )
+                  })()}
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </div>

@@ -4,7 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import Icon from '@/components/ui/Icon'
 import { auth } from '../../../../../../firebase'
-import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore'
+import { toast } from 'react-toastify'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -16,6 +17,7 @@ type TradingAccount = {
   currency: CurrencyType
   userId: string
   capital?: number
+  target?: number
   strategy?: string
   rules?: string
 }
@@ -26,12 +28,15 @@ export default function EditTradingAccountPage() {
   const accountId = params?.accountId
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [showResetModal, setShowResetModal] = useState(false)
   const [account, setAccount] = useState<TradingAccount | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     type: 'real' as AccountType,
     currency: 'usd' as CurrencyType,
     capital: '',
+    target: '',
     strategy: '',
     rules: '',
   })
@@ -59,6 +64,7 @@ export default function EditTradingAccountPage() {
         type: acc.type,
         currency: acc.currency || 'usd',
         capital: String(acc.capital ?? 0),
+        target: String(acc.target ?? ''),
         strategy: acc.strategy || '',
         rules: acc.rules || '',
       })
@@ -86,33 +92,66 @@ export default function EditTradingAccountPage() {
     if (!user || !accountId) return
     const name = formData.name.trim()
     if (!name) {
-      alert('Please enter an account name')
+      toast.error('Please enter an account name')
       return
     }
     const capital = Number(formData.capital)
     if (formData.capital && Number.isNaN(capital)) {
-      alert('Please enter a valid capital amount')
+      toast.error('Please enter a valid capital amount')
       return
     }
 
     setIsSaving(true)
     try {
       const db = getFirestore()
+      const target = Number(formData.target)
       await updateDoc(doc(db, 'tradingAccounts', accountId), {
         name,
         type: formData.type,
         currency: formData.currency,
         capital: Number.isFinite(capital) ? capital : 0,
+        target: Number.isFinite(target) && target > 0 ? target : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         updatedAt: new Date().toISOString(),
       })
+      toast.success('Account updated successfully!')
       router.push(`/trading/trading_pnl/${accountId}`)
     } catch (e) {
       console.error('Error updating account:', e)
-      alert('Failed to update account')
+      toast.error('Failed to update account')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleResetPnL = async () => {
+    const user = auth.currentUser
+    if (!user || !accountId) return
+
+    setIsResetting(true)
+    try {
+      const db = getFirestore()
+      // Query all PnL entries for this account
+      const pnlQuery = query(
+        collection(db, 'trading_pnl'),
+        where('userId', '==', user.uid),
+        where('accountId', '==', accountId)
+      )
+      const pnlSnapshot = await getDocs(pnlQuery)
+      
+      // Delete all PnL entries
+      const deletePromises = pnlSnapshot.docs.map(doc => deleteDoc(doc.ref))
+      await Promise.all(deletePromises)
+
+      setShowResetModal(false)
+      toast.success(`Successfully deleted ${pnlSnapshot.docs.length} P&L entries`)
+      router.push(`/trading/trading_pnl/${accountId}`)
+    } catch (e) {
+      console.error('Error resetting P&L:', e)
+      toast.error('Failed to reset P&L data')
+    } finally {
+      setIsResetting(false)
     }
   }
 
@@ -220,6 +259,20 @@ export default function EditTradingAccountPage() {
                 </div>
 
                 <div>
+                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">
+                    Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.target}
+                    onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
+                    placeholder="Your profit goal for the month"
+                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm text-theme-tertiary mb-2 font-medium">Account Type</label>
                   <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
                     <button
@@ -280,6 +333,22 @@ export default function EditTradingAccountPage() {
               />
               <p className="text-xs text-theme-muted mt-3">Set specific rules to follow when trading this account</p>
             </div>
+
+            {/* Danger Zone - Reset P&L */}
+            <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/30 rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
+                ⚠️ Danger Zone
+              </h2>
+              <p className="text-sm text-theme-secondary mb-4">
+                Reset all P&L data for this account. This will permanently delete all daily entries, trades, and lessons recorded for this account.
+              </p>
+              <button
+                onClick={() => setShowResetModal(true)}
+                className="px-4 py-2 bg-red-500/20 text-red-300 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-medium"
+              >
+                🗑️ Reset All P&L Data
+              </button>
+            </div>
           </div>
         </div>
 
@@ -302,6 +371,46 @@ export default function EditTradingAccountPage() {
           </button>
         </div>
       </div>
+
+      {/* Reset P&L Confirmation Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-theme-secondary/60">
+              <h3 className="text-xl font-bold text-red-400 flex items-center gap-2">
+                ⚠️ Reset P&L Data
+              </h3>
+              <p className="text-sm text-theme-tertiary mt-1">
+                This action cannot be undone!
+              </p>
+            </div>
+            <div className="p-6 space-y-3">
+              <p className="text-theme-secondary">
+                Are you sure you want to delete <span className="font-bold text-red-400">all P&L entries</span> for this account?
+              </p>
+              <p className="text-sm text-theme-tertiary">
+                This will permanently remove all daily profit/loss records, trade counts, and lessons for <span className="font-semibold text-theme-primary">{account?.name}</span>.
+              </p>
+            </div>
+            <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowResetModal(false)}
+                disabled={isResetting}
+                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetPnL}
+                disabled={isResetting}
+                className="px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+              >
+                {isResetting ? 'Resetting...' : '🗑️ Yes, Reset All P&L'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

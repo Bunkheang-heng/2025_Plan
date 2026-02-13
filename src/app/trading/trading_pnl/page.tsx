@@ -5,6 +5,7 @@ import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 import { addDoc, collection, deleteDoc, doc, getDocs, getFirestore, orderBy, query, where } from 'firebase/firestore'
 import { FaChartLine, FaPlus, FaWallet } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -16,6 +17,7 @@ type TradingAccount = {
   currency: CurrencyType
   userId: string
   capital?: number
+  target?: number
   strategy?: string
   rules?: string
   createdAt?: string
@@ -25,7 +27,7 @@ export default function TradingPnLAccountsPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [accounts, setAccounts] = useState<TradingAccount[]>([])
-  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, currency: 'usd' as CurrencyType, capital: '', strategy: '', rules: '' })
+  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, currency: 'usd' as CurrencyType, capital: '', target: '', strategy: '', rules: '' })
   const [isCreating, setIsCreating] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState<TradingAccount | null>(null)
@@ -83,29 +85,32 @@ export default function TradingPnLAccountsPage() {
     if (!name) return
     const capital = Number(formData.capital)
     if (formData.capital && Number.isNaN(capital)) {
-      alert('Please enter a valid capital amount')
+      toast.error('Please enter a valid capital amount')
       return
     }
 
     setIsCreating(true)
     try {
       const db = getFirestore()
+      const target = Number(formData.target)
       const ref = await addDoc(collection(db, 'tradingAccounts'), {
         userId: user.uid,
         name,
         type: formData.type,
         currency: formData.currency,
         capital: Number.isFinite(capital) ? capital : 0,
+        target: Number.isFinite(target) && target > 0 ? target : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         createdAt: new Date().toISOString(),
       })
-      setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', strategy: '', rules: '' })
+      setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', target: '', strategy: '', rules: '' })
+      toast.success('Account created successfully!')
       await fetchAccounts()
       router.push(`/trading/trading_pnl/${ref.id}`)
     } catch (e) {
       console.error('Error creating trading account:', e)
-      alert('Failed to create account')
+      toast.error('Failed to create account')
     } finally {
       setIsCreating(false)
     }
@@ -123,12 +128,13 @@ export default function TradingPnLAccountsPage() {
     try {
       const db = getFirestore()
       await deleteDoc(doc(db, 'tradingAccounts', deletingAccount.id))
+      toast.success('Account deleted successfully!')
       await fetchAccounts()
       setIsDeleteModalOpen(false)
       setDeletingAccount(null)
     } catch (e) {
       console.error('Error deleting account:', e)
-      alert('Failed to delete account')
+      toast.error('Failed to delete account')
     } finally {
       setIsDeleting(false)
     }
@@ -189,6 +195,9 @@ export default function TradingPnLAccountsPage() {
                           <div className="text-[11px] text-theme-muted font-mono break-all">{acc.id}</div>
                           <div className="text-xs text-theme-tertiary mt-1">
                             Capital: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.capital || 0).toFixed(2)}
+                            {acc.target && acc.target > 0 && (
+                              <span className="ml-2 text-indigo-400">| 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.target).toFixed(2)}</span>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col gap-1 items-end">
@@ -277,6 +286,16 @@ export default function TradingPnLAccountsPage() {
               value={formData.capital}
               onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
               placeholder="0.00"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+            />
+
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.target}
+              onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
+              placeholder="Your profit goal for the month"
               className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
             />
 

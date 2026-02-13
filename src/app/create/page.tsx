@@ -91,7 +91,7 @@ function CreatePlanContent() {
 
       // Redirect back to the appropriate page
       if (planType === 'daily') {
-        router.push('/task/daily')
+        router.push(dateToUse ? `/task/daily/${dateToUse}` : '/task/daily')
       } else if (planType === 'weekly') {
         router.push('/task/weekly')
       } else {

@@ -5,6 +5,8 @@ import { Nav } from "@/components";
 import AuthGate from "@/components/layout/AuthGate";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +52,18 @@ export default function RootLayout({
             <main className="flex-1 md:pl-72 pt-0 bg-theme-primary text-theme-primary">
               {children}
             </main>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+            />
           </AuthProvider>
         </ThemeProvider>
       </body>
