@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../../firebase'
-import { collection, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
 import { FaArrowLeft, FaEdit, FaChartLine, FaCalendarAlt } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
@@ -29,6 +29,23 @@ type DailyPnL = {
   userId: string
   accountType?: AccountType
   accountId?: string
+}
+
+type DailyWithdrawal = {
+  id?: string
+  date: string
+  amount: number
+  userId: string
+  accountId: string
+}
+
+type WeeklyLesson = {
+  weekKey: string
+  lessons: string
+  userId: string
+  accountId: string
+  year?: number
+  month?: number
 }
 
 type MonthStats = {
@@ -86,6 +103,8 @@ export default function TradingPnLAccountPage() {
   const [state, setState] = useState({
     isLoading: true,
     dailyData: {} as Record<string, DailyPnL>,
+    withdrawalData: {} as Record<string, number>,
+    weeklyLessons: {} as Record<string, string>,
     monthStats: {
       totalPnL: 0,
       winDays: 0,
@@ -105,11 +124,18 @@ export default function TradingPnLAccountPage() {
     trades: '',
     lessons: ''
   })
+  const [modalMode, setModalMode] = useState<'choice' | 'entry' | 'withdraw'>('choice')
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+  const [selectedWeekKey, setSelectedWeekKey] = useState<string | null>(null)
+  const [weekLessonText, setWeekLessonText] = useState('')
   const capitalAmount = useMemo(() => Number(account?.capital || 0), [account?.capital])
   const currencySymbol = useMemo(() => account?.currency === 'cent' ? '¢' : '$', [account?.currency])
+  const monthWithdrawalsTotal = useMemo(() => {
+    return Object.values(state.withdrawalData).reduce((sum, amt) => sum + amt, 0)
+  }, [state.withdrawalData])
   const balanceAmount = useMemo(() => {
-    return capitalAmount + (state.monthStats?.totalPnL || 0)
-  }, [capitalAmount, state.monthStats?.totalPnL])
+    return capitalAmount + (state.monthStats?.totalPnL || 0) - (monthWithdrawalsTotal || 0)
+  }, [capitalAmount, state.monthStats?.totalPnL, monthWithdrawalsTotal])
 
   const fetchAccount = useCallback(async () => {
     const user = auth.currentUser
@@ -140,7 +166,7 @@ export default function TradingPnLAccountPage() {
       const startDate = formatLocalDate(new Date(year, month, 1))
       const endDate = formatLocalDate(new Date(year, month + 1, 0))
 
-      const applyFilters = (rows: DailyPnL[]) => {
+      const applyFilters = (rows: DailyPnL[], withdrawalRows: DailyWithdrawal[], weeklyLessonsData: Record<string, string>) => {
         const filtered = rows.filter(row => {
           const matchesAccount = row.accountId === accountId ||
             (!row.accountId && account?.type && row.accountType === account.type)
@@ -152,10 +178,18 @@ export default function TradingPnLAccountPage() {
         filtered.forEach(row => {
           dailyData[row.date] = row
         })
+        const withdrawalData: Record<string, number> = {}
+        withdrawalRows
+          .filter(w => w.accountId === accountId && w.date >= startDate && w.date <= endDate)
+          .forEach(w => {
+            withdrawalData[w.date] = (withdrawalData[w.date] || 0) + w.amount
+          })
         const monthStats = calculateMonthStats(dailyData)
         setState({
           isLoading: false,
           dailyData,
+          withdrawalData,
+          weeklyLessons: weeklyLessonsData,
           monthStats
         })
       }
@@ -184,7 +218,38 @@ export default function TradingPnLAccountPage() {
           rows = rows.concat(legacyRows)
         }
 
-        applyFilters(rows)
+        const withdrawQuery = query(
+          collection(db, 'trading_withdrawals'),
+          where('userId', '==', user.uid),
+          where('accountId', '==', accountId),
+          where('date', '>=', startDate),
+          where('date', '<=', endDate)
+        )
+        let withdrawalRows: DailyWithdrawal[] = []
+        try {
+          const withdrawSnapshot = await getDocs(withdrawQuery)
+          withdrawalRows = withdrawSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as DailyWithdrawal))
+        } catch (_) {
+        }
+
+        let weeklyLessons: Record<string, string> = {}
+        try {
+          const lessonQuery = query(
+            collection(db, 'trading_weekly_lessons'),
+            where('userId', '==', user.uid),
+            where('accountId', '==', accountId),
+            where('year', '==', year),
+            where('month', '==', month)
+          )
+          const lessonSnapshot = await getDocs(lessonQuery)
+          lessonSnapshot.docs.forEach(d => {
+            const data = d.data() as WeeklyLesson
+            if (data.weekKey) weeklyLessons[data.weekKey] = data.lessons || ''
+          })
+        } catch (_) {
+        }
+
+        applyFilters(rows, withdrawalRows, weeklyLessons)
       } catch (indexError: any) {
         if (indexError.code === 'failed-precondition' || indexError.message?.includes('index')) {
           const fallbackQuery = query(
@@ -192,8 +257,25 @@ export default function TradingPnLAccountPage() {
             where('userId', '==', user.uid)
           )
           const fallbackSnapshot = await getDocs(fallbackQuery)
-          const rows = fallbackSnapshot.docs.map(d => d.data() as DailyPnL)
-          applyFilters(rows)
+          const rows = fallbackSnapshot.docs.map(d => d.data() as DailyPnL).filter(r => r.date >= startDate && r.date <= endDate && (r.accountId === accountId || (!r.accountId && account?.type && r.accountType === account.type)))
+          let withdrawalRows: DailyWithdrawal[] = []
+          let weeklyLessons: Record<string, string> = {}
+          try {
+            const wq = query(collection(db, 'trading_withdrawals'), where('userId', '==', user.uid))
+            const ws = await getDocs(wq)
+            withdrawalRows = ws.docs.map(d => ({ id: d.id, ...d.data() } as DailyWithdrawal)).filter(w => w.accountId === accountId && w.date >= startDate && w.date <= endDate)
+          } catch (_) { }
+          try {
+            const lq = query(collection(db, 'trading_weekly_lessons'), where('userId', '==', user.uid))
+            const ls = await getDocs(lq)
+            ls.docs.forEach(d => {
+              const data = d.data() as WeeklyLesson
+              if (data.accountId === accountId && data.month === month && data.year === year && data.weekKey) {
+                weeklyLessons[data.weekKey] = data.lessons || ''
+              }
+            })
+          } catch (_) { }
+          applyFilters(rows, withdrawalRows, weeklyLessons)
         } else {
           throw indexError
         }
@@ -234,8 +316,56 @@ export default function TradingPnLAccountPage() {
       setFormData({ amount: '', trades: '', lessons: '' })
       setIsEditing(true)
     }
-
+    const existingWithdrawal = state.withdrawalData[dateStr] || 0
+    setWithdrawAmount(existingWithdrawal > 0 ? existingWithdrawal.toString() : '')
+    setModalMode('choice')
     setSelectedDate(dateStr)
+  }
+
+  const handleWithdrawSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedDate || !accountId) return
+    const amount = parseFloat(withdrawAmount)
+    if (isNaN(amount) || amount < 0) {
+      toast.error('Please enter a valid amount')
+      return
+    }
+    try {
+      const db = getFirestore()
+      const user = auth.currentUser
+      if (!user) return
+      const docId = `${user.uid}_${accountId}_${selectedDate}`
+      const docRef = doc(db, 'trading_withdrawals', docId)
+      const wq = query(
+        collection(db, 'trading_withdrawals'),
+        where('userId', '==', user.uid),
+        where('accountId', '==', accountId),
+        where('date', '==', selectedDate)
+      )
+      const wSnap = await getDocs(wq)
+      const toDelete = wSnap.docs.filter(d => d.id !== docId)
+      if (amount === 0) {
+        await Promise.all([...toDelete.map(d => deleteDoc(doc(db, 'trading_withdrawals', d.id))), deleteDoc(docRef).catch(() => {})])
+        toast.success('Withdrawal removed')
+      } else {
+        await Promise.all(toDelete.map(d => deleteDoc(doc(db, 'trading_withdrawals', d.id))))
+        await setDoc(docRef, {
+          userId: user.uid,
+          accountId,
+          accountType: account?.type || null,
+          date: selectedDate,
+          amount
+        })
+        toast.success(state.withdrawalData[selectedDate] ? 'Withdrawal updated' : 'Withdrawal recorded')
+      }
+      setSelectedDate(null)
+      setModalMode('choice')
+      setWithdrawAmount('')
+      fetchMonthData(currentDate)
+    } catch (error) {
+      console.error('Error saving withdrawal:', error)
+      toast.error('Failed to save withdrawal')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -281,6 +411,58 @@ export default function TradingPnLAccountPage() {
     const newDate = new Date(currentDate)
     newDate.setMonth(currentDate.getMonth() + direction)
     setCurrentDate(newDate)
+  }
+
+  const getWeekKey = (rowIndex: number) => {
+    const y = currentDate.getFullYear()
+    const m = currentDate.getMonth()
+    return `${y}-${String(m + 1).padStart(2, '0')}-R${rowIndex}`
+  }
+
+  const openWeekLessonModal = (rowIndex: number) => {
+    const key = getWeekKey(rowIndex)
+    setSelectedWeekKey(key)
+    setWeekLessonText(state.weeklyLessons[key] || '')
+  }
+
+  const closeWeekLessonModal = () => {
+    setSelectedWeekKey(null)
+    setWeekLessonText('')
+  }
+
+  const saveWeekLesson = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedWeekKey || !accountId) return
+    try {
+      const db = getFirestore()
+      const user = auth.currentUser
+      if (!user) return
+      const parts = selectedWeekKey.split('-')
+      const y = parseInt(parts[0] || '0', 10)
+      const m = parseInt(parts[1] || '1', 10)
+      const docId = `${user.uid}_${accountId}_${selectedWeekKey}`
+      const docRef = doc(db, 'trading_weekly_lessons', docId)
+      if (!weekLessonText.trim()) {
+        await deleteDoc(docRef).catch(() => {})
+        setState(prev => ({ ...prev, weeklyLessons: { ...prev.weeklyLessons, [selectedWeekKey]: '' } }))
+        toast.success('Lesson removed')
+      } else {
+        await setDoc(docRef, {
+          userId: user.uid,
+          accountId,
+          weekKey: selectedWeekKey,
+          lessons: weekLessonText.trim(),
+          year: y,
+          month: m - 1
+        })
+        setState(prev => ({ ...prev, weeklyLessons: { ...prev.weeklyLessons, [selectedWeekKey]: weekLessonText.trim() } }))
+        toast.success('Lesson saved')
+      }
+      closeWeekLessonModal()
+    } catch (error) {
+      console.error('Error saving lesson:', error)
+      toast.error('Failed to save lesson')
+    }
   }
 
   const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
@@ -399,7 +581,7 @@ export default function TradingPnLAccountPage() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-theme-tertiary">Balance (Capital + P&amp;L)</div>
+              <div className="text-xs text-theme-tertiary">Balance (Capital + P&amp;L - Withdrawals)</div>
               <div className={`text-2xl font-bold ${balanceAmount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {currencySymbol}{balanceAmount.toFixed(2)}
               </div>
@@ -534,7 +716,7 @@ export default function TradingPnLAccountPage() {
           </>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
           {[
             {
               label: 'Total P&L',
@@ -546,6 +728,16 @@ export default function TradingPnLAccountPage() {
               ),
               gradient: state.monthStats.totalPnL >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600',
               isMain: true
+            },
+            {
+              label: 'Withdraw',
+              value: `${currencySymbol}${monthWithdrawalsTotal.toFixed(2)}`,
+              icon: (
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm-7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              ),
+              gradient: 'from-orange-500 to-orange-600'
             },
             {
               label: 'Win Days',
@@ -682,23 +874,25 @@ export default function TradingPnLAccountPage() {
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
                     const dateStr = formatLocalDate(dateObj)
                     const dayData = state.dailyData[dateStr]
+                    const dayWithdrawals = state.withdrawalData[dateStr] || 0
                     const isToday = dateStr === formatLocalDate(new Date())
 
                     return (
                       <button
                         key={day}
-                        onClick={() => !isWeekend && handleDateClick(day)}
-                        disabled={isWeekend}
+                        onClick={() => handleDateClick(day)}
                         className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
                           isWeekend
-                            ? 'border-gray-600/30 bg-theme-card/30 opacity-50 cursor-not-allowed'
+                            ? 'border-gray-600/30 bg-theme-card/30 hover:bg-gray-700/50 hover:scale-105'
                             : isToday
                               ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105'
                               : dayData
                                 ? dayData.amount >= 0
                                   ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
                                   : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
-                                : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
+                                : dayWithdrawals > 0
+                                  ? 'border-orange-500/50 bg-orange-500/10 hover:bg-orange-500/20 hover:scale-105'
+                                  : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
                         }`}
                       >
                         <div className="flex flex-col items-center justify-center h-full">
@@ -715,21 +909,30 @@ export default function TradingPnLAccountPage() {
                             <div className="text-[10px] text-theme-muted font-semibold mt-1 text-center leading-tight">
                               Market<br />Closed
                             </div>
-                          ) : dayData ? (
+                          ) : dayData || (state.withdrawalData[dateStr] || 0) > 0 ? (
                             <>
-                              <div className={`text-xs font-bold ${
-                                dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'
-                              }`}>
-                                {currencySymbol}{dayData.amount >= 0 ? '+' : ''}{dayData.amount.toFixed(0)}
-                              </div>
-                              <div className="text-xs text-theme-tertiary">
-                                {dayData.trades} {dayData.trades === 1 ? 'trade' : 'trades'}
-                              </div>
-                              {dayData.lessons && (
-                                <div className="mt-1">
-                                  <svg className="w-3 h-3 text-yellow-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                  </svg>
+                              {dayData && (
+                                <>
+                                  <div className={`text-xs font-bold ${
+                                    dayData.amount >= 0 ? 'text-emerald-400' : 'text-red-400'
+                                  }`}>
+                                    {currencySymbol}{dayData.amount >= 0 ? '+' : ''}{dayData.amount.toFixed(0)}
+                                  </div>
+                                  <div className="text-xs text-theme-tertiary">
+                                    {dayData.trades} {dayData.trades === 1 ? 'trade' : 'trades'}
+                                  </div>
+                                  {dayData.lessons && (
+                                    <div className="mt-1">
+                                      <svg className="w-3 h-3 text-yellow-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                      </svg>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              {(state.withdrawalData[dateStr] || 0) > 0 && (
+                                <div className="text-[10px] text-orange-400 font-semibold mt-0.5">
+                                  -{currencySymbol}{(state.withdrawalData[dateStr] || 0).toFixed(0)}
                                 </div>
                               )}
                             </>
@@ -740,13 +943,35 @@ export default function TradingPnLAccountPage() {
                   })}
                   {(() => {
                     const weekTotal = getWeekTotal(week)
+                    const wkKey = getWeekKey(rowIndex)
+                    const lessonText = state.weeklyLessons[wkKey] || ''
                     return (
-                      <div className="col-span-7 py-2 px-3 rounded-lg bg-theme-card/50 border border-theme-secondary text-right">
-                        <span className="text-xs text-theme-tertiary font-medium">Week total: </span>
-                        <span className={`text-sm font-bold ${weekTotal >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {currencySymbol}{weekTotal >= 0 ? '+' : ''}{weekTotal.toFixed(2)}
-                        </span>
-                      </div>
+                      <>
+                        <div className="col-span-7 py-2 px-3 rounded-lg bg-theme-card/50 border border-theme-secondary text-right flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openWeekLessonModal(rowIndex)}
+                            className="flex items-center gap-2 py-1.5 px-3 rounded-lg border border-yellow-500/30 hover:bg-yellow-500/10 text-yellow-400 text-xs font-medium transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            {lessonText ? 'Edit lesson' : 'Add lesson'}
+                          </button>
+                          <div>
+                            <span className="text-xs text-theme-tertiary font-medium">Week total: </span>
+                            <span className={`text-sm font-bold ${weekTotal >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {currencySymbol}{weekTotal >= 0 ? '+' : ''}{weekTotal.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                        {lessonText && (
+                          <div className="col-span-7 py-2 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-left">
+                            <div className="text-xs text-theme-tertiary font-medium mb-1">Lessons learned</div>
+                            <p className="text-sm text-theme-secondary whitespace-pre-wrap line-clamp-2">{lessonText}</p>
+                          </div>
+                        )}
+                      </>
                     )
                   })()}
                 </React.Fragment>
@@ -780,13 +1005,15 @@ export default function TradingPnLAccountPage() {
                     })}
                   </h2>
                   <p className="text-sm text-theme-tertiary mt-1">
-                    {!isEditing && formData.amount ? 'Trading Summary' : isEditing && formData.amount ? 'Edit Entry' : 'New Entry'}
+                    {modalMode === 'choice' ? 'Add entry or record a withdrawal' : modalMode === 'withdraw' ? 'Record withdrawal' : !isEditing && formData.amount ? 'Trading Summary' : isEditing && formData.amount ? 'Edit Entry' : 'New Entry'}
                   </p>
                 </div>
                 <button
                   onClick={() => {
                     setSelectedDate(null)
                     setIsEditing(false)
+                    setModalMode('choice')
+                    setWithdrawAmount('')
                   }}
                   className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
                 >
@@ -797,7 +1024,63 @@ export default function TradingPnLAccountPage() {
               </div>
             </div>
 
-            {!isEditing && formData.amount ? (
+            {modalMode === 'choice' ? (
+              <div className="p-6 space-y-4">
+                <p className="text-theme-secondary text-center mb-6">What would you like to do for this day?</p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setModalMode('entry')}
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-bold rounded-xl transition-all shadow-lg"
+                  >
+                    Add P&L Entry
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalMode('withdraw')}
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold rounded-xl transition-all shadow-lg"
+                  >
+                    Withdraw
+                  </button>
+                </div>
+              </div>
+            ) : modalMode === 'withdraw' ? (
+              <form onSubmit={handleWithdrawSubmit} className="p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-yellow-400 mb-3">Withdrawal amount ({currencySymbol})</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-tertiary text-lg font-bold">{currencySymbol}</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full pl-8 pr-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                    />
+                  </div>
+                  <p className="text-xs text-theme-tertiary mt-2">
+                    Enter 0 to remove the withdrawal for this day
+                  </p>
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setModalMode('choice')}
+                    className="flex-1 px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 text-white font-bold rounded-xl"
+                  >
+                    {state.withdrawalData[selectedDate] ? 'Update' : 'Save'} Withdrawal
+                  </button>
+                </div>
+              </form>
+            ) : !isEditing && formData.amount ? (
               <div className="p-6 space-y-6">
                 <div className="bg-gray-700/30 border border-yellow-500/20 rounded-xl p-6 space-y-4">
                   <div className="flex items-center justify-between">
@@ -840,9 +1123,17 @@ export default function TradingPnLAccountPage() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setModalMode('choice')}
+                    className="px-4 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       setSelectedDate(null)
                       setIsEditing(false)
+                      setModalMode('choice')
                     }}
                     className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl transition-colors"
                   >
@@ -911,24 +1202,73 @@ export default function TradingPnLAccountPage() {
 
                 <div className="flex space-x-4 pt-4">
                   <button
-                    type="submit"
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 text-lg"
+                    type="button"
+                    onClick={() => setModalMode('choice')}
+                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
                   >
-                    Save
+                    Back
                   </button>
                   <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDate(null)
-                      setIsEditing(false)
-                    }}
-                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl transition-colors"
+                    type="submit"
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl"
                   >
-                    Cancel
+                    Save
                   </button>
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {selectedWeekKey && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+          onClick={closeWeekLessonModal}
+        >
+          <div
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-yellow-500/30 rounded-2xl max-w-lg w-full shadow-2xl animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-theme-primary">Weekly lessons learned</h2>
+                <button
+                  onClick={closeWeekLessonModal}
+                  className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-theme-tertiary"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <form onSubmit={saveWeekLesson} className="p-6">
+              <label className="block text-sm font-medium text-theme-secondary mb-2">Reflect on this week</label>
+              <textarea
+                value={weekLessonText}
+                onChange={(e) => setWeekLessonText(e.target.value)}
+                placeholder="What did you learn this week? Wins, mistakes, insights to remember..."
+                rows={5}
+                className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
+              />
+              <p className="text-xs text-theme-tertiary mt-2">Leave empty and save to remove</p>
+              <div className="flex gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={closeWeekLessonModal}
+                  className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-theme-primary font-medium rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-xl"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

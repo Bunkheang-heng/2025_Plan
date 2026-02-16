@@ -93,7 +93,7 @@ function CreatePlanContent() {
       if (planType === 'daily') {
         router.push(dateToUse ? `/task/daily/${dateToUse}` : '/task/daily')
       } else if (planType === 'weekly') {
-        router.push('/task/weekly')
+        router.push(newPlan.weekStart ? `/task/weekly/${newPlan.weekStart}` : '/task/weekly')
       } else {
         router.push('/task/monthly')
       }

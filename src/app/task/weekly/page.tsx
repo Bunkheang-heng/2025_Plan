@@ -1,313 +1,134 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 
-type Plan = {
-  id: string;
-  status: string;
-  title: string;
-  description: string;
-  weekStart: string;
-  planType: string;
-  priority?: string;
+const TZ = 'Asia/Phnom_Penh'
+
+function getMonday(date: Date): Date {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = (day + 6) % 7
+  d.setDate(d.getDate() - diff)
+  return d
 }
 
-export default function WeeklyPlans() {
-  const [state, setState] = useState({
-    isLoading: true,
-    plans: [] as Plan[],
-    totalTasks: 0,
-    completedTasks: 0
-  })
-  const [selectedWeek, setSelectedWeek] = useState(() => {
-    const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
-    const startOfWeek = new Date(nowInPhnomPenh)
-    // Calculate Monday as start of week (getDay() returns 0=Sunday, 1=Monday, etc.)
-    const daysFromMonday = (nowInPhnomPenh.getDay() + 6) % 7 // Convert to Monday-based week
-    startOfWeek.setDate(nowInPhnomPenh.getDate() - daysFromMonday)
-    return startOfWeek.toLocaleDateString('en-CA')
+function formatWeekRange(weekStart: string): string {
+  const monday = new Date(weekStart)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  return `${monday.toLocaleDateString('en-US', { timeZone: TZ, month: 'short', day: 'numeric' })} - ${sunday.toLocaleDateString('en-US', { timeZone: TZ, month: 'short', day: 'numeric', year: 'numeric' })}`
+}
+
+export default function WeeklyPlansIndex() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [focusDate, setFocusDate] = useState(() => {
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: TZ }))
+    return getMonday(now)
   })
   const router = useRouter()
 
-  const fetchPlans = useCallback(async () => {
-    try {
-      const db = getFirestore()
-      const user = auth.currentUser
-      
-      if (!user) return
-
-      const q = query(
-        collection(db, 'weekly'),
-        where('weekStart', '==', selectedWeek)
-      )
-      
-      const querySnapshot = await getDocs(q)
-      const planData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Plan[]
-      
-      setState(prev => ({
-        ...prev,
-        plans: planData,
-        totalTasks: planData.length,
-        completedTasks: planData.filter(plan => plan.status === 'Done').length,
-        isLoading: false
-      }))
-    } catch (error) {
-      console.error('Error fetching plans:', error)
-      setState(prev => ({ ...prev, isLoading: false }))
-    }
-  }, [selectedWeek])
-
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (!user) {
-        router.push('/login')
-      } else {
-        fetchPlans()
-      }
+      if (!user) router.push('/login')
+      else setIsLoading(false)
     })
-
     return () => unsubscribe()
-  }, [router, fetchPlans])
+  }, [router])
 
-  const updatePlanStatus = async (planId: string, newStatus: string) => {
-    setState(prev => {
-      const updatedPlans = prev.plans.map(plan => 
-        plan.id === planId ? { ...plan, status: newStatus } : plan
-      )
-      const completedTasks = updatedPlans.filter(plan => plan.status === 'Done').length
-      
-      return {
-        ...prev,
-        plans: updatedPlans,
-        completedTasks
-      }
-    })
-
-    try {
-      const db = getFirestore()
-      const planRef = doc(db, 'weekly', planId)
-      
-      await updateDoc(planRef, {
-        status: newStatus
-      })
-    } catch (error) {
-      console.error('Error updating plan status:', error)
-      fetchPlans()
+  const getWeeks = () => {
+    const weeks: string[] = []
+    const start = new Date(focusDate)
+    start.setDate(focusDate.getDate() - 21)
+    for (let i = 0; i < 12; i++) {
+      const monday = new Date(start)
+      monday.setDate(start.getDate() + i * 7)
+      weeks.push(monday.toLocaleDateString('en-CA'))
     }
-  }
-
-  const formatWeekRange = (weekStart: string) => {
-    const monday = new Date(weekStart)
-    const friday = new Date(monday)
-    friday.setDate(monday.getDate() + 4) // Monday + 4 days = Friday
-    
-    return `${monday.toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh', month: 'short', day: 'numeric' })} - ${friday.toLocaleDateString('en-US', { timeZone: 'Asia/Phnom_Penh', month: 'short', day: 'numeric', year: 'numeric' })} (Mon-Fri)`
-  }
-
-  const getWeekOptions = () => {
-    const weeks = []
-    const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }))
-    
-    for (let i = -4; i <= 4; i++) {
-      const date = new Date(nowInPhnomPenh)
-      date.setDate(nowInPhnomPenh.getDate() + (i * 7))
-      const startOfWeek = new Date(date)
-      // Calculate Monday as start of week
-      const daysFromMonday = (date.getDay() + 6) % 7
-      startOfWeek.setDate(date.getDate() - daysFromMonday)
-      weeks.push(startOfWeek.toLocaleDateString('en-CA'))
-    }
-    
     return weeks
   }
 
-
-
-  const getPriorityIcon = (priority: string = 'medium') => {
-    switch (priority) {
-      case 'high':
-        return '🔴'
-      case 'medium':
-        return '🟡'
-      case 'low':
-        return '🟢'
-      default:
-        return '⚪'
-    }
+  const handleWeekClick = (weekStart: string) => {
+    router.push(`/task/weekly/${weekStart}`)
   }
 
-  if (state.isLoading) {
-    return <Loading />
+  if (isLoading) return <Loading />
+
+  const weeks = getWeeks()
+  const nowInPhnomPenh = new Date(new Date().toLocaleString('en-US', { timeZone: TZ }))
+  const currentWeekStart = getMonday(nowInPhnomPenh).toLocaleDateString('en-CA')
+
+  const shiftWeeks = (n: number) => {
+    const d = new Date(focusDate)
+    d.setDate(d.getDate() + n * 7 * 6)
+    setFocusDate(d)
   }
+
+  const periodLabel = `${focusDate.toLocaleDateString('en-US', { timeZone: TZ, month: 'short', year: 'numeric' })} (weeks)`
 
   return (
     <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
-        {/* Header */}
-        <div className="text-center mb-12">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+        <div className="text-center mb-10">
           <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-            Weekly Strategic Planning
+            Weekly Planning
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
-            Weekly Plans 📊
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-2">
+            Weekly Objectives
           </h1>
-          <p className="text-xl text-theme-secondary font-medium">
-            Set Monday-Friday objectives and track your weekly progress
+          <p className="text-theme-secondary">
+            Select a week to view and manage your objectives
           </p>
         </div>
 
-        {/* Week Selection & Stats */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 lg:p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg border border-purple-400/50">
-                  <svg className="w-5 h-5 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <label className="text-sm font-bold text-yellow-400">Select Week:</label>
-              </div>
-              <select
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(e.target.value)}
-                className="px-4 py-3 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 font-semibold bg-theme-secondary shadow-sm"
-              >
-                {getWeekOptions().map((week) => (
-                  <option key={week} value={week} className="bg-theme-card text-gray-100">
-                    {formatWeekRange(week)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="flex flex-wrap items-center gap-6 text-sm">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
-              <span className="text-theme-tertiary font-medium">Total: <span className="font-bold text-yellow-400">{state.totalTasks}</span></span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600"></div>
-              <span className="text-theme-tertiary font-medium">Completed: <span className="font-bold text-yellow-400">{state.completedTasks}</span></span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
-              <span className="text-theme-tertiary font-medium">Progress: <span className="font-bold text-yellow-400">{state.totalTasks > 0 ? Math.round((state.completedTasks / state.totalTasks) * 100) : 0}%</span></span>
-            </div>
-          </div>
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => shiftWeeks(-1)}
+            className="p-3 hover:bg-gray-800 rounded-xl border border-theme-secondary transition-colors"
+            aria-label="Previous weeks"
+          >
+            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="text-2xl font-bold text-theme-primary">{periodLabel}</div>
+          <button
+            onClick={() => shiftWeeks(1)}
+            className="p-3 hover:bg-gray-800 rounded-xl border border-theme-secondary transition-colors"
+            aria-label="Next weeks"
+          >
+            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
 
-        {/* Plans List */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <h3 className="text-xl font-bold text-theme-primary">Weekly Objectives</h3>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-theme-primary/90 text-sm font-semibold">{state.completedTasks}/{state.totalTasks}</span>
-                <button
-                  onClick={() => router.push('/create?type=weekly')}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
-                >
-                  <svg className="w-4 h-4 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {state.plans.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="p-3 bg-gray-700/50 rounded-xl inline-block mb-4 border border-yellow-500/20">
-                <svg className="w-8 h-8 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <h4 className="text-lg font-semibold text-gray-200 mb-2">No plans for this week</h4>
-              <p className="text-theme-tertiary mb-6">Create your first weekly objective to get started</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {weeks.map((weekStart) => {
+            const isCurrentWeek = weekStart === currentWeekStart
+            return (
               <button
-                onClick={() => router.push('/create?type=weekly')}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-theme-primary rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 border border-purple-400/50"
+                key={weekStart}
+                onClick={() => handleWeekClick(weekStart)}
+                className={`px-5 py-6 rounded-xl border-2 text-left transition-all duration-200 hover:scale-[1.02] ${
+                  isCurrentWeek
+                    ? 'border-yellow-400 bg-yellow-400/10'
+                    : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50'
+                }`}
               >
-                Create Weekly Plan
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-700/50">
-              {state.plans.map((plan) => (
-                <div key={plan.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200">
-                  <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
-                    <div className="flex items-center">
-                      <select
-                        value={plan.status}
-                        onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                        className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-theme-secondary"
-                      >
-                        <option value="Not Started" className="bg-theme-card">⏳ Not Started</option>
-                        <option value="Done" className="bg-theme-card">✅ Done</option>
-                        <option value="Missed" className="bg-theme-card">❌ Missed</option>
-                      </select>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h4 className={`font-semibold text-lg ${
-                          plan.status === 'Done' 
-                            ? 'text-theme-muted line-through' 
-                            : 'text-gray-100'
-                        }`}>
-                          {plan.title}
-                        </h4>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
-                          plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
-                          plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
-                          plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
-                          'bg-gray-500/20 text-theme-secondary border-gray-400/50'
-                        }`}>
-                          {getPriorityIcon(plan.priority)} {plan.priority?.toUpperCase() || 'MEDIUM'}
-                        </span>
-                      </div>
-                      {plan.description && (
-                        <p className={`text-sm leading-relaxed ${
-                          plan.status === 'Done'
-                            ? 'text-theme-muted'
-                            : 'text-theme-secondary'
-                        }`}>
-                          {plan.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
-                        plan.status === 'Done'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
-                          : plan.status === 'Missed'
-                          ? 'bg-red-500/20 text-red-300 border-red-400/50'
-                          : 'bg-gray-500/20 text-theme-secondary border-gray-400/50'
-                      }`}>
-                        {plan.status}
-                      </span>
-                    </div>
-                  </div>
+                <div className={`text-sm font-bold ${isCurrentWeek ? 'text-yellow-400' : 'text-gray-200'}`}>
+                  {formatWeekRange(weekStart)}
                 </div>
-              ))}
-            </div>
-          )}
+                {isCurrentWeek && (
+                  <div className="text-xs text-yellow-400 font-medium mt-1">Current week</div>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>
   )
-} 
+}

@@ -132,20 +132,28 @@ export default function EditTradingAccountPage() {
     setIsResetting(true)
     try {
       const db = getFirestore()
-      // Query all PnL entries for this account
-      const pnlQuery = query(
-        collection(db, 'trading_pnl'),
-        where('userId', '==', user.uid),
-        where('accountId', '==', accountId)
-      )
-      const pnlSnapshot = await getDocs(pnlQuery)
-      
-      // Delete all PnL entries
-      const deletePromises = pnlSnapshot.docs.map(doc => deleteDoc(doc.ref))
-      await Promise.all(deletePromises)
+
+      const [pnlQuery, withdrawQuery, lessonsQuery] = [
+        query(collection(db, 'trading_pnl'), where('userId', '==', user.uid), where('accountId', '==', accountId)),
+        query(collection(db, 'trading_withdrawals'), where('userId', '==', user.uid), where('accountId', '==', accountId)),
+        query(collection(db, 'trading_weekly_lessons'), where('userId', '==', user.uid), where('accountId', '==', accountId))
+      ]
+
+      const [pnlSnapshot, withdrawSnapshot, lessonsSnapshot] = await Promise.all([
+        getDocs(pnlQuery),
+        getDocs(withdrawQuery),
+        getDocs(lessonsQuery)
+      ])
+
+      const allDeletes = [
+        ...pnlSnapshot.docs.map(d => deleteDoc(d.ref)),
+        ...withdrawSnapshot.docs.map(d => deleteDoc(d.ref)),
+        ...lessonsSnapshot.docs.map(d => deleteDoc(d.ref))
+      ]
+      await Promise.all(allDeletes)
 
       setShowResetModal(false)
-      toast.success(`Successfully deleted ${pnlSnapshot.docs.length} P&L entries`)
+      toast.success(`Successfully reset: ${pnlSnapshot.docs.length} P&L, ${withdrawSnapshot.docs.length} withdrawals, ${lessonsSnapshot.docs.length} weekly lessons`)
       router.push(`/trading/trading_pnl/${accountId}`)
     } catch (e) {
       console.error('Error resetting P&L:', e)

@@ -1,99 +1,58 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 
-type Article = {
+const CALENDAR_API = '/api/economic-calendar'
+
+type CalendarEvent = {
   title: string;
-  description: string;
-  url: string;
-  urlToImage: string;
-  publishedAt: string;
-  source: { name: string };
-  category: string;
-  relevance: number;
+  country: string;
+  date: string;
+  impact: string;
+  forecast: string;
+  previous: string;
 }
 
 export default function TradingNews() {
   const [state, setState] = useState({
     isLoading: true,
     isFetching: false,
-    articles: [] as Article[],
-    nextUpdate: null as string | null,
-    isPredicting: false,
-    predictionError: null as string | null
+    events: [] as CalendarEvent[]
   })
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const router = useRouter()
 
   const fetchNews = useCallback(async () => {
-    setState(prev => ({ ...prev, isFetching: true, predictionError: null }))
+    setState(prev => ({ ...prev, isFetching: true }))
     
     try {
-      const response = await fetch('/api/gold-news')
-      const data = await response.json()
-
-      if (data.error) {
-        console.error('Error fetching news:', data.error)
-        alert('Failed to fetch news. Please check if you have set up the NEWS_API_KEY environment variable.')
-      } else {
-        setState(prev => ({
-          ...prev,
-          articles: data.articles || [],
-          nextUpdate: data.nextUpdate,
-          isLoading: false,
-          isFetching: false
-        }))
+      const response = await fetch(CALENDAR_API)
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err?.details || err?.error || 'Failed to fetch calendar')
       }
+      const data = await response.json()
+      const events: CalendarEvent[] = Array.isArray(data) ? data : []
+      // Sort by date ascending
+      events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      setState(prev => ({
+        ...prev,
+        events,
+        isLoading: false,
+        isFetching: false
+      }))
     } catch (error) {
       console.error('Error:', error)
-      setState(prev => ({ ...prev, isLoading: false, isFetching: false }))
+      setState(prev => ({
+        ...prev,
+        events: [],
+        isLoading: false,
+        isFetching: false
+      }))
     }
   }, [])
-
-  const predictTodayTrend = useCallback(async () => {
-    setState(prev => ({ ...prev, isPredicting: true, predictionError: null }))
-    try {
-      // Ensure we have news loaded
-      let articles = state.articles
-      if (!articles || articles.length === 0) {
-        const newsRes = await fetch('/api/gold-news')
-        const newsData = await newsRes.json()
-        articles = newsData.articles || []
-      }
-
-      const res = await fetch('/api/gold-trend-prediction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          articles,
-          timezone: 'Asia/Phnom_Penh',
-          todayISO: new Date().toISOString()
-        })
-      })
-
-      const data = await res.json()
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.details || data?.error || 'Failed to predict trend')
-      }
-
-      // Store for the AI page to display
-      localStorage.setItem('goldTrendPrediction', JSON.stringify({
-        prediction: data.prediction,
-        articlesUsed: articles,
-        generatedAt: new Date().toISOString()
-      }))
-
-      router.push('/trading/trading_ai_predication')
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to predict trend'
-      setState(prev => ({ ...prev, predictionError: msg }))
-    } finally {
-      setState(prev => ({ ...prev, isPredicting: false }))
-    }
-  }, [router, state.articles])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -107,48 +66,31 @@ export default function TradingNews() {
     return () => unsubscribe()
   }, [router, fetchNews])
 
-  const categories = ['All', 'Gold', 'Inflation', 'Federal Reserve', 'Currency', 'Geopolitical', 'Market News']
+  const categories = ['All', 'High', 'Medium', 'Low', 'Holiday']
   
-  const filteredArticles = selectedCategory === 'All' 
-    ? state.articles 
-    : state.articles.filter(article => article.category === selectedCategory)
+  const filteredEvents = selectedCategory === 'All' 
+    ? state.events 
+    : state.events.filter(event => event.impact === selectedCategory)
 
-  const getCategoryColor = (category: string) => {
+  const getImpactColor = (impact: string) => {
     const colors: Record<string, string> = {
-      'Gold': 'from-yellow-500 to-yellow-600',
-      'Inflation': 'from-red-500 to-red-600',
-      'Federal Reserve': 'from-blue-500 to-blue-600',
-      'Currency': 'from-green-500 to-green-600',
-      'Geopolitical': 'from-purple-500 to-purple-600',
-      'Market News': 'from-gray-500 to-gray-600'
+      'High': 'from-red-500 to-red-600',
+      'Medium': 'from-amber-500 to-amber-600',
+      'Low': 'from-gray-500 to-gray-600',
+      'Holiday': 'from-slate-500 to-slate-600'
     }
-    return colors[category] || 'from-gray-500 to-gray-600'
+    return colors[impact] || 'from-gray-500 to-gray-600'
   }
 
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, string> = {
-      'Gold': 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      'Inflation': 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
-      'Federal Reserve': 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-      'Currency': 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      'Geopolitical': 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      'Market News': 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
-    }
-    return icons[category] || icons['Market News']
-  }
-
-  const formatTimeAgo = (dateString: string) => {
+  const formatEventDate = (dateString: string) => {
     const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMins / 60)
-    const diffDays = Math.floor(diffHours / 24)
-
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   if (state.isLoading) {
@@ -165,54 +107,30 @@ export default function TradingNews() {
             Gold Trading Intelligence
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
-            <span>Gold Market News</span>
+            <span>Economic Calendar</span>
             <svg className="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </h1>
           <p className="text-xl text-theme-secondary font-medium mb-4">
-            Stay ahead with real-time gold market updates
+            This week&apos;s economic events
           </p>
 
-          {/* Refresh Button */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex justify-center">
             <button
               onClick={fetchNews}
-              disabled={state.isFetching || state.isPredicting}
+              disabled={state.isFetching}
               className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className={`w-5 h-5 ${state.isFetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span>{state.isFetching ? 'Refreshing...' : 'Refresh News'}</span>
-            </button>
-
-            <button
-              onClick={predictTodayTrend}
-              disabled={state.isLoading || state.isFetching || state.isPredicting || state.articles.length === 0}
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className={`w-5 h-5 ${state.isPredicting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1-1-3.5 0 2.25-2.25M15 3h6v6m0-6L10 14" />
-              </svg>
-              <span>{state.isPredicting ? 'Analyzing with AI...' : 'AI Predict Today Trend'}</span>
+              <span>{state.isFetching ? 'Refreshing...' : 'Refresh'}</span>
             </button>
           </div>
-
-          {state.nextUpdate && (
-            <p className="text-sm text-theme-tertiary mt-2">
-              Auto-refresh at {new Date(state.nextUpdate).toLocaleTimeString()}
-            </p>
-          )}
-
-          {state.predictionError && (
-            <p className="text-sm text-red-400 mt-2">
-              {state.predictionError}
-            </p>
-          )}
         </div>
 
-        {/* Category Filter */}
+        {/* Impact Filter */}
         <div className="mb-8 overflow-x-auto">
           <div className="flex space-x-3 pb-2">
             {categories.map((category) => (
@@ -225,114 +143,73 @@ export default function TradingNews() {
                     : 'bg-theme-secondary text-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 hover:text-yellow-400'
                 }`}
               >
-                {category !== 'All' && (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={getCategoryIcon(category)} />
-                  </svg>
-                )}
                 <span>{category}</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs ${
                   selectedCategory === category ? 'bg-gray-900/30' : 'bg-gray-700/50'
                 }`}>
-                  {category === 'All' 
-                    ? state.articles.length 
-                    : state.articles.filter(a => a.category === category).length}
+                  {category === 'All'
+                    ? state.events.length
+                    : state.events.filter(e => e.impact === category).length}
                 </span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Articles Grid */}
-        {filteredArticles.length === 0 ? (
+        {/* Events List */}
+        {filteredEvents.length === 0 ? (
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-12 text-center">
             <div className="max-w-md mx-auto">
               <div className="p-4 bg-gray-700/50 rounded-xl inline-block mb-4 border border-yellow-500/20">
                 <svg className="w-12 h-12 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-200 mb-2">No news available</h3>
-              <p className="text-theme-tertiary mb-6">
-                {state.articles.length === 0 
-                  ? 'Please set up your NEWS_API_KEY to fetch gold market news.'
-                  : 'No articles in this category.'}
+              <h3 className="text-2xl font-bold text-gray-200 mb-2">No events</h3>
+              <p className="text-theme-tertiary">
+                {state.events.length === 0
+                  ? 'Could not load the economic calendar. Try refreshing.'
+                  : 'No events in this impact category.'}
               </p>
-              {state.articles.length === 0 && (
-                <div className="bg-gray-700/30 border border-yellow-500/20 rounded-xl p-4 text-left text-sm text-theme-secondary">
-                  <p className="font-semibold text-yellow-400 mb-2">Setup Instructions:</p>
-                  <ol className="list-decimal list-inside space-y-1">
-                    <li>Get a free API key from <a href="https://newsapi.org" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:underline">newsapi.org</a></li>
-                    <li>Add it to your .env.local file as NEWS_API_KEY</li>
-                    <li>Restart your development server</li>
-                  </ol>
-                </div>
-              )}
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredArticles.map((article, index) => (
-              <a
-                key={index}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20 animate-slide-in-up"
+            {filteredEvents.map((event, index) => (
+              <div
+                key={`${event.date}-${event.title}-${index}`}
+                className="group bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/10 animate-slide-in-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                {/* Article Image */}
-                {article.urlToImage && (
-                  <div className="relative h-48 overflow-hidden bg-gray-900">
-                    <Image
-                      src={article.urlToImage}
-                      alt={article.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      loading="lazy"
-                      quality={85}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
-                    
-                    {/* Category Badge on Image */}
-                    <div className="absolute top-3 left-3">
-                      <span className={`inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-theme-primary text-xs font-bold shadow-lg`}>
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={getCategoryIcon(article.category)} />
-                        </svg>
-                        <span>{article.category}</span>
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Article Content */}
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-3 text-xs text-theme-tertiary">
-                    <span className="font-medium">{article.source.name}</span>
-                    <span>{formatTimeAgo(article.publishedAt)}</span>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className={`inline-flex items-center px-2.5 py-1 bg-gradient-to-r ${getImpactColor(event.impact)} rounded-lg text-theme-primary text-xs font-bold`}>
+                      {event.impact}
+                    </span>
+                    <span className="text-xs font-semibold text-theme-tertiary bg-theme-secondary px-2 py-1 rounded">
+                      {event.country}
+                    </span>
                   </div>
-
-                  <h3 className="text-lg font-bold text-theme-primary mb-3 line-clamp-2 group-hover:text-yellow-400 transition-colors">
-                    {article.title}
+                  <p className="text-sm text-theme-tertiary mb-2">
+                    {formatEventDate(event.date)}
+                  </p>
+                  <h3 className="text-lg font-bold text-theme-primary mb-4 line-clamp-2 group-hover:text-yellow-400 transition-colors">
+                    {event.title}
                   </h3>
-
-                  {article.description && (
-                    <p className="text-theme-tertiary text-sm line-clamp-3 mb-4">
-                      {article.description}
-                    </p>
-                  )}
-
-                  {/* Read More Link */}
-                  <div className="flex items-center space-x-2 text-yellow-400 font-semibold text-sm group-hover:space-x-3 transition-all">
-                    <span>Read Article</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
+                  <div className="flex flex-wrap gap-3 text-sm">
+                    {event.forecast && (
+                      <span className="text-theme-secondary">
+                        <span className="text-theme-tertiary">Forecast:</span> {event.forecast}
+                      </span>
+                    )}
+                    {event.previous && (
+                      <span className="text-theme-secondary">
+                        <span className="text-theme-tertiary">Previous:</span> {event.previous}
+                      </span>
+                    )}
                   </div>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
         )}

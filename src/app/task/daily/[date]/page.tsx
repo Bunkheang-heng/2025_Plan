@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loading } from '@/components'
 import { auth } from '../../../../../firebase'
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore'
 
 type Plan = {
   id: string
@@ -24,8 +24,11 @@ export default function DailyPlanDatePage() {
   const dateStr = params?.date ?? ''
   const [state, setState] = useState({
     isLoading: true,
-    plans: [] as Plan[]
+    plans: [] as Plan[],
+    addModalOpen: false,
+    isAdding: false
   })
+  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' })
 
   const autoCompletePlans = useCallback(async (plans: Plan[], targetDate: string) => {
     const autoCompletedIds: string[] = []
@@ -117,6 +120,45 @@ export default function DailyPlanDatePage() {
     }
   }
 
+  const openAddModal = () => {
+    setNewTask({ title: '', description: '', priority: 'medium' })
+    setState(prev => ({ ...prev, addModalOpen: true }))
+  }
+
+  const closeAddModal = () => {
+    setState(prev => ({ ...prev, addModalOpen: false }))
+    setNewTask({ title: '', description: '', priority: 'medium' })
+  }
+
+  const addTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const title = newTask.title.trim()
+    if (!title) return
+
+    setState(prev => ({ ...prev, isAdding: true }))
+    try {
+      const db = getFirestore()
+      const user = auth.currentUser
+      if (!user) return
+
+      await addDoc(collection(db, 'daily'), {
+        title,
+        description: newTask.description.trim() || null,
+        date: dateStr,
+        planType: 'daily',
+        status: 'Not Started',
+        priority: newTask.priority || 'medium',
+        createdAt: new Date()
+      })
+      closeAddModal()
+      fetchDayData()
+    } catch (error) {
+      console.error('Error adding plan:', error)
+    } finally {
+      setState(prev => ({ ...prev, isAdding: false }))
+    }
+  }
+
   if (state.isLoading) {
     return <Loading />
   }
@@ -140,8 +182,8 @@ export default function DailyPlanDatePage() {
     : 'Invalid date'
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-theme-primary flex flex-col">
+      <div className="w-full flex-1 px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="mb-8">
           <Link
             href="/task/daily"
@@ -169,14 +211,15 @@ export default function DailyPlanDatePage() {
               <h2 className="text-xl font-bold text-theme-primary">Tasks</h2>
               <div className="flex items-center space-x-4">
                 <span className="text-theme-primary/90 text-sm font-semibold">{completed}/{total}</span>
-                <Link
-                  href={`/create?type=daily&date=${dateStr}`}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
+                <button
+                  onClick={openAddModal}
+                  className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-lg transition-colors"
                 >
-                  <svg className="w-4 h-4 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                </Link>
+                  Add task
+                </button>
               </div>
             </div>
           </div>
@@ -191,15 +234,15 @@ export default function DailyPlanDatePage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-200 mb-2">No tasks for this day</h3>
                 <p className="text-theme-tertiary mb-4">Add a new task to get started</p>
-                <Link
-                  href={`/create?type=daily&date=${dateStr}`}
+                <button
+                  onClick={openAddModal}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Add task
-                </Link>
+                </button>
               </div>
             ) : (
               sortedPlans.map((plan) => (
@@ -270,6 +313,86 @@ export default function DailyPlanDatePage() {
           </div>
         </div>
       </div>
+
+      {/* Add task modal */}
+      {state.addModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+          onClick={closeAddModal}
+        >
+          <div
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-theme-primary">Add task for {dateLabel}</h2>
+              <button
+                onClick={closeAddModal}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-theme-tertiary"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={addTask} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Title</label>
+                <input
+                  type="text"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter task title"
+                  required
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  disabled={state.isAdding}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Description (optional)</label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Add description"
+                  rows={3}
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
+                  disabled={state.isAdding}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Priority</label>
+                <select
+                  value={newTask.priority}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
+                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                >
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeAddModal}
+                  className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-theme-primary font-medium rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={state.isAdding}
+                  className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-gray-900 font-semibold rounded-xl transition-colors"
+                >
+                  {state.isAdding ? 'Adding...' : 'Add'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

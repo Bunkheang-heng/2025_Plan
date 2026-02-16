@@ -38,6 +38,16 @@ service cloud.firestore {
       allow read, write, delete, create: if request.auth != null;
     }
 
+    // Trading Withdrawals - authenticated users can access
+    match /trading_withdrawals/{document} {
+      allow read, write, delete, create: if request.auth != null;
+    }
+
+    // Trading Weekly Lessons - authenticated users can access
+    match /trading_weekly_lessons/{document} {
+      allow read, write, delete, create: if request.auth != null;
+    }
+
     // Trading Accounts - users can only access their own
     match /tradingAccounts/{accountId} {
       allow create: if signedIn()
