@@ -97,8 +97,10 @@ export default function DailyPlans() {
 
       const year = date.getFullYear()
       const month = date.getMonth()
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0]
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0]
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const startDate = `${year}-${pad(month + 1)}-01`
+      const lastDayOfMonth = new Date(year, month + 1, 0).getDate()
+      const endDate = `${year}-${pad(month + 1)}-${pad(lastDayOfMonth)}`
 
       const q = query(
         collection(db, 'daily'),
@@ -176,10 +178,15 @@ export default function DailyPlans() {
     return () => clearInterval(interval)
   }, [currentDate, state.isLoading, fetchMonthData])
 
+  const toDateStr = (y: number, m: number, d: number) => {
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${y}-${pad(m + 1)}-${pad(d)}`
+  }
+
   const handleDateClick = (day: number) => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
-    const dateStr = new Date(year, month, day).toISOString().split('T')[0]
+    const dateStr = toDateStr(year, month, day)
     router.push(`/task/daily/${dateStr}`)
   }
 
@@ -214,33 +221,25 @@ export default function DailyPlans() {
           <p className="text-xl text-theme-secondary font-medium">
             Click on a day to view and manage your daily tasks
           </p>
-        </div>
-
-        {/* Calendar */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
-          {/* Calendar Header */}
-          <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => changeMonth(-1)}
-                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
-              >
-                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              
-              <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
-              
-              <button
-                onClick={() => changeMonth(1)}
-                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
-              >
-                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-              </button>
-            </div>
+          {/* ...existing code... */}
+          <div className="flex items-center justify-center gap-4 mt-8 mb-4">
+            <button
+              onClick={() => changeMonth(-1)}
+              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
+            <button
+              onClick={() => changeMonth(1)}
+              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
 
           {/* Calendar Grid */}
@@ -264,9 +263,9 @@ export default function DailyPlans() {
               {/* Actual days */}
               {Array.from({ length: daysInMonth }).map((_, index) => {
                 const day = index + 1
-                const dateStr = new Date(year, month, day).toISOString().split('T')[0]
+                const dateStr = toDateStr(year, month, day)
                 const dayData = state.monthData[dateStr]
-                const isToday = dateStr === new Date().toISOString().split('T')[0]
+                const isToday = dateStr === new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
                 const hasPlans = dayData && dayData.totalTasks > 0
                 const allCompleted = dayData && dayData.totalTasks > 0 && dayData.completedTasks === dayData.totalTasks
 

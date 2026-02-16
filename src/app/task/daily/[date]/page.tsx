@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loading } from '@/components'
 import { auth } from '../../../../../firebase'
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore'
 
 type Plan = {
   id: string
@@ -26,7 +26,9 @@ export default function DailyPlanDatePage() {
     isLoading: true,
     plans: [] as Plan[],
     addModalOpen: false,
-    isAdding: false
+    isAdding: false,
+    isResetting: false,
+    clearConfirmOpen: false
   })
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' })
 
@@ -85,7 +87,7 @@ export default function DailyPlanDatePage() {
         autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' as const } : plan
       )
 
-      setState({ isLoading: false, plans: updatedPlans })
+      setState(prev => ({ ...prev, isLoading: false, plans: updatedPlans }))
     } catch (error) {
       console.error('Error fetching day plans:', error)
       setState(prev => ({ ...prev, isLoading: false }))
@@ -128,6 +130,31 @@ export default function DailyPlanDatePage() {
   const closeAddModal = () => {
     setState(prev => ({ ...prev, addModalOpen: false }))
     setNewTask({ title: '', description: '', priority: 'medium' })
+  }
+
+  const openClearConfirm = () => {
+    if (state.plans.length === 0) return
+    setState(prev => ({ ...prev, clearConfirmOpen: true }))
+  }
+
+  const closeClearConfirm = () => {
+    setState(prev => ({ ...prev, clearConfirmOpen: false }))
+  }
+
+  const confirmClearAll = async () => {
+    setState(prev => ({ ...prev, isResetting: true }))
+    closeClearConfirm()
+    try {
+      const db = getFirestore()
+      const deletes = state.plans.map(plan => deleteDoc(doc(db, 'daily', plan.id)))
+      await Promise.all(deletes)
+      setState(prev => ({ ...prev, plans: [], isResetting: false }))
+    } catch (error) {
+      console.error('Error clearing daily plan:', error)
+      fetchDayData()
+    } finally {
+      setState(prev => ({ ...prev, isResetting: false }))
+    }
   }
 
   const addTask = async (e: React.FormEvent) => {
@@ -209,8 +236,18 @@ export default function DailyPlanDatePage() {
           <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-theme-primary">Tasks</h2>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-theme-primary/90 text-sm font-semibold">{completed}/{total}</span>
+                <button
+                  onClick={openClearConfirm}
+                  disabled={state.plans.length === 0 || state.isResetting}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed text-theme-primary font-semibold rounded-lg transition-colors"
+                >
+                  <svg className={`w-4 h-4 ${state.isResetting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {state.isResetting ? 'Clearing...' : 'Clear all tasks'}
+                </button>
                 <button
                   onClick={openAddModal}
                   className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-lg transition-colors"
@@ -274,7 +311,7 @@ export default function DailyPlanDatePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
                         <h4 className={`font-semibold text-lg ${
-                          plan.status === 'Done' ? 'text-theme-muted line-through' : 'text-gray-100'
+                          plan.status === 'Done' || plan.status === 'Missed' ? 'text-theme-muted line-through' : 'text-gray-100'
                         }`}>
                           {plan.title}
                         </h4>
@@ -289,7 +326,7 @@ export default function DailyPlanDatePage() {
                       </div>
                       {plan.description && (
                         <p className={`text-sm leading-relaxed ${
-                          plan.status === 'Done' ? 'text-theme-muted' : 'text-theme-secondary'
+                          plan.status === 'Done' || plan.status === 'Missed' ? 'text-theme-muted line-through' : 'text-theme-secondary'
                         }`}>
                           {plan.description}
                         </p>
@@ -390,6 +427,49 @@ export default function DailyPlanDatePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Clear all confirmation modal */}
+      {state.clearConfirmOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+          onClick={closeClearConfirm}
+        >
+          <div
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-red-500/40 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-theme-primary">Clear all tasks</h2>
+              <button
+                onClick={closeClearConfirm}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-theme-tertiary"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-theme-secondary mb-6">
+              Delete all {state.plans.length} task{state.plans.length !== 1 ? 's' : ''} for this day? This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={closeClearConfirm}
+                className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-theme-primary font-medium rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmClearAll}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"
+              >
+                Delete all
+              </button>
+            </div>
           </div>
         </div>
       )}
