@@ -25,6 +25,8 @@ type DailyPnL = {
   date: string
   amount: number
   trades: number
+  winTrades?: number
+  lossTrades?: number
   lessons?: string
   userId: string
   accountType?: AccountType
@@ -53,6 +55,8 @@ type MonthStats = {
   winDays: number
   lossDays: number
   totalTrades: number
+  winTrades: number
+  lossTrades: number
   bestDay: number
   worstDay: number
   winRate: number
@@ -79,20 +83,29 @@ const getDaysInMonth = (date: Date) => {
 const calculateMonthStats = (data: Record<string, DailyPnL>): MonthStats => {
   const values = Object.values(data)
   if (values.length === 0) {
-    return { totalPnL: 0, winDays: 0, lossDays: 0, totalTrades: 0, bestDay: 0, worstDay: 0, winRate: 0 }
+    return { totalPnL: 0, winDays: 0, lossDays: 0, totalTrades: 0, winTrades: 0, lossTrades: 0, bestDay: 0, worstDay: 0, winRate: 0 }
   }
 
   const totalPnL = values.reduce((sum, d) => sum + d.amount, 0)
   const winDays = values.filter(d => d.amount > 0).length
   const lossDays = values.filter(d => d.amount < 0).length
   const totalTrades = values.reduce((sum, d) => sum + d.trades, 0)
+  // If per-trade win/loss isn't recorded, fall back to treating the whole day as win/loss.
+  const winTrades = values.reduce((sum, d) => {
+    if (typeof d.winTrades === 'number') return sum + d.winTrades
+    return sum + (d.amount > 0 ? d.trades : 0)
+  }, 0)
+  const lossTrades = values.reduce((sum, d) => {
+    if (typeof d.lossTrades === 'number') return sum + d.lossTrades
+    return sum + (d.amount < 0 ? d.trades : 0)
+  }, 0)
   const amounts = values.map(d => d.amount)
   const bestDay = amounts.length > 0 ? Math.max(...amounts) : 0
   const worstDay = amounts.length > 0 ? Math.min(...amounts) : 0
   const totalTradingDays = winDays + lossDays
   const winRate = totalTradingDays > 0 ? (winDays / totalTradingDays) * 100 : 0
 
-  return { totalPnL, winDays, lossDays, totalTrades, bestDay, worstDay, winRate }
+  return { totalPnL, winDays, lossDays, totalTrades, winTrades, lossTrades, bestDay, worstDay, winRate }
 }
 
 export default function TradingPnLAccountPage() {
@@ -110,6 +123,8 @@ export default function TradingPnLAccountPage() {
       winDays: 0,
       lossDays: 0,
       totalTrades: 0,
+      winTrades: 0,
+      lossTrades: 0,
       bestDay: 0,
       worstDay: 0,
       winRate: 0
@@ -122,6 +137,8 @@ export default function TradingPnLAccountPage() {
   const [formData, setFormData] = useState({
     amount: '',
     trades: '',
+    winTrades: '',
+    lossTrades: '',
     lessons: ''
   })
   const [modalMode, setModalMode] = useState<'choice' | 'entry' | 'withdraw'>('choice')
@@ -309,11 +326,13 @@ export default function TradingPnLAccountPage() {
       setFormData({
         amount: existingData.amount.toString(),
         trades: existingData.trades.toString(),
+        winTrades: typeof existingData.winTrades === 'number' ? existingData.winTrades.toString() : '',
+        lossTrades: typeof existingData.lossTrades === 'number' ? existingData.lossTrades.toString() : '',
         lessons: existingData.lessons || ''
       })
       setIsEditing(false)
     } else {
-      setFormData({ amount: '', trades: '', lessons: '' })
+      setFormData({ amount: '', trades: '', winTrades: '', lossTrades: '', lessons: '' })
       setIsEditing(true)
     }
     const existingWithdrawal = state.withdrawalData[dateStr] || 0
@@ -374,9 +393,29 @@ export default function TradingPnLAccountPage() {
 
     const amount = parseFloat(formData.amount)
     const trades = parseInt(formData.trades, 10)
+    let winTrades: number | null = formData.winTrades.trim() === '' ? null : parseInt(formData.winTrades, 10)
+    let lossTrades: number | null = formData.lossTrades.trim() === '' ? null : parseInt(formData.lossTrades, 10)
 
-    if (isNaN(amount) || isNaN(trades) || trades < 0) {
+    if (
+      isNaN(amount) ||
+      isNaN(trades) ||
+      trades < 0 ||
+      (winTrades !== null && (isNaN(winTrades) || winTrades < 0)) ||
+      (lossTrades !== null && (isNaN(lossTrades) || lossTrades < 0))
+    ) {
       toast.error('Please enter valid numbers')
+      return
+    }
+
+    // If user provided only one side, infer the other from total trades.
+    if (winTrades !== null && lossTrades === null) {
+      lossTrades = Math.max(trades - winTrades, 0)
+    } else if (lossTrades !== null && winTrades === null) {
+      winTrades = Math.max(trades - lossTrades, 0)
+    }
+
+    if (winTrades !== null && lossTrades !== null && winTrades + lossTrades > trades) {
+      toast.error('Win + loss trades cannot exceed total trades')
       return
     }
 
@@ -393,13 +432,15 @@ export default function TradingPnLAccountPage() {
         accountType: account?.type || null,
         amount,
         trades,
+        winTrades: winTrades ?? null,
+        lossTrades: lossTrades ?? null,
         lessons: formData.lessons || null
       })
 
       toast.success('P&L entry saved!')
       setSelectedDate(null)
       setIsEditing(false)
-      setFormData({ amount: '', trades: '', lessons: '' })
+      setFormData({ amount: '', trades: '', winTrades: '', lossTrades: '', lessons: '' })
       fetchMonthData(currentDate)
     } catch (error) {
       console.error('Error saving data:', error)
@@ -768,6 +809,26 @@ export default function TradingPnLAccountPage() {
                 </svg>
               ),
               gradient: 'from-blue-500 to-blue-600'
+            },
+            {
+              label: 'Winning Trades',
+              value: state.monthStats.winTrades.toString(),
+              icon: (
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ),
+              gradient: 'from-emerald-500 to-emerald-600'
+            },
+            {
+              label: 'Losing Trades',
+              value: state.monthStats.lossTrades.toString(),
+              icon: (
+                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ),
+              gradient: 'from-red-500 to-red-600'
             },
             {
               label: 'Win Rate',
@@ -1181,6 +1242,31 @@ export default function TradingPnLAccountPage() {
                     placeholder="0"
                     className="w-full px-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500"
                   />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-theme-tertiary mb-1">Winning trades (optional)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.winTrades}
+                        onChange={(e) => setFormData({ ...formData, winTrades: e.target.value })}
+                        placeholder="0"
+                        className="w-full px-4 py-3 bg-theme-secondary border border-yellow-500/20 rounded-xl text-theme-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-theme-tertiary mb-1">Losing trades (optional)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.lossTrades}
+                        onChange={(e) => setFormData({ ...formData, lossTrades: e.target.value })}
+                        placeholder="0"
+                        className="w-full px-4 py-3 bg-theme-secondary border border-yellow-500/20 rounded-xl text-theme-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-theme-tertiary mt-2">If left blank, win/loss trades will be estimated from the day’s P&amp;L.</p>
                 </div>
 
                 <div>

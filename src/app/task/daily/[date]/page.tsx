@@ -16,6 +16,7 @@ type Plan = {
   timePeriod?: string
   priority?: string
   startTime?: string
+  order?: number
 }
 
 export default function DailyPlanDatePage() {
@@ -28,9 +29,13 @@ export default function DailyPlanDatePage() {
     addModalOpen: false,
     isAdding: false,
     isResetting: false,
-    clearConfirmOpen: false
+    clearConfirmOpen: false,
+    editModalOpen: false,
+    isSavingEdit: false
   })
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' })
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
+  const [editForm, setEditForm] = useState({ title: '', description: '', priority: 'medium', startTime: '' })
 
   const autoCompletePlans = useCallback(async (plans: Plan[], targetDate: string) => {
     const autoCompletedIds: string[] = []
@@ -83,11 +88,28 @@ export default function DailyPlanDatePage() {
       const plans = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Plan))
 
       const autoCompletedIds = await autoCompletePlans(plans, dateStr)
-      const updatedPlans = plans.map(plan =>
+      let updatedPlans = plans.map(plan =>
         autoCompletedIds.includes(plan.id) ? { ...plan, status: 'Done' as const } : plan
       )
-
-      setState(prev => ({ ...prev, isLoading: false, plans: updatedPlans }))
+      const sorted = [...updatedPlans].sort((a, b) => {
+        const oa = a.order ?? 999
+        const ob = b.order ?? 999
+        if (oa !== ob) return oa - ob
+        if (!a.startTime && !b.startTime) return 0
+        if (!a.startTime) return 1
+        if (!b.startTime) return -1
+        return a.startTime.localeCompare(b.startTime)
+      })
+      const withOrder = sorted.map((plan, index) => ({ ...plan, order: plan.order ?? index }))
+      const needsOrderWrite = updatedPlans.filter(p => p.order == null)
+      if (needsOrderWrite.length > 0) {
+        const writes = needsOrderWrite.map((plan) => {
+          const newOrder = withOrder.findIndex(x => x.id === plan.id)
+          return updateDoc(doc(db, 'daily', plan.id), { order: newOrder })
+        })
+        await Promise.all(writes)
+      }
+      setState(prev => ({ ...prev, isLoading: false, plans: withOrder }))
     } catch (error) {
       console.error('Error fetching day plans:', error)
       setState(prev => ({ ...prev, isLoading: false }))
@@ -168,6 +190,9 @@ export default function DailyPlanDatePage() {
       const user = auth.currentUser
       if (!user) return
 
+      const nextOrder = state.plans.length > 0
+        ? Math.max(...state.plans.map(p => p.order ?? 0)) + 1
+        : 0
       await addDoc(collection(db, 'daily'), {
         title,
         description: newTask.description.trim() || null,
@@ -175,6 +200,7 @@ export default function DailyPlanDatePage() {
         planType: 'daily',
         status: 'Not Started',
         priority: newTask.priority || 'medium',
+        order: nextOrder,
         createdAt: new Date()
       })
       closeAddModal()
@@ -191,11 +217,91 @@ export default function DailyPlanDatePage() {
   }
 
   const sortedPlans = [...state.plans].sort((a, b) => {
+    const orderA = a.order ?? 999
+    const orderB = b.order ?? 999
+    if (orderA !== orderB) return orderA - orderB
     if (!a.startTime && !b.startTime) return 0
     if (!a.startTime) return 1
     if (!b.startTime) return -1
     return a.startTime.localeCompare(b.startTime)
   })
+
+  const movePlan = async (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= sortedPlans.length) return
+    const planA = sortedPlans[index]
+    const planB = sortedPlans[newIndex]
+    const orderA = planA.order ?? index
+    const orderB = planB.order ?? newIndex
+    setState(prev => ({
+      ...prev,
+      plans: prev.plans.map(p => {
+        if (p.id === planA.id) return { ...p, order: orderB }
+        if (p.id === planB.id) return { ...p, order: orderA }
+        return p
+      })
+    }))
+    try {
+      const db = getFirestore()
+      await Promise.all([
+        updateDoc(doc(db, 'daily', planA.id), { order: orderB }),
+        updateDoc(doc(db, 'daily', planB.id), { order: orderA })
+      ])
+    } catch (error) {
+      console.error('Error moving plan:', error)
+      fetchDayData()
+    }
+  }
+
+  const openEditModal = (plan: Plan) => {
+    setEditingPlan(plan)
+    setEditForm({
+      title: plan.title,
+      description: plan.description || '',
+      priority: plan.priority || 'medium',
+      startTime: plan.startTime || ''
+    })
+    setState(prev => ({ ...prev, editModalOpen: true }))
+  }
+
+  const closeEditModal = () => {
+    setEditingPlan(null)
+    setEditForm({ title: '', description: '', priority: 'medium', startTime: '' })
+    setState(prev => ({ ...prev, editModalOpen: false }))
+  }
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPlan) return
+    const title = editForm.title.trim()
+    if (!title) return
+
+    setState(prev => ({ ...prev, isSavingEdit: true }))
+    try {
+      const db = getFirestore()
+      await updateDoc(doc(db, 'daily', editingPlan.id), {
+        title,
+        description: editForm.description.trim() || null,
+        priority: editForm.priority,
+        startTime: editForm.startTime.trim() || null
+      })
+      setState(prev => ({
+        ...prev,
+        plans: prev.plans.map(p =>
+          p.id === editingPlan.id
+            ? { ...p, title, description: editForm.description.trim(), priority: editForm.priority, startTime: editForm.startTime.trim() || undefined }
+            : p
+        ),
+        isSavingEdit: false
+      }))
+      closeEditModal()
+    } catch (error) {
+      console.error('Error updating plan:', error)
+      fetchDayData()
+    } finally {
+      setState(prev => ({ ...prev, isSavingEdit: false }))
+    }
+  }
   const completed = state.plans.filter(p => p.status === 'Done').length
   const total = state.plans.length
 
@@ -282,10 +388,34 @@ export default function DailyPlanDatePage() {
                 </button>
               </div>
             ) : (
-              sortedPlans.map((plan) => (
+              sortedPlans.map((plan, index) => (
                 <div key={plan.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200">
                   <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
                     <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => movePlan(index, 'up')}
+                          disabled={index === 0}
+                          className="p-1.5 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
+                          title="Move up"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePlan(index, 'down')}
+                          disabled={index === sortedPlans.length - 1}
+                          className="p-1.5 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
+                          title="Move down"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </div>
                       {plan.startTime && (
                         <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg px-3 py-2">
                           <div className="text-blue-300 font-bold text-sm">
@@ -307,6 +437,17 @@ export default function DailyPlanDatePage() {
                         <option value="Done" className="bg-theme-card">Done</option>
                         <option value="Missed" className="bg-theme-card">Missed</option>
                       </select>
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(plan)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 text-theme-secondary text-sm font-medium"
+                        title="Edit task"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                      </button>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -430,6 +571,99 @@ export default function DailyPlanDatePage() {
           </div>
         </div>
       )}
+
+      {/* Edit task modal */}
+      {state.editModalOpen && editingPlan && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+          onClick={closeEditModal}
+        >
+          <div
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-theme-primary">Edit task</h2>
+              <button
+                onClick={closeEditModal}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-theme-tertiary"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={saveEdit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Title</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter task title"
+                  required
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  disabled={state.isSavingEdit}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Description (optional)</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Add description"
+                  rows={3}
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
+                  disabled={state.isSavingEdit}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Start time (optional)</label>
+                <input
+                  type="time"
+                  value={editForm.startTime}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, startTime: e.target.value }))}
+                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  disabled={state.isSavingEdit}
+                />
+                <p className="text-xs text-theme-tertiary mt-1">24h format used for ordering</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Priority</label>
+                <select
+                  value={editForm.priority}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, priority: e.target.value }))}
+                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  disabled={state.isSavingEdit}
+                >
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-theme-primary font-medium rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={state.isSavingEdit}
+                  className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-gray-900 font-semibold rounded-xl transition-colors"
+                >
+                  {state.isSavingEdit ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Clear all confirmation modal */}
       {state.clearConfirmOpen && (
         <div

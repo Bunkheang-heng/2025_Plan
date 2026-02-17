@@ -14,10 +14,18 @@ const requiredEnvVars = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Check if any required variables are missing
+const envVarNames = {
+  apiKey: 'NEXT_PUBLIC_FIREBASE_API_KEY',
+  authDomain: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  projectId: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  storageBucket: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  messagingSenderId: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  appId: 'NEXT_PUBLIC_FIREBASE_APP_ID',
+  measurementId: 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID'
+};
 const missingVars = Object.entries(requiredEnvVars)
-  .filter(([key, value]) => !value)
-  .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.toUpperCase()}`);
+  .filter(([, value]) => !value)
+  .map(([key]) => envVarNames[key]);
 
 if (missingVars.length > 0) {
   throw new Error(`Missing required Firebase environment variables: ${missingVars.join(', ')}`);
