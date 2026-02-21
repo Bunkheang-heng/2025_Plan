@@ -81,6 +81,14 @@ service cloud.firestore {
         allow read, write, delete, create: if request.auth != null;
       }
     }
+
+    // Self Punishment - users can only access their own entries
+    match /selfPunishments/{document} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
     
     // User profiles - users can read their own profile, admins can read all
     // Users can create and update their own profile

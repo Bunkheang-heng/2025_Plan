@@ -38,7 +38,8 @@ export default function Nav() {
       subLinks: [
         { path: '/task/daily', label: 'Daily Tasks' },
         { path: '/task/weekly', label: 'Weekly Tasks' },
-        { path: '/task/monthly', label: 'Monthly Tasks' }
+        { path: '/task/monthly', label: 'Monthly Tasks' },
+        { path: '/self_punishment', label: 'Self Punishment' }
       ]
     },
     { path: '/school', label: 'School', icon: SchoolIcon },
