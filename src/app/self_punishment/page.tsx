@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, orderBy, setDoc } from 'firebase/firestore'
@@ -19,6 +19,7 @@ type PunishmentEntry = {
 
 export default function SelfPunishmentPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [state, setState] = useState({
     isLoading: true,
     entries: [] as PunishmentEntry[],
@@ -72,6 +73,23 @@ export default function SelfPunishmentPage() {
     })
     return () => unsubscribe()
   }, [router, fetchEntries])
+
+  useEffect(() => {
+    const ruleBroken = searchParams.get('ruleBroken') || ''
+    const punishment = searchParams.get('punishment') || ''
+    const date = searchParams.get('date') || ''
+    const expiresAt = searchParams.get('expiresAt') || ''
+    if (!ruleBroken && !punishment) return
+
+    setForm(prev => ({
+      ...prev,
+      ruleBroken: ruleBroken || prev.ruleBroken,
+      punishment: punishment || prev.punishment,
+      date: date || prev.date,
+      expiresAt: expiresAt || prev.expiresAt,
+    }))
+    setState(prev => ({ ...prev, addModalOpen: true }))
+  }, [searchParams])
 
   const openAddModal = () => {
     setForm({
@@ -156,9 +174,17 @@ export default function SelfPunishmentPage() {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
   }
 
-  const today = new Date().toISOString().slice(0, 10)
-  const isExpired = (entry: PunishmentEntry) =>
-    !!entry.expiresAt && entry.expiresAt < today
+  const getExpiryTs = (expiresAt?: string) => {
+    if (!expiresAt) return null
+    const ts = new Date(expiresAt + 'T23:59:59').getTime()
+    return Number.isFinite(ts) ? ts : null
+  }
+
+  const isExpired = (entry: PunishmentEntry) => {
+    const expiryTs = getExpiryTs(entry.expiresAt)
+    if (!expiryTs) return false
+    return Date.now() > expiryTs
+  }
 
   return (
     <div className="min-h-screen bg-theme-primary">
@@ -215,7 +241,16 @@ export default function SelfPunishmentPage() {
               </div>
             ) : (
               state.entries.map((entry) => (
-                <div key={entry.id} className={`p-6 hover:bg-gray-700/20 transition-colors ${isExpired(entry) ? 'opacity-80' : ''}`}>
+                <div
+                  key={entry.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/self_punishment/${entry.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') router.push(`/self_punishment/${entry.id}`)
+                  }}
+                  className={`p-6 hover:bg-gray-700/20 transition-colors cursor-pointer ${isExpired(entry) ? 'opacity-80' : ''}`}
+                >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -236,7 +271,10 @@ export default function SelfPunishmentPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => openDeleteConfirm(entry)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openDeleteConfirm(entry)
+                      }}
                       className="flex-shrink-0 px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 text-sm font-medium"
                     >
                       Remove

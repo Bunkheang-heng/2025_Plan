@@ -18,6 +18,7 @@ type TradingAccount = {
   userId: string
   capital?: number
   target?: number
+  maxLoss?: number
   strategy?: string
   rules?: string
   createdAt?: string
@@ -27,7 +28,7 @@ export default function TradingPnLAccountsPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [accounts, setAccounts] = useState<TradingAccount[]>([])
-  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, currency: 'usd' as CurrencyType, capital: '', target: '', strategy: '', rules: '' })
+  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, currency: 'usd' as CurrencyType, capital: '', target: '', maxLoss: '', strategy: '', rules: '' })
   const [isCreating, setIsCreating] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState<TradingAccount | null>(null)
@@ -88,6 +89,11 @@ export default function TradingPnLAccountsPage() {
       toast.error('Please enter a valid capital amount')
       return
     }
+    const maxLoss = Number(formData.maxLoss)
+    if (formData.maxLoss && Number.isNaN(maxLoss)) {
+      toast.error('Please enter a valid max loss amount')
+      return
+    }
 
     setIsCreating(true)
     try {
@@ -100,11 +106,12 @@ export default function TradingPnLAccountsPage() {
         currency: formData.currency,
         capital: Number.isFinite(capital) ? capital : 0,
         target: Number.isFinite(target) && target > 0 ? target : null,
+        maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         createdAt: new Date().toISOString(),
       })
-      setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', target: '', strategy: '', rules: '' })
+      setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', target: '', maxLoss: '', strategy: '', rules: '' })
       toast.success('Account created successfully!')
       await fetchAccounts()
       router.push(`/trading/trading_pnl/${ref.id}`)
@@ -298,6 +305,17 @@ export default function TradingPnLAccountsPage() {
               placeholder="Your profit goal for the month"
               className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
             />
+
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.maxLoss}
+              onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
+              placeholder="Maximum allowed loss before warning"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+            />
+            <p className="text-xs text-theme-muted mt-2">When your drawdown reaches this amount, we’ll warn you and prompt a self punishment.</p>
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Account type</label>
             <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">

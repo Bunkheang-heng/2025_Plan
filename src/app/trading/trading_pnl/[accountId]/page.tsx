@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../../firebase'
@@ -17,6 +17,7 @@ type TradingAccount = {
   userId: string
   capital?: number
   target?: number
+  maxLoss?: number
   strategy?: string
   rules?: string
 }
@@ -69,6 +70,11 @@ const formatLocalDate = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
+
+const encodeQuery = (params: Record<string, string>) =>
+  Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&')
 
 const getDaysInMonth = (date: Date) => {
   const year = date.getFullYear()
@@ -142,6 +148,7 @@ export default function TradingPnLAccountPage() {
     lessons: ''
   })
   const [modalMode, setModalMode] = useState<'choice' | 'entry' | 'withdraw'>('choice')
+  const [maxLossPopupOpen, setMaxLossPopupOpen] = useState(false)
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [selectedWeekKey, setSelectedWeekKey] = useState<string | null>(null)
   const [weekLessonText, setWeekLessonText] = useState('')
@@ -153,6 +160,23 @@ export default function TradingPnLAccountPage() {
   const balanceAmount = useMemo(() => {
     return capitalAmount + (state.monthStats?.totalPnL || 0) - (monthWithdrawalsTotal || 0)
   }, [capitalAmount, state.monthStats?.totalPnL, monthWithdrawalsTotal])
+
+  const maxLossAmount = useMemo(() => Number(account?.maxLoss || 0), [account?.maxLoss])
+  const currentLoss = useMemo(() => Math.max(0, capitalAmount - balanceAmount), [capitalAmount, balanceAmount])
+  const maxLossReached = useMemo(() => maxLossAmount > 0 && currentLoss >= maxLossAmount, [maxLossAmount, currentLoss])
+  const maxLossProgress = useMemo(() => {
+    if (maxLossAmount <= 0) return 0
+    return Math.min((currentLoss / maxLossAmount) * 100, 100)
+  }, [currentLoss, maxLossAmount])
+
+  const prevMaxLossReached = useRef(false)
+  useEffect(() => {
+    const wasReached = prevMaxLossReached.current
+    if (!wasReached && maxLossReached) {
+      setMaxLossPopupOpen(true)
+    }
+    prevMaxLossReached.current = maxLossReached
+  }, [maxLossReached])
 
   const fetchAccount = useCallback(async () => {
     const user = auth.currentUser
@@ -390,6 +414,10 @@ export default function TradingPnLAccountPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedDate || !accountId) return
+    if (maxLossReached) {
+      toast.error('Max loss reached. P&L entries are locked for this account.')
+      return
+    }
 
     const amount = parseFloat(formData.amount)
     const trades = parseInt(formData.trades, 10)
@@ -612,6 +640,59 @@ export default function TradingPnLAccountPage() {
             Track your daily profit &amp; loss
           </p>
         </div>
+
+        {maxLossAmount > 0 && (
+          <div className={`mb-8 border rounded-2xl p-5 shadow-lg ${
+            maxLossReached
+              ? 'bg-red-500/10 border-red-500/40 shadow-red-500/10'
+              : 'bg-amber-500/10 border-amber-500/40 shadow-amber-500/10'
+          }`}>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className={`text-sm font-bold ${
+                    maxLossReached ? 'text-red-300' : 'text-amber-300'
+                  }`}>
+                    {maxLossReached ? 'Max Loss Reached' : 'Max Loss Warning'}
+                  </span>
+                  <span className="text-xs text-theme-tertiary">
+                    ({currencySymbol}{currentLoss.toFixed(2)} / {currencySymbol}{maxLossAmount.toFixed(2)})
+                  </span>
+                </div>
+                <p className="text-sm text-theme-secondary">
+                  If you keep trading after hitting your max loss, log a self punishment to stay accountable.
+                </p>
+                <div className="mt-3 h-2 w-full bg-gray-800/60 border border-theme-secondary rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      maxLossReached ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'
+                    }`}
+                    style={{ width: `${maxLossProgress}%` }}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const today = formatLocalDate(new Date())
+                    const tomorrow = formatLocalDate(new Date(Date.now() + 24 * 60 * 60 * 1000))
+                    const ruleBroken = `Max loss reached on ${accountLabel}: ${currencySymbol}${currentLoss.toFixed(2)} / ${currencySymbol}${maxLossAmount.toFixed(2)}`
+                    const punishment = 'No trading tomorrow'
+                    router.push(`/self_punishment?${encodeQuery({ ruleBroken, punishment, date: today, expiresAt: tomorrow })}`)
+                  }}
+                  className={`px-4 py-2 rounded-xl font-bold transition-all ${
+                    maxLossReached
+                      ? 'bg-red-600 hover:bg-red-500 text-white'
+                      : 'bg-amber-500 hover:bg-amber-400 text-gray-900'
+                  }`}
+                >
+                  Log punishment
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-theme-card border border-theme-secondary rounded-2xl p-5 mb-8">
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -1091,10 +1172,22 @@ export default function TradingPnLAccountPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     type="button"
-                    onClick={() => setModalMode('entry')}
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-bold rounded-xl transition-all shadow-lg"
+                    onClick={() => {
+                      if (maxLossReached) {
+                        setMaxLossPopupOpen(true)
+                        toast.error('Max loss reached. P&L entries are locked.')
+                        return
+                      }
+                      setModalMode('entry')
+                    }}
+                    disabled={maxLossReached}
+                    className={`flex-1 px-6 py-4 font-bold rounded-xl transition-all shadow-lg ${
+                      maxLossReached
+                        ? 'bg-gray-700 text-theme-tertiary cursor-not-allowed'
+                        : 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900'
+                    }`}
                   >
-                    Add P&L Entry
+                    {maxLossReached ? 'P&L Locked' : 'Add P&L Entry'}
                   </button>
                   <button
                     type="button"
@@ -1104,6 +1197,11 @@ export default function TradingPnLAccountPage() {
                     Withdraw
                   </button>
                 </div>
+                {maxLossReached && (
+                  <div className="mt-2 text-center text-sm text-red-300">
+                    You hit your max loss. Trading entries are locked for this account.
+                  </div>
+                )}
               </div>
             ) : modalMode === 'withdraw' ? (
               <form onSubmit={handleWithdrawSubmit} className="p-6 space-y-6">
@@ -1303,6 +1401,77 @@ export default function TradingPnLAccountPage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {maxLossPopupOpen && maxLossAmount > 0 && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-red-500/40 rounded-2xl max-w-lg w-full shadow-2xl shadow-red-500/10 animate-slide-up">
+            <div className="p-6 border-b border-theme-secondary/60">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-theme-primary">Max Loss Reached</h3>
+                  <p className="text-sm text-theme-tertiary mt-1">
+                    P&amp;L entries are locked for this account.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setMaxLossPopupOpen(false)}
+                  className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                >
+                  <svg className="w-6 h-6 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                <div className="text-sm text-theme-secondary">
+                  Current drawdown:
+                  <span className="ml-2 font-bold text-red-300">{currencySymbol}{currentLoss.toFixed(2)}</span>
+                </div>
+                <div className="text-sm text-theme-secondary mt-1">
+                  Max loss limit:
+                  <span className="ml-2 font-bold text-theme-primary">{currencySymbol}{maxLossAmount.toFixed(2)}</span>
+                </div>
+                <div className="mt-3 h-2 w-full bg-gray-800/60 border border-theme-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-red-500 to-red-600"
+                    style={{ width: `${maxLossProgress}%` }}
+                  />
+                </div>
+              </div>
+
+              <p className="text-sm text-theme-secondary">
+                If you break your rule and keep trading, log a self punishment now.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const today = formatLocalDate(new Date())
+                    const tomorrow = formatLocalDate(new Date(Date.now() + 24 * 60 * 60 * 1000))
+                    const ruleBroken = `Max loss reached on ${accountLabel}: ${currencySymbol}${currentLoss.toFixed(2)} / ${currencySymbol}${maxLossAmount.toFixed(2)}`
+                    const punishment = 'No trading tomorrow'
+                    router.push(`/self_punishment?${encodeQuery({ ruleBroken, punishment, date: today, expiresAt: tomorrow })}`)
+                    setMaxLossPopupOpen(false)
+                  }}
+                  className="flex-1 px-5 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-colors"
+                >
+                  Log punishment
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMaxLossPopupOpen(false)}
+                  className="flex-1 px-5 py-3 bg-gray-700 hover:bg-gray-600 text-theme-primary font-semibold rounded-xl transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

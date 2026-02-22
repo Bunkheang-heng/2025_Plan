@@ -18,6 +18,7 @@ type TradingAccount = {
   userId: string
   capital?: number
   target?: number
+  maxLoss?: number
   strategy?: string
   rules?: string
 }
@@ -37,6 +38,7 @@ export default function EditTradingAccountPage() {
     currency: 'usd' as CurrencyType,
     capital: '',
     target: '',
+    maxLoss: '',
     strategy: '',
     rules: '',
   })
@@ -65,6 +67,7 @@ export default function EditTradingAccountPage() {
         currency: acc.currency || 'usd',
         capital: String(acc.capital ?? 0),
         target: String(acc.target ?? ''),
+        maxLoss: String(acc.maxLoss ?? ''),
         strategy: acc.strategy || '',
         rules: acc.rules || '',
       })
@@ -100,6 +103,11 @@ export default function EditTradingAccountPage() {
       toast.error('Please enter a valid capital amount')
       return
     }
+    const maxLoss = Number(formData.maxLoss)
+    if (formData.maxLoss && Number.isNaN(maxLoss)) {
+      toast.error('Please enter a valid max loss amount')
+      return
+    }
 
     setIsSaving(true)
     try {
@@ -111,6 +119,7 @@ export default function EditTradingAccountPage() {
         currency: formData.currency,
         capital: Number.isFinite(capital) ? capital : 0,
         target: Number.isFinite(target) && target > 0 ? target : null,
+        maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         updatedAt: new Date().toISOString(),
@@ -278,6 +287,21 @@ export default function EditTradingAccountPage() {
                     placeholder="Your profit goal for the month"
                     className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">
+                    Max Loss ({formData.currency === 'cent' ? '¢' : '$'})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.maxLoss}
+                    onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
+                    placeholder="Maximum allowed loss before warning"
+                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                  />
+                  <p className="text-xs text-theme-muted mt-2">We’ll warn you when your drawdown reaches this amount.</p>
                 </div>
 
                 <div>

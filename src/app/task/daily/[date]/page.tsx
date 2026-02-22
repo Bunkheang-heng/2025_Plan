@@ -33,9 +33,9 @@ export default function DailyPlanDatePage() {
     editModalOpen: false,
     isSavingEdit: false
   })
-  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' })
+  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium', timePeriod: 'Morning' })
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', description: '', priority: 'medium', startTime: '' })
+  const [editForm, setEditForm] = useState({ title: '', description: '', priority: 'medium', startTime: '', timePeriod: 'Morning' })
 
   const autoCompletePlans = useCallback(async (plans: Plan[], targetDate: string) => {
     const autoCompletedIds: string[] = []
@@ -145,13 +145,13 @@ export default function DailyPlanDatePage() {
   }
 
   const openAddModal = () => {
-    setNewTask({ title: '', description: '', priority: 'medium' })
+    setNewTask({ title: '', description: '', priority: 'medium', timePeriod: 'Morning' })
     setState(prev => ({ ...prev, addModalOpen: true }))
   }
 
   const closeAddModal = () => {
     setState(prev => ({ ...prev, addModalOpen: false }))
-    setNewTask({ title: '', description: '', priority: 'medium' })
+    setNewTask({ title: '', description: '', priority: 'medium', timePeriod: 'Morning' })
   }
 
   const openClearConfirm = () => {
@@ -200,6 +200,7 @@ export default function DailyPlanDatePage() {
         planType: 'daily',
         status: 'Not Started',
         priority: newTask.priority || 'medium',
+        timePeriod: newTask.timePeriod || 'Morning',
         order: nextOrder,
         createdAt: new Date()
       })
@@ -226,11 +227,35 @@ export default function DailyPlanDatePage() {
     return a.startTime.localeCompare(b.startTime)
   })
 
-  const movePlan = async (index: number, direction: 'up' | 'down') => {
+  const getEffectivePeriod = (plan: Plan): 'Morning' | 'Afternoon' | 'Evening' => {
+    const tp = (plan.timePeriod || '').toLowerCase()
+    if (tp === 'morning') return 'Morning'
+    if (tp === 'afternoon') return 'Afternoon'
+    if (tp === 'evening') return 'Evening'
+    if (plan.startTime) {
+      const h = parseInt(plan.startTime.split(':')[0] || '0', 10)
+      if (h < 12) return 'Morning'
+      if (h < 18) return 'Afternoon'
+      return 'Evening'
+    }
+    return 'Morning'
+  }
+
+  const periodOrder: Array<'Morning' | 'Afternoon' | 'Evening'> = ['Morning', 'Afternoon', 'Evening']
+
+  const plansByPeriod = {
+    Morning: sortedPlans.filter(p => getEffectivePeriod(p) === 'Morning'),
+    Afternoon: sortedPlans.filter(p => getEffectivePeriod(p) === 'Afternoon'),
+    Evening: sortedPlans.filter(p => getEffectivePeriod(p) === 'Evening'),
+  } as const
+
+  const movePlanWithin = async (period: 'Morning' | 'Afternoon' | 'Evening', planId: string, direction: 'up' | 'down') => {
+    const list = plansByPeriod[period]
+    const index = list.findIndex(p => p.id === planId)
     const newIndex = direction === 'up' ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= sortedPlans.length) return
-    const planA = sortedPlans[index]
-    const planB = sortedPlans[newIndex]
+    if (index < 0 || newIndex < 0 || newIndex >= list.length) return
+    const planA = list[index]
+    const planB = list[newIndex]
     const orderA = planA.order ?? index
     const orderB = planB.order ?? newIndex
     setState(prev => ({
@@ -259,14 +284,15 @@ export default function DailyPlanDatePage() {
       title: plan.title,
       description: plan.description || '',
       priority: plan.priority || 'medium',
-      startTime: plan.startTime || ''
+      startTime: plan.startTime || '',
+      timePeriod: getEffectivePeriod(plan)
     })
     setState(prev => ({ ...prev, editModalOpen: true }))
   }
 
   const closeEditModal = () => {
     setEditingPlan(null)
-    setEditForm({ title: '', description: '', priority: 'medium', startTime: '' })
+    setEditForm({ title: '', description: '', priority: 'medium', startTime: '', timePeriod: 'Morning' })
     setState(prev => ({ ...prev, editModalOpen: false }))
   }
 
@@ -283,13 +309,14 @@ export default function DailyPlanDatePage() {
         title,
         description: editForm.description.trim() || null,
         priority: editForm.priority,
-        startTime: editForm.startTime.trim() || null
+        startTime: editForm.startTime.trim() || null,
+        timePeriod: editForm.timePeriod || 'Morning'
       })
       setState(prev => ({
         ...prev,
         plans: prev.plans.map(p =>
           p.id === editingPlan.id
-            ? { ...p, title, description: editForm.description.trim(), priority: editForm.priority, startTime: editForm.startTime.trim() || undefined }
+            ? { ...p, title, description: editForm.description.trim(), priority: editForm.priority, startTime: editForm.startTime.trim() || undefined, timePeriod: editForm.timePeriod || 'Morning' }
             : p
         ),
         isSavingEdit: false
@@ -388,105 +415,127 @@ export default function DailyPlanDatePage() {
                 </button>
               </div>
             ) : (
-              sortedPlans.map((plan, index) => (
-                <div key={plan.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200">
-                  <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex flex-col gap-1">
-                        <button
-                          type="button"
-                          onClick={() => movePlan(index, 'up')}
-                          disabled={index === 0}
-                          className="p-1.5 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
-                          title="Move up"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => movePlan(index, 'down')}
-                          disabled={index === sortedPlans.length - 1}
-                          className="p-1.5 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
-                          title="Move down"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
+              periodOrder.map((period) => {
+                const list = plansByPeriod[period]
+                return (
+                  <div key={period} className="divide-y divide-gray-700/50">
+                    <div className="px-6 py-4 bg-black/20 border-b border-gray-700/40 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-yellow-400">{period}</span>
+                        <span className="text-xs text-theme-tertiary">({list.length})</span>
                       </div>
-                      {plan.startTime && (
-                        <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg px-3 py-2">
-                          <div className="text-blue-300 font-bold text-sm">
-                            {new Date(`2000-01-01T${plan.startTime}`).toLocaleTimeString('en-US', {
-                              timeZone: 'Asia/Phnom_Penh',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true
-                            })}
+                    </div>
+                    {list.length === 0 ? (
+                      <div className="px-6 py-6 text-sm text-theme-tertiary">
+                        No tasks in {period.toLowerCase()}.
+                      </div>
+                    ) : (
+                      list.map((plan, idx) => (
+                        <div key={plan.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200">
+                          <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <div className="flex flex-col gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => movePlanWithin(period, plan.id, 'up')}
+                                  disabled={idx === 0}
+                                  className="p-1.5 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
+                                  title="Move up"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => movePlanWithin(period, plan.id, 'down')}
+                                  disabled={idx === list.length - 1}
+                                  className="p-1.5 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
+                                  title="Move down"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </div>
+                              {plan.startTime && (
+                                <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg px-3 py-2">
+                                  <div className="text-blue-300 font-bold text-sm">
+                                    {new Date(`2000-01-01T${plan.startTime}`).toLocaleTimeString('en-US', {
+                                      timeZone: 'Asia/Phnom_Penh',
+                                      hour: 'numeric',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                              <select
+                                value={plan.status}
+                                onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
+                                className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-theme-secondary"
+                              >
+                                <option value="Not Started" className="bg-theme-card">Not Started</option>
+                                <option value="Done" className="bg-theme-card">Done</option>
+                                <option value="Missed" className="bg-theme-card">Missed</option>
+                                <option value="Failed" className="bg-theme-card">Failed</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(plan)}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 text-theme-secondary text-sm font-medium"
+                                title="Edit task"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit
+                              </button>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-3 mb-2">
+                                <h4 className={`font-semibold text-lg ${
+                                  plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-gray-100'
+                                }`}>
+                                  {plan.title}
+                                </h4>
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                                  plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
+                                  plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
+                                  plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
+                                  'bg-gray-500/20 text-theme-secondary border-gray-400/50'
+                                }`}>
+                                  {plan.priority?.toUpperCase() || 'MEDIUM'}
+                                </span>
+                              </div>
+                              {plan.description && (
+                                <p className={`text-sm leading-relaxed ${
+                                  plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-theme-secondary'
+                                }`}>
+                                  {plan.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                                plan.status === 'Done'
+                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+                                  : plan.status === 'Missed'
+                                    ? 'bg-red-500/20 text-red-300 border-red-400/50'
+                                    : plan.status === 'Failed'
+                                      ? 'bg-orange-500/20 text-orange-300 border-orange-400/50'
+                                    : 'bg-gray-500/20 text-theme-secondary border-gray-400/50'
+                              }`}>
+                                {plan.status}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      )}
-                      <select
-                        value={plan.status}
-                        onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                        className="px-3 py-2 border border-yellow-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-100 text-sm font-medium cursor-pointer bg-theme-secondary"
-                      >
-                        <option value="Not Started" className="bg-theme-card">Not Started</option>
-                        <option value="Done" className="bg-theme-card">Done</option>
-                        <option value="Missed" className="bg-theme-card">Missed</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(plan)}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-theme-secondary border border-yellow-500/20 hover:border-yellow-500/50 text-theme-secondary text-sm font-medium"
-                        title="Edit task"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </button>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h4 className={`font-semibold text-lg ${
-                          plan.status === 'Done' || plan.status === 'Missed' ? 'text-theme-muted line-through' : 'text-gray-100'
-                        }`}>
-                          {plan.title}
-                        </h4>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
-                          plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-400/50' :
-                          plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-400/50' :
-                          plan.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' :
-                          'bg-gray-500/20 text-theme-secondary border-gray-400/50'
-                        }`}>
-                          {plan.priority?.toUpperCase() || 'MEDIUM'}
-                        </span>
-                      </div>
-                      {plan.description && (
-                        <p className={`text-sm leading-relaxed ${
-                          plan.status === 'Done' || plan.status === 'Missed' ? 'text-theme-muted line-through' : 'text-theme-secondary'
-                        }`}>
-                          {plan.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
-                        plan.status === 'Done'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
-                          : plan.status === 'Missed'
-                            ? 'bg-red-500/20 text-red-300 border-red-400/50'
-                            : 'bg-gray-500/20 text-theme-secondary border-gray-400/50'
-                      }`}>
-                        {plan.status}
-                      </span>
-                    </div>
+                      ))
+                    )}
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </div>
@@ -548,6 +597,18 @@ export default function DailyPlanDatePage() {
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
                   <option value="low">Low</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Time period</label>
+                <select
+                  value={newTask.timePeriod}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, timePeriod: e.target.value }))}
+                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                >
+                  <option value="Morning">Morning</option>
+                  <option value="Afternoon">Afternoon</option>
+                  <option value="Evening">Evening</option>
                 </select>
               </div>
 
@@ -640,6 +701,19 @@ export default function DailyPlanDatePage() {
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
                   <option value="low">Low</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Time period</label>
+                <select
+                  value={editForm.timePeriod}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, timePeriod: e.target.value }))}
+                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  disabled={state.isSavingEdit}
+                >
+                  <option value="Morning">Morning</option>
+                  <option value="Afternoon">Afternoon</option>
+                  <option value="Evening">Evening</option>
                 </select>
               </div>
 

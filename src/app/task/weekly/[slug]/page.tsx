@@ -246,14 +246,15 @@ export default function WeeklyPlanSlugPage() {
                         <option value="Not Started" className="bg-theme-card">Not Started</option>
                         <option value="Done" className="bg-theme-card">Done</option>
                         <option value="Missed" className="bg-theme-card">Missed</option>
+                        <option value="Failed" className="bg-theme-card">Failed</option>
                       </select>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className={`font-semibold text-base ${plan.status === 'Done' ? 'text-theme-muted line-through' : 'text-gray-100'}`}>
+                      <h4 className={`font-semibold text-base ${plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-gray-100'}`}>
                         {plan.title}
                       </h4>
                       {plan.description && (
-                        <p className={`text-sm mt-1 ${plan.status === 'Done' ? 'text-theme-muted' : 'text-theme-secondary'}`}>
+                        <p className={`text-sm mt-1 ${plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted' : 'text-theme-secondary'}`}>
                           {plan.description}
                         </p>
                       )}
@@ -271,6 +272,8 @@ export default function WeeklyPlanSlugPage() {
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
                           : plan.status === 'Missed'
                             ? 'bg-red-500/20 text-red-300 border border-red-400/30'
+                            : plan.status === 'Failed'
+                              ? 'bg-orange-500/20 text-orange-300 border border-orange-400/30'
                             : 'bg-gray-500/20 text-theme-secondary border border-gray-400/30'
                       }`}>
                         {plan.status}
