@@ -291,17 +291,17 @@ export default function EditTradingAccountPage() {
 
                 <div>
                   <label className="block text-sm text-theme-tertiary mb-2 font-medium">
-                    Max Loss ({formData.currency === 'cent' ? '¢' : '$'})
+                    Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.maxLoss}
                     onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
-                    placeholder="Maximum allowed loss before warning"
+                    placeholder="Maximum allowed loss per day before locking"
                     className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
                   />
-                  <p className="text-xs text-theme-muted mt-2">We’ll warn you when your drawdown reaches this amount.</p>
+                  <p className="text-xs text-theme-muted mt-2">We’ll warn you when your daily P&amp;L loss reaches this amount.</p>
                 </div>
 
                 <div>

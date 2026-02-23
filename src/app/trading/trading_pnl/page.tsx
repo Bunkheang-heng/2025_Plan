@@ -306,16 +306,16 @@ export default function TradingPnLAccountsPage() {
               className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
             />
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
             <input
               type="number"
               step="0.01"
               value={formData.maxLoss}
               onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
-              placeholder="Maximum allowed loss before warning"
+              placeholder="Maximum allowed loss per day before locking"
               className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
             />
-            <p className="text-xs text-theme-muted mt-2">When your drawdown reaches this amount, we’ll warn you and prompt a self punishment.</p>
+            <p className="text-xs text-theme-muted mt-2">If your daily P&amp;L loss reaches this amount, we’ll warn you, lock that day, and prompt a self punishment.</p>
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Account type</label>
             <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
