@@ -261,23 +261,6 @@ export default function TradingPnLAccountPage() {
         )
         const pnlSnapshot = await getDocs(pnlQuery)
         allPnLEntries = pnlSnapshot.docs.map(d => d.data() as DailyPnL)
-
-        // Also check for legacy entries without accountId but with matching accountType
-        if (account?.type) {
-          const legacyQuery = query(
-            collection(db, 'trading_pnl'),
-            where('userId', '==', user.uid),
-            where('accountType', '==', account.type)
-          )
-          const legacySnapshot = await getDocs(legacyQuery)
-          legacySnapshot.docs.forEach(d => {
-            const data = d.data() as DailyPnL
-            // Only add if it doesn't have an accountId (to avoid double counting)
-            if (!data.accountId) {
-              allPnLEntries.push(data)
-            }
-          })
-        }
       } catch (indexError: any) {
         // Fallback without index
         if (indexError.code === 'failed-precondition' || indexError.message?.includes('index')) {
@@ -288,7 +271,7 @@ export default function TradingPnLAccountPage() {
           const fallbackSnapshot = await getDocs(fallbackQuery)
           allPnLEntries = fallbackSnapshot.docs
             .map(d => d.data() as DailyPnL)
-            .filter(data => data.accountId === accountId || (!data.accountId && account?.type && data.accountType === account.type))
+            .filter(data => data.accountId === accountId)
         } else {
           throw indexError
         }
@@ -357,7 +340,7 @@ export default function TradingPnLAccountPage() {
     } catch (error) {
       console.error('Error fetching all-time data:', error)
     }
-  }, [accountId, account?.type])
+  }, [accountId])
 
   const fetchMonthData = useCallback(async (date: Date) => {
     try {
@@ -372,8 +355,7 @@ export default function TradingPnLAccountPage() {
 
       const applyFilters = (rows: DailyPnL[], withdrawalRows: DailyWithdrawal[], weeklyLessonsData: Record<string, string>) => {
         const filtered = rows.filter(row => {
-          const matchesAccount = row.accountId === accountId ||
-            (!row.accountId && account?.type && row.accountType === account.type)
+          const matchesAccount = row.accountId === accountId
           const inRange = row.date >= startDate && row.date <= endDate
           return matchesAccount && inRange
         })
@@ -407,20 +389,7 @@ export default function TradingPnLAccountPage() {
           where('date', '<=', endDate)
         )
         const querySnapshot = await getDocs(q)
-        let rows = querySnapshot.docs.map(d => d.data() as DailyPnL)
-
-        if (account?.type) {
-          const legacyQuery = query(
-            collection(db, 'trading_pnl'),
-            where('userId', '==', user.uid),
-            where('accountType', '==', account.type),
-            where('date', '>=', startDate),
-            where('date', '<=', endDate)
-          )
-          const legacySnapshot = await getDocs(legacyQuery)
-          const legacyRows = legacySnapshot.docs.map(d => d.data() as DailyPnL)
-          rows = rows.concat(legacyRows)
-        }
+        const rows = querySnapshot.docs.map(d => d.data() as DailyPnL)
 
         const withdrawQuery = query(
           collection(db, 'trading_withdrawals'),
@@ -461,7 +430,7 @@ export default function TradingPnLAccountPage() {
             where('userId', '==', user.uid)
           )
           const fallbackSnapshot = await getDocs(fallbackQuery)
-          const rows = fallbackSnapshot.docs.map(d => d.data() as DailyPnL).filter(r => r.date >= startDate && r.date <= endDate && (r.accountId === accountId || (!r.accountId && account?.type && r.accountType === account.type)))
+          const rows = fallbackSnapshot.docs.map(d => d.data() as DailyPnL).filter(r => r.date >= startDate && r.date <= endDate && r.accountId === accountId)
           let withdrawalRows: DailyWithdrawal[] = []
           let weeklyLessons: Record<string, string> = {}
           try {
@@ -488,7 +457,7 @@ export default function TradingPnLAccountPage() {
       console.error('Error fetching data:', error)
       setState(prev => ({ ...prev, isLoading: false }))
     }
-  }, [account?.type, accountId])
+  }, [accountId])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
