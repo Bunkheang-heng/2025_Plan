@@ -23,6 +23,12 @@ type TradingAccount = {
   rules?: string
 }
 
+type TradingAccountBasic = {
+  id: string
+  name: string
+  type: AccountType
+}
+
 export default function EditTradingAccountPage() {
   const router = useRouter()
   const params = useParams<{ accountId: string }>()
@@ -32,6 +38,7 @@ export default function EditTradingAccountPage() {
   const [isResetting, setIsResetting] = useState(false)
   const [showResetModal, setShowResetModal] = useState(false)
   const [account, setAccount] = useState<TradingAccount | null>(null)
+  const [allAccounts, setAllAccounts] = useState<TradingAccountBasic[]>([])
   const [formData, setFormData] = useState({
     name: '',
     type: 'real' as AccountType,
@@ -79,16 +86,38 @@ export default function EditTradingAccountPage() {
     }
   }, [accountId, router])
 
+  const fetchAllAccounts = useCallback(async () => {
+    const user = auth.currentUser
+    if (!user) return
+    const db = getFirestore()
+    try {
+      const q = query(
+        collection(db, 'tradingAccounts'),
+        where('userId', '==', user.uid)
+      )
+      const snap = await getDocs(q)
+      const list = snap.docs.map(d => ({
+        id: d.id,
+        name: (d.data() as TradingAccount).name,
+        type: (d.data() as TradingAccount).type
+      }))
+      setAllAccounts(list)
+    } catch (e) {
+      console.error('Error fetching accounts:', e)
+    }
+  }, [])
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
         router.push('/login')
       } else {
         fetchAccount()
+        fetchAllAccounts()
       }
     })
     return () => unsubscribe()
-  }, [fetchAccount, router])
+  }, [fetchAccount, fetchAllAccounts, router])
 
   const handleSave = async () => {
     const user = auth.currentUser
@@ -186,12 +215,27 @@ export default function EditTradingAccountPage() {
     <div className="min-h-screen bg-theme-primary">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={() => router.push(`/trading/trading_pnl/${accountId}`)}
-            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
-          >
-            <Icon name="arrow-left" size="sm" /> Back
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push(`/trading/trading_pnl/${accountId}`)}
+              className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+            >
+              <Icon name="arrow-left" size="sm" /> Back
+            </button>
+            {allAccounts.length > 1 && (
+              <select
+                value={accountId}
+                onChange={(e) => router.push(`/trading/trading_pnl/${e.target.value}/edit`)}
+                className="px-4 py-2 bg-gray-900/60 border border-yellow-500/30 rounded-lg text-yellow-400 font-medium focus:outline-none focus:border-yellow-500 text-sm cursor-pointer"
+              >
+                {allAccounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <button
             onClick={handleSave}
             disabled={isSaving || !formData.name.trim()}

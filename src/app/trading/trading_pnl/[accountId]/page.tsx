@@ -22,6 +22,8 @@ type TradingAccount = {
   rules?: string
 }
 
+type TradingAccountWithId = TradingAccount & { id: string }
+
 type DailyPnL = {
   date: string
   amount: number
@@ -119,6 +121,7 @@ export default function TradingPnLAccountPage() {
   const params = useParams<{ accountId: string }>()
   const accountId = params?.accountId
   const [account, setAccount] = useState<TradingAccount | null>(null)
+  const [allAccounts, setAllAccounts] = useState<TradingAccountWithId[]>([])
   const [state, setState] = useState({
     isLoading: true,
     dailyData: {} as Record<string, DailyPnL>,
@@ -135,6 +138,19 @@ export default function TradingPnLAccountPage() {
       worstDay: 0,
       winRate: 0
     } as MonthStats
+  })
+  // Cumulative all-time stats (not reset each month)
+  const [cumulativeData, setCumulativeData] = useState({
+    allTimePnL: 0,
+    allTimeWithdrawals: 0,
+    winDays: 0,
+    lossDays: 0,
+    totalTrades: 0,
+    winTrades: 0,
+    lossTrades: 0,
+    bestDay: 0,
+    worstDay: 0,
+    winRate: 0
   })
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -158,9 +174,10 @@ export default function TradingPnLAccountPage() {
   const monthWithdrawalsTotal = useMemo(() => {
     return Object.values(state.withdrawalData).reduce((sum, amt) => sum + amt, 0)
   }, [state.withdrawalData])
+  // Balance now uses cumulative all-time data (continuous, not reset monthly)
   const balanceAmount = useMemo(() => {
-    return capitalAmount + (state.monthStats?.totalPnL || 0) - (monthWithdrawalsTotal || 0)
-  }, [capitalAmount, state.monthStats?.totalPnL, monthWithdrawalsTotal])
+    return capitalAmount + cumulativeData.allTimePnL - cumulativeData.allTimeWithdrawals
+  }, [capitalAmount, cumulativeData.allTimePnL, cumulativeData.allTimeWithdrawals])
 
   const maxLossAmount = useMemo(() => Number(account?.maxLoss || 0), [account?.maxLoss])
   const todayStr = useMemo(() => formatLocalDate(new Date()), [])
@@ -204,6 +221,143 @@ export default function TradingPnLAccountPage() {
     }
     setAccount(data)
   }, [accountId])
+
+  const fetchAllAccounts = useCallback(async () => {
+    const user = auth.currentUser
+    if (!user) return
+    const db = getFirestore()
+    try {
+      const q = query(
+        collection(db, 'tradingAccounts'),
+        where('userId', '==', user.uid)
+      )
+      const snap = await getDocs(q)
+      const list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data() as TradingAccount
+      }))
+      setAllAccounts(list)
+    } catch (e) {
+      console.error('Error fetching accounts:', e)
+    }
+  }, [])
+
+  // Fetch all-time cumulative stats (continuous, not reset monthly)
+  const fetchAllTimeData = useCallback(async () => {
+    try {
+      const db = getFirestore()
+      const user = auth.currentUser
+      if (!user || !accountId) return
+
+      let allPnLEntries: DailyPnL[] = []
+      let allTimeWithdrawals = 0
+
+      // Fetch all P&L entries for this account
+      try {
+        const pnlQuery = query(
+          collection(db, 'trading_pnl'),
+          where('userId', '==', user.uid),
+          where('accountId', '==', accountId)
+        )
+        const pnlSnapshot = await getDocs(pnlQuery)
+        allPnLEntries = pnlSnapshot.docs.map(d => d.data() as DailyPnL)
+
+        // Also check for legacy entries without accountId but with matching accountType
+        if (account?.type) {
+          const legacyQuery = query(
+            collection(db, 'trading_pnl'),
+            where('userId', '==', user.uid),
+            where('accountType', '==', account.type)
+          )
+          const legacySnapshot = await getDocs(legacyQuery)
+          legacySnapshot.docs.forEach(d => {
+            const data = d.data() as DailyPnL
+            // Only add if it doesn't have an accountId (to avoid double counting)
+            if (!data.accountId) {
+              allPnLEntries.push(data)
+            }
+          })
+        }
+      } catch (indexError: any) {
+        // Fallback without index
+        if (indexError.code === 'failed-precondition' || indexError.message?.includes('index')) {
+          const fallbackQuery = query(
+            collection(db, 'trading_pnl'),
+            where('userId', '==', user.uid)
+          )
+          const fallbackSnapshot = await getDocs(fallbackQuery)
+          allPnLEntries = fallbackSnapshot.docs
+            .map(d => d.data() as DailyPnL)
+            .filter(data => data.accountId === accountId || (!data.accountId && account?.type && data.accountType === account.type))
+        } else {
+          throw indexError
+        }
+      }
+
+      // Fetch all withdrawals for this account
+      try {
+        const withdrawQuery = query(
+          collection(db, 'trading_withdrawals'),
+          where('userId', '==', user.uid),
+          where('accountId', '==', accountId)
+        )
+        const withdrawSnapshot = await getDocs(withdrawQuery)
+        withdrawSnapshot.docs.forEach(d => {
+          const data = d.data() as DailyWithdrawal
+          allTimeWithdrawals += data.amount || 0
+        })
+      } catch (_) {
+        // Fallback
+        try {
+          const fallbackQuery = query(
+            collection(db, 'trading_withdrawals'),
+            where('userId', '==', user.uid)
+          )
+          const fallbackSnapshot = await getDocs(fallbackQuery)
+          fallbackSnapshot.docs.forEach(d => {
+            const data = d.data() as DailyWithdrawal
+            if (data.accountId === accountId) {
+              allTimeWithdrawals += data.amount || 0
+            }
+          })
+        } catch (_) {}
+      }
+
+      // Calculate all-time stats from all entries
+      const allTimePnL = allPnLEntries.reduce((sum, d) => sum + (d.amount || 0), 0)
+      const winDays = allPnLEntries.filter(d => d.amount > 0).length
+      const lossDays = allPnLEntries.filter(d => d.amount < 0).length
+      const totalTrades = allPnLEntries.reduce((sum, d) => sum + (d.trades || 0), 0)
+      const winTrades = allPnLEntries.reduce((sum, d) => {
+        if (typeof d.winTrades === 'number') return sum + d.winTrades
+        return sum + (d.amount > 0 ? d.trades : 0)
+      }, 0)
+      const lossTrades = allPnLEntries.reduce((sum, d) => {
+        if (typeof d.lossTrades === 'number') return sum + d.lossTrades
+        return sum + (d.amount < 0 ? d.trades : 0)
+      }, 0)
+      const amounts = allPnLEntries.map(d => d.amount)
+      const bestDay = amounts.length > 0 ? Math.max(...amounts) : 0
+      const worstDay = amounts.length > 0 ? Math.min(...amounts) : 0
+      const totalTradingDays = winDays + lossDays
+      const winRate = totalTradingDays > 0 ? (winDays / totalTradingDays) * 100 : 0
+
+      setCumulativeData({
+        allTimePnL,
+        allTimeWithdrawals,
+        winDays,
+        lossDays,
+        totalTrades,
+        winTrades,
+        lossTrades,
+        bestDay,
+        worstDay,
+        winRate
+      })
+    } catch (error) {
+      console.error('Error fetching all-time data:', error)
+    }
+  }, [accountId, account?.type])
 
   const fetchMonthData = useCallback(async (date: Date) => {
     try {
@@ -342,12 +496,14 @@ export default function TradingPnLAccountPage() {
         router.push('/login')
       } else {
         fetchAccount()
+        fetchAllAccounts()
         fetchMonthData(currentDate)
+        fetchAllTimeData()
       }
     })
 
     return () => unsubscribe()
-  }, [router, currentDate, fetchAccount, fetchMonthData])
+  }, [router, currentDate, fetchAccount, fetchAllAccounts, fetchMonthData, fetchAllTimeData])
 
   const handleDateClick = (day: number) => {
     const year = currentDate.getFullYear()
@@ -414,6 +570,7 @@ export default function TradingPnLAccountPage() {
       setModalMode('choice')
       setWithdrawAmount('')
       fetchMonthData(currentDate)
+      fetchAllTimeData()
     } catch (error) {
       console.error('Error saving withdrawal:', error)
       toast.error('Failed to save withdrawal')
@@ -490,6 +647,7 @@ export default function TradingPnLAccountPage() {
       setIsEditing(false)
       setFormData({ amount: '', trades: '', winTrades: '', lossTrades: '', lessons: '' })
       fetchMonthData(currentDate)
+      fetchAllTimeData()
     } catch (error) {
       console.error('Error saving data:', error)
       toast.error('Failed to save data')
@@ -596,12 +754,27 @@ export default function TradingPnLAccountPage() {
     <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => router.push('/trading/trading_pnl')}
-            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
-          >
-            <FaArrowLeft /> Accounts
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/trading/trading_pnl')}
+              className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+            >
+              <FaArrowLeft /> Accounts
+            </button>
+            {allAccounts.length > 1 && (
+              <select
+                value={accountId}
+                onChange={(e) => router.push(`/trading/trading_pnl/${e.target.value}`)}
+                className="px-4 py-2 bg-gray-900/60 border border-yellow-500/30 rounded-lg text-yellow-400 font-medium focus:outline-none focus:border-yellow-500 text-sm cursor-pointer"
+              >
+                {allAccounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push(`/trading/trading_pnl/${accountId}/edit`)}
@@ -737,11 +910,11 @@ export default function TradingPnLAccountPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-lg">🎯</span>
-                <h3 className="text-sm font-bold text-yellow-400">Monthly Target Progress</h3>
+                <h3 className="text-sm font-bold text-yellow-400">Target Progress</h3>
               </div>
               <div className="text-sm text-theme-secondary">
-                <span className={`font-bold ${state.monthStats.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {currencySymbol}{state.monthStats.totalPnL.toFixed(2)}
+                <span className={`font-bold ${cumulativeData.allTimePnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {currencySymbol}{cumulativeData.allTimePnL.toFixed(2)}
                 </span>
                 <span className="text-theme-tertiary"> / </span>
                 <span className="font-bold text-yellow-400">{currencySymbol}{account.target.toFixed(2)}</span>
@@ -750,29 +923,29 @@ export default function TradingPnLAccountPage() {
             <div className="relative h-4 bg-theme-secondary rounded-full overflow-hidden">
               <div
                 className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ${
-                  state.monthStats.totalPnL >= account.target
+                  cumulativeData.allTimePnL >= account.target
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                    : state.monthStats.totalPnL >= 0
+                    : cumulativeData.allTimePnL >= 0
                       ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
                       : 'bg-gradient-to-r from-red-600 to-red-500'
                 }`}
                 style={{
-                  width: `${Math.min(Math.max((state.monthStats.totalPnL / account.target) * 100, 0), 100)}%`
+                  width: `${Math.min(Math.max((cumulativeData.allTimePnL / account.target) * 100, 0), 100)}%`
                 }}
               />
             </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-theme-tertiary">
-                {state.monthStats.totalPnL >= account.target
+                {cumulativeData.allTimePnL >= account.target
                   ? '🎉 Target Achieved!'
-                  : state.monthStats.totalPnL >= 0
-                    ? `${((state.monthStats.totalPnL / account.target) * 100).toFixed(1)}% complete`
+                  : cumulativeData.allTimePnL >= 0
+                    ? `${((cumulativeData.allTimePnL / account.target) * 100).toFixed(1)}% complete`
                     : 'Below target'}
               </span>
               <span className="text-xs text-theme-tertiary">
-                {state.monthStats.totalPnL >= account.target
-                  ? `+${currencySymbol}${(state.monthStats.totalPnL - account.target).toFixed(2)} over target`
-                  : `${currencySymbol}${(account.target - state.monthStats.totalPnL).toFixed(2)} to go`}
+                {cumulativeData.allTimePnL >= account.target
+                  ? `+${currencySymbol}${(cumulativeData.allTimePnL - account.target).toFixed(2)} over target`
+                  : `${currencySymbol}${(account.target - cumulativeData.allTimePnL).toFixed(2)} to go`}
               </span>
             </div>
           </div>
@@ -863,18 +1036,18 @@ export default function TradingPnLAccountPage() {
           {[
             {
               label: 'Total P&L',
-              value: `${currencySymbol}${state.monthStats.totalPnL.toFixed(2)}`,
+              value: `${currencySymbol}${cumulativeData.allTimePnL.toFixed(2)}`,
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ),
-              gradient: state.monthStats.totalPnL >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600',
+              gradient: cumulativeData.allTimePnL >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600',
               isMain: true
             },
             {
               label: 'Withdraw',
-              value: `${currencySymbol}${monthWithdrawalsTotal.toFixed(2)}`,
+              value: `${currencySymbol}${cumulativeData.allTimeWithdrawals.toFixed(2)}`,
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm-7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -884,7 +1057,7 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Win Days',
-              value: state.monthStats.winDays.toString(),
+              value: cumulativeData.winDays.toString(),
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -894,7 +1067,7 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Loss Days',
-              value: state.monthStats.lossDays.toString(),
+              value: cumulativeData.lossDays.toString(),
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -904,7 +1077,7 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Total Trades',
-              value: state.monthStats.totalTrades.toString(),
+              value: cumulativeData.totalTrades.toString(),
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -914,7 +1087,7 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Winning Trades',
-              value: state.monthStats.winTrades.toString(),
+              value: cumulativeData.winTrades.toString(),
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -924,7 +1097,7 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Losing Trades',
-              value: state.monthStats.lossTrades.toString(),
+              value: cumulativeData.lossTrades.toString(),
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -934,17 +1107,17 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Win Rate',
-              value: `${state.monthStats.winRate.toFixed(1)}%`,
+              value: `${cumulativeData.winRate.toFixed(1)}%`,
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
               ),
-              gradient: state.monthStats.winRate >= 50 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'
+              gradient: cumulativeData.winRate >= 50 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'
             },
             {
               label: 'Best Day',
-              value: `${currencySymbol}${state.monthStats.bestDay.toFixed(0)}`,
+              value: `${currencySymbol}${cumulativeData.bestDay.toFixed(0)}`,
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -954,7 +1127,7 @@ export default function TradingPnLAccountPage() {
             },
             {
               label: 'Worst Day',
-              value: `${currencySymbol}${state.monthStats.worstDay.toFixed(0)}`,
+              value: `${currencySymbol}${cumulativeData.worstDay.toFixed(0)}`,
               icon: (
                 <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />

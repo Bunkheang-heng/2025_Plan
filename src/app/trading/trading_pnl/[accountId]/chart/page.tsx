@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../../../firebase'
-import { doc, getDoc, getFirestore } from 'firebase/firestore'
-import { FaArrowLeft, FaEdit, FaChartLine, FaCalendarAlt } from 'react-icons/fa'
+import { collection, doc, getDoc, getDocs, getFirestore, query, where } from 'firebase/firestore'
+import { FaArrowLeft, FaEdit, FaChartLine, FaCalendarAlt, FaExpand, FaCompress } from 'react-icons/fa'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -20,6 +20,8 @@ type TradingAccount = {
   rules?: string
 }
 
+type TradingAccountWithId = TradingAccount & { id: string }
+
 const SYMBOLS = [
   { label: 'XAU/USD (Gold Spot)', value: 'OANDA:XAUUSD' },
   { label: 'XAU/USD (Forex)', value: 'FX:XAUUSD' },
@@ -33,6 +35,7 @@ const CHART_TIMEFRAMES = [
   { label: '15M', value: '15' },
   { label: '1H', value: '60' },
   { label: '4H', value: '240' },
+  { label: '1D', value: 'D' },
 ]
 
 export default function TradingChartPage() {
@@ -40,8 +43,10 @@ export default function TradingChartPage() {
   const params = useParams<{ accountId: string }>()
   const accountId = params?.accountId
   const [account, setAccount] = useState<TradingAccount | null>(null)
+  const [allAccounts, setAllAccounts] = useState<TradingAccountWithId[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [selectedSymbol, setSelectedSymbol] = useState('OANDA:XAUUSD')
 
   const fetchAccount = useCallback(async () => {
@@ -63,16 +68,48 @@ export default function TradingChartPage() {
     setIsLoading(false)
   }, [accountId])
 
+  const fetchAllAccounts = useCallback(async () => {
+    const user = auth.currentUser
+    if (!user) return
+    const db = getFirestore()
+    try {
+      const q = query(
+        collection(db, 'tradingAccounts'),
+        where('userId', '==', user.uid)
+      )
+      const snap = await getDocs(q)
+      const list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data() as TradingAccount
+      }))
+      setAllAccounts(list)
+    } catch (e) {
+      console.error('Error fetching accounts:', e)
+    }
+  }, [])
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
         router.push('/login')
       } else {
         fetchAccount()
+        fetchAllAccounts()
       }
     })
     return () => unsubscribe()
-  }, [router, fetchAccount])
+  }, [router, fetchAccount, fetchAllAccounts])
+
+  // Handle Escape key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isFullscreen])
 
   if (isLoading) {
     return <Loading />
@@ -86,12 +123,27 @@ export default function TradingChartPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => router.push('/trading/trading_pnl')}
-            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
-          >
-            <FaArrowLeft /> Accounts
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/trading/trading_pnl')}
+              className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+            >
+              <FaArrowLeft /> Accounts
+            </button>
+            {allAccounts.length > 1 && (
+              <select
+                value={accountId}
+                onChange={(e) => router.push(`/trading/trading_pnl/${e.target.value}/chart`)}
+                className="px-4 py-2 bg-gray-900/60 border border-yellow-500/30 rounded-lg text-yellow-400 font-medium focus:outline-none focus:border-yellow-500 text-sm cursor-pointer"
+              >
+                {allAccounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push(`/trading/trading_pnl/${accountId}/edit`)}
@@ -162,17 +214,26 @@ export default function TradingChartPage() {
                 ))}
               </select>
             </div>
-            <a
-              href={`https://www.tradingview.com/chart/?symbol=${selectedSymbol}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all text-sm font-medium flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Open Full TradingView
-            </a>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsFullscreen(true)}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all text-sm font-medium flex items-center gap-2"
+              >
+                <FaExpand className="w-4 h-4" />
+                Fullscreen View
+              </button>
+              <a
+                href={`https://www.tradingview.com/chart/?symbol=${selectedSymbol}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all text-sm font-medium flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Open TradingView
+              </a>
+            </div>
           </div>
           <p className="text-xs text-theme-muted mt-3 flex items-center gap-1">
             <span>💡</span>
@@ -294,6 +355,85 @@ export default function TradingChartPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Fullscreen Charts Overlay */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-50 bg-theme-primary overflow-auto">
+          {/* Fullscreen Header */}
+          <div className="sticky top-0 z-10 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-secondary px-4 py-3">
+            <div className="flex items-center justify-between max-w-full">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setIsFullscreen(false)}
+                  className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <FaCompress className="w-4 h-4" /> Exit Fullscreen
+                </button>
+                <h2 className="text-lg font-bold text-yellow-400 hidden sm:block">
+                  {selectedSymbol.split(':')[1] || selectedSymbol} - All Timeframes
+                </h2>
+              </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={selectedSymbol}
+                  onChange={(e) => setSelectedSymbol(e.target.value)}
+                  className="px-4 py-2 bg-gray-900/60 border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500 text-sm"
+                >
+                  {SYMBOLS.map(symbol => (
+                    <option key={symbol.value} value={symbol.value}>
+                      {symbol.label}
+                    </option>
+                  ))}
+                </select>
+                <a
+                  href={`https://www.tradingview.com/chart/?symbol=${selectedSymbol}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all text-sm font-medium flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  <span className="hidden sm:inline">TradingView</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          {/* Fullscreen Charts Grid */}
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {CHART_TIMEFRAMES.map((tf) => (
+                <div 
+                  key={tf.value} 
+                  className="bg-theme-card border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg"
+                >
+                  <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 px-4 py-2 flex items-center justify-between">
+                    <span className="text-sm font-bold text-yellow-400">{tf.label}</span>
+                    <a
+                      href={`https://www.tradingview.com/chart/?symbol=${selectedSymbol}&interval=${tf.value}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-theme-tertiary hover:text-theme-primary transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                  <div style={{ height: 'calc((100vh - 120px) / 2)' }} className="w-full min-h-[300px]">
+                    <iframe
+                      src={`https://s.tradingview.com/embed-widget/advanced-chart/?symbol=${selectedSymbol}&interval=${tf.value}&theme=dark&style=1&timezone=Etc%2FUTC&allow_symbol_change=false&save_image=true&hide_top_toolbar=true&hide_legend=false&hide_side_toolbar=true&withdateranges=false&details=false&calendar=false&studies=%5B%5D&show_popup_button=true&popup_width=1000&popup_height=650&locale=en`}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
