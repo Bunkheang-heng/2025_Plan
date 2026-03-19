@@ -13,6 +13,7 @@ interface AuthButtonProps {
 interface SubLink {
   path: string;
   label: string;
+  group?: string;
 }
 
 interface NavLink {
@@ -29,6 +30,11 @@ export default function Nav() {
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+
+  const toggleGroup = (key: string) => {
+    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
 
   const allNavLinks: NavLink[] = [
     { path: '/', label: 'Dashboard', icon: DashboardIcon },
@@ -47,15 +53,16 @@ export default function Nav() {
       label: 'Trading', 
       icon: TradingIcon,
       subLinks: [
-        { path: '/trading/trading_pnl', label: 'Trading P&L' },
-        { path: '/trading/entry_checklist', label: 'Entry Checklist' },
-        { path: '/trading/trade_entry', label: 'Trade Entry Log' },
-        { path: '/trading/lessons', label: 'Lessons' },
-        { path: '/trading/trading_news', label: 'Trading News' },
-        { path: '/trading/trading_ai_predication', label: 'Trading AI Predication' },
-        { path: '/trading/gold_info', label: 'Gold Market Information' },
-        { path: '/trading_partner/groups', label: 'Trading Partner' },
-        { path: '/setup', label: 'My Setup' }
+        { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
+        { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
+        { path: '/trading/trade_entry', label: 'Trade Entry Log', group: 'Trading' },
+        { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
+        { path: '/trading/tools', label: 'Tools', group: 'Learning' },
+        { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
+        { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
+        { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
+        { path: '/trading_partner/groups', label: 'Trading Partner', group: 'Social' },
+        { path: '/setup', label: 'My Setup', group: 'Social' }
       ]
     },
     { 
@@ -284,20 +291,86 @@ export default function Nav() {
           </button>
           
           {isOpen && (
-            <div className="ml-4 mt-1 space-y-1 animate-slide-down">
-              {link.subLinks.map((subLink) => (
-                <button
-                  key={subLink.path}
-                  onClick={() => router.push(subLink.path)}
-                  className={`w-full text-left px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
-                    pathname === subLink.path
-                      ? 'bg-yellow-500/20 text-yellow-400 border-l-2 border-yellow-400'
-                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
-                  }`}
-                >
-                  {subLink.label}
-                </button>
-              ))}
+            <div className="ml-4 mt-1 animate-slide-down">
+              {(() => {
+                const hasGroups = link.subLinks.some((s) => s.group)
+                if (!hasGroups) {
+                  return (
+                    <div className="space-y-1">
+                      {link.subLinks.map((subLink) => (
+                        <button
+                          key={subLink.path}
+                          onClick={() => router.push(subLink.path)}
+                          className={`w-full text-left px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
+                            pathname === subLink.path
+                              ? 'bg-yellow-500/20 text-yellow-400 border-l-2 border-yellow-400'
+                              : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
+                          }`}
+                        >
+                          {subLink.label}
+                        </button>
+                      ))}
+                    </div>
+                  )
+                }
+                const groups: { name: string; items: SubLink[] }[] = []
+                link.subLinks.forEach((s) => {
+                  const gName = s.group || ''
+                  const existing = groups.find((g) => g.name === gName)
+                  if (existing) existing.items.push(s)
+                  else groups.push({ name: gName, items: [s] })
+                })
+                return (
+                  <div className="space-y-1">
+                    {groups.map((g) => {
+                      const groupKey = `${link.label}-${g.name}`
+                      const isGroupOpen = !!openGroups[groupKey]
+                      const hasActiveItem = g.items.some((s) => pathname === s.path)
+                      return (
+                        <div key={g.name}>
+                          {g.name ? (
+                            <button
+                              onClick={() => toggleGroup(groupKey)}
+                              className={`w-full flex items-center justify-between px-4 py-2 rounded-r-lg transition-colors duration-200 text-xs font-bold uppercase tracking-wider ${
+                                hasActiveItem
+                                  ? 'text-yellow-400'
+                                  : 'text-theme-muted hover:text-theme-secondary'
+                              }`}
+                            >
+                              <span>{g.name}</span>
+                              <svg
+                                className={`w-3 h-3 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          ) : null}
+                          {(!g.name || isGroupOpen) && (
+                            <div className="space-y-0.5 animate-slide-down">
+                              {g.items.map((subLink) => (
+                                <button
+                                  key={subLink.path}
+                                  onClick={() => router.push(subLink.path)}
+                                  className={`w-full text-left px-6 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
+                                    pathname === subLink.path
+                                      ? 'bg-yellow-500/20 text-yellow-400 border-l-2 border-yellow-400'
+                                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
+                                  }`}
+                                >
+                                  {subLink.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </div>
@@ -351,24 +424,94 @@ export default function Nav() {
           </button>
           
           {isOpen && (
-            <div className="ml-9 mt-1 space-y-1">
-              {link.subLinks.map((subLink) => (
-                <button
-                  key={subLink.path}
-                  onClick={() => {
-                    router.push(subLink.path)
-                    setMobileOpen(false)
-                    setOpenDropdown(null)
-                  }}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-150 text-sm ${
-                    pathname === subLink.path
-                      ? 'text-yellow-400 bg-theme-tertiary/50'
-                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
-                  }`}
-                >
-                  {subLink.label}
-                </button>
-              ))}
+            <div className="ml-9 mt-1">
+              {(() => {
+                const hasGroups = link.subLinks.some((s) => s.group)
+                if (!hasGroups) {
+                  return (
+                    <div className="space-y-1">
+                      {link.subLinks.map((subLink) => (
+                        <button
+                          key={subLink.path}
+                          onClick={() => {
+                            router.push(subLink.path)
+                            setMobileOpen(false)
+                            setOpenDropdown(null)
+                          }}
+                          className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-150 text-sm ${
+                            pathname === subLink.path
+                              ? 'text-yellow-400 bg-theme-tertiary/50'
+                              : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
+                          }`}
+                        >
+                          {subLink.label}
+                        </button>
+                      ))}
+                    </div>
+                  )
+                }
+                const groups: { name: string; items: SubLink[] }[] = []
+                link.subLinks.forEach((s) => {
+                  const gName = s.group || ''
+                  const existing = groups.find((g) => g.name === gName)
+                  if (existing) existing.items.push(s)
+                  else groups.push({ name: gName, items: [s] })
+                })
+                return (
+                  <div className="space-y-1">
+                    {groups.map((g) => {
+                      const groupKey = `${link.label}-${g.name}`
+                      const isGroupOpen = !!openGroups[groupKey]
+                      const hasActiveItem = g.items.some((s) => pathname === s.path)
+                      return (
+                        <div key={g.name}>
+                          {g.name ? (
+                            <button
+                              onClick={() => toggleGroup(groupKey)}
+                              className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors duration-150 text-xs font-bold uppercase tracking-wider ${
+                                hasActiveItem
+                                  ? 'text-yellow-400'
+                                  : 'text-theme-muted hover:text-theme-secondary'
+                              }`}
+                            >
+                              <span>{g.name}</span>
+                              <svg
+                                className={`w-3 h-3 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          ) : null}
+                          {(!g.name || isGroupOpen) && (
+                            <div className="space-y-0.5">
+                              {g.items.map((subLink) => (
+                                <button
+                                  key={subLink.path}
+                                  onClick={() => {
+                                    router.push(subLink.path)
+                                    setMobileOpen(false)
+                                    setOpenDropdown(null)
+                                  }}
+                                  className={`w-full text-left px-6 py-2 rounded-lg transition-colors duration-150 text-sm ${
+                                    pathname === subLink.path
+                                      ? 'text-yellow-400 bg-theme-tertiary/50'
+                                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
+                                  }`}
+                                >
+                                  {subLink.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </div>

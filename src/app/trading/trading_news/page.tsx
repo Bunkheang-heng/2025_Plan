@@ -156,7 +156,7 @@ export default function TradingNews() {
           </div>
         </div>
 
-        {/* Events List */}
+        {/* Events Table */}
         {filteredEvents.length === 0 ? (
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-12 text-center">
             <div className="max-w-md mx-auto">
@@ -174,43 +174,53 @@ export default function TradingNews() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event, index) => (
-              <div
-                key={`${event.date}-${event.title}-${index}`}
-                className="group bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/10 animate-slide-in-up"
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className={`inline-flex items-center px-2.5 py-1 bg-gradient-to-r ${getImpactColor(event.impact)} rounded-lg text-theme-primary text-xs font-bold`}>
-                      {event.impact}
-                    </span>
-                    <span className="text-xs font-semibold text-theme-tertiary bg-theme-secondary px-2 py-1 rounded">
-                      {event.country}
-                    </span>
-                  </div>
-                  <p className="text-sm text-theme-tertiary mb-2">
-                    {formatEventDate(event.date)}
-                  </p>
-                  <h3 className="text-lg font-bold text-theme-primary mb-4 line-clamp-2 group-hover:text-yellow-400 transition-colors">
-                    {event.title}
-                  </h3>
-                  <div className="flex flex-wrap gap-3 text-sm">
-                    {event.forecast && (
-                      <span className="text-theme-secondary">
-                        <span className="text-theme-tertiary">Forecast:</span> {event.forecast}
-                      </span>
-                    )}
-                    {event.previous && (
-                      <span className="text-theme-secondary">
-                        <span className="text-theme-tertiary">Previous:</span> {event.previous}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[860px]">
+                <thead>
+                  <tr className="bg-gray-800/70 border-b border-yellow-500/20">
+                    <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-theme-tertiary">Date & Time</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-theme-tertiary">Country</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-theme-tertiary">Event</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-theme-tertiary">Impact</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-theme-tertiary">Forecast</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-theme-tertiary">Previous</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {filteredEvents.map((event, index) => (
+                    <tr
+                      key={`${event.date}-${event.title}-${index}`}
+                      className="hover:bg-gray-800/40 transition-colors animate-slide-in-up"
+                      style={{ animationDelay: `${index * 0.03}s` }}
+                    >
+                      <td className="px-5 py-3 text-sm text-theme-secondary whitespace-nowrap">
+                        {formatEventDate(event.date)}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold text-theme-tertiary bg-theme-secondary">
+                          {event.country || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-sm font-semibold text-theme-primary">
+                        {event.title}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex items-center px-2.5 py-1 bg-gradient-to-r ${getImpactColor(event.impact)} rounded-lg text-theme-primary text-xs font-bold`}>
+                          {event.impact}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-sm text-theme-secondary">
+                        {event.forecast || '-'}
+                      </td>
+                      <td className="px-5 py-3 text-sm text-theme-secondary">
+                        {event.previous || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

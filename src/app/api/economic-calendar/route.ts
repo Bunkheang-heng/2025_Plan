@@ -5,18 +5,21 @@ const CALENDAR_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json'
 // In-memory cache to avoid 429 rate limits from the external API
 let cachedEvents: unknown[] | null = null
 let cacheTime = 0
-const CACHE_DURATION_MS = 60 * 60 * 1000 // 1 hour
+const CACHE_DURATION_MS = 5 * 60 * 1000 // 5 minutes
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const force = searchParams.get('force') === '1' || searchParams.get('force') === 'true'
   const now = Date.now()
-  if (cachedEvents !== null && now - cacheTime < CACHE_DURATION_MS) {
+  if (!force && cachedEvents !== null && now - cacheTime < CACHE_DURATION_MS) {
     return NextResponse.json(cachedEvents)
   }
 
   try {
     const response = await fetch(CALENDAR_URL, {
       headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 }
+      cache: force ? 'no-store' : 'force-cache',
+      next: { revalidate: 300 }
     })
     if (!response.ok) {
       if (response.status === 429) {

@@ -20,12 +20,25 @@ interface TechnicalLevel {
   strength: 'strong' | 'moderate' | 'weak'
 }
 
+interface EconomicEvent {
+  title: string
+  country: string
+  date: string
+  time: string
+  impact: 'High' | 'Medium' | 'Low'
+  forecast?: string
+  previous?: string
+  status: 'upcoming' | 'released'
+}
+
 export default function GoldMarketInfo() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isFetching, setIsFetching] = useState(false)
   const [dataSource, setDataSource] = useState<string>('Initializing...')
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
+  const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([])
+  const [isFetchingEvents, setIsFetchingEvents] = useState(false)
 
   // Real-time market data
   const [marketData, setMarketData] = useState<MarketData>({
@@ -91,11 +104,61 @@ export default function GoldMarketInfo() {
     { icon: '🎯', title: 'Liquidity', description: 'One of the most liquid markets with 24/5 trading' },
   ]
 
-  const economicEvents = [
-    { time: '08:30 EST', event: 'US CPI Data', impact: 'High', status: 'upcoming' },
-    { time: '10:00 EST', event: 'Fed Chair Speech', impact: 'High', status: 'upcoming' },
-    { time: '14:30 EST', event: 'Retail Sales', impact: 'Medium', status: 'upcoming' },
-  ]
+  const toDayKey = (value: string) => {
+    const parsed = new Date(value)
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
+    }
+    const raw = (value || '').trim()
+    return raw.length >= 10 ? raw.slice(0, 10) : raw
+  }
+
+  const extractEventTime = (value: string) => {
+    if (!value) return '-'
+    const parsed = new Date(value)
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Phnom_Penh',
+      })
+    }
+    const matches = value.match(/\b\d{1,2}:\d{2}\b/)
+    return matches?.[0] || value
+  }
+
+  const fetchEconomicEvents = async () => {
+    try {
+      setIsFetchingEvents(true)
+      const response = await fetch('/api/economic-calendar?force=1', { cache: 'no-store' })
+      if (!response.ok) {
+        throw new Error(`Failed to fetch economic calendar (${response.status})`)
+      }
+      const payload = await response.json()
+      const list = Array.isArray(payload) ? payload : []
+
+      const mapped: EconomicEvent[] = list.map((event: any) => ({
+        title: event.title || 'Unknown Event',
+        country: event.country || 'N/A',
+        date: event.date || '',
+        time: extractEventTime(event.date || ''),
+        impact: (event.impact === 'High' || event.impact === 'Medium' || event.impact === 'Low')
+          ? event.impact
+          : 'Low',
+        forecast: event.forecast || '',
+        previous: event.previous || '',
+        status: event.actual ? 'released' : 'upcoming',
+      }))
+
+      setEconomicEvents(mapped)
+    } catch (error) {
+      console.error('Error fetching economic events:', error)
+      setEconomicEvents([])
+    } finally {
+      setIsFetchingEvents(false)
+    }
+  }
 
   useEffect(() => {
     // Temporarily disable auth check for demo
@@ -103,14 +166,23 @@ export default function GoldMarketInfo() {
     
     // Fetch initial data
     fetchGoldPrice()
+    fetchEconomicEvents()
     
-    // Auto-refresh every 60 seconds (1 minute)
-    const interval = setInterval(() => {
+    // Auto-refresh price every 60 seconds
+    const priceInterval = setInterval(() => {
       fetchGoldPrice()
     }, 60000) // 60000ms = 1 minute
+
+    // Auto-refresh calendar every 5 minutes
+    const calendarInterval = setInterval(() => {
+      fetchEconomicEvents()
+    }, 5 * 60 * 1000)
     
-    // Cleanup interval on unmount
-    return () => clearInterval(interval)
+    // Cleanup intervals on unmount
+    return () => {
+      clearInterval(priceInterval)
+      clearInterval(calendarInterval)
+    }
     
     // const unsubscribe = auth.onAuthStateChanged((user) => {
     //   if (!user) {
@@ -128,6 +200,10 @@ export default function GoldMarketInfo() {
   }
 
   const isPositive = marketData.change24h >= 0
+  const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
+  const todaysEconomicEvents = economicEvents
+    .filter((event) => toDayKey(event.date) === todayDate)
+    .sort((a, b) => a.time.localeCompare(b.time))
 
   return (
     <div className="min-h-screen bg-theme-primary">
@@ -336,25 +412,63 @@ export default function GoldMarketInfo() {
                   Today&apos;s Events
                 </h2>
               </div>
-              <div className="p-6 space-y-3">
-                {economicEvents.map((event, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-gray-700/30 border border-yellow-500/20 rounded-xl hover:border-yellow-500/40 transition-all"
+              <div className="p-6">
+                <div className="flex justify-end mb-3">
+                  <button
+                    type="button"
+                    onClick={fetchEconomicEvents}
+                    disabled={isFetchingEvents}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 disabled:opacity-50"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="text-sm font-bold text-yellow-400">{event.time}</div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        event.impact === 'High' ? 'bg-red-500/20 text-red-400' :
-                        event.impact === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-green-500/20 text-green-400'
-                      }`}>
-                        {event.impact}
-                      </span>
-                    </div>
-                    <div className="text-sm text-theme-primary font-medium">{event.event}</div>
+                    {isFetchingEvents ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                </div>
+                {todaysEconomicEvents.length === 0 ? (
+                  <div className="text-sm text-theme-tertiary text-center py-6">
+                    No economic events scheduled for today.
                   </div>
-                ))}
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left border-b border-yellow-500/20 text-theme-tertiary">
+                          <th className="py-2 pr-3 font-semibold">Time</th>
+                          <th className="py-2 pr-3 font-semibold">Event</th>
+                          <th className="py-2 pr-3 font-semibold">Country</th>
+                          <th className="py-2 pr-3 font-semibold">Impact</th>
+                          <th className="py-2 font-semibold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {todaysEconomicEvents.map((event, index) => (
+                          <tr key={index} className="border-b border-gray-800/80">
+                            <td className="py-3 pr-3 text-yellow-400 font-semibold whitespace-nowrap">{event.time}</td>
+                            <td className="py-3 pr-3 text-theme-primary">{event.title}</td>
+                            <td className="py-3 pr-3 text-theme-secondary">{event.country}</td>
+                            <td className="py-3 pr-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                event.impact === 'High' ? 'bg-red-500/20 text-red-400' :
+                                event.impact === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-green-500/20 text-green-400'
+                              }`}>
+                                {event.impact}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                event.status === 'released'
+                                  ? 'bg-blue-500/20 text-blue-400'
+                                  : 'bg-purple-500/20 text-purple-400'
+                              }`}>
+                                {event.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 
