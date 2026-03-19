@@ -49,6 +49,8 @@ export default function Nav() {
       subLinks: [
         { path: '/trading/trading_pnl', label: 'Trading P&L' },
         { path: '/trading/entry_checklist', label: 'Entry Checklist' },
+        { path: '/trading/trade_entry', label: 'Trade Entry Log' },
+        { path: '/trading/lessons', label: 'Lessons' },
         { path: '/trading/trading_news', label: 'Trading News' },
         { path: '/trading/trading_ai_predication', label: 'Trading AI Predication' },
         { path: '/trading/gold_info', label: 'Gold Market Information' },

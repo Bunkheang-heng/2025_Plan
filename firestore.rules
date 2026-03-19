@@ -90,6 +90,22 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
     }
 
+    // Trade Entries - users can only access their own trade entries
+    match /tradeEntries/{document} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // Trading Lessons - users can only access their own lessons
+    match /tradingLessons/{document} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
     // Trading Entry Checklist - users can only access their own checklist items
     match /entryChecklists/{document} {
       allow create: if signedIn()
