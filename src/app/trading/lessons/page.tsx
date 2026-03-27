@@ -228,7 +228,7 @@ export default function TradingLessonsPage() {
 
   return (
     <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+      <div className="w-full px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">

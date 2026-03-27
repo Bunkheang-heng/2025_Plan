@@ -57,6 +57,7 @@ export default function Nav() {
         { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
         { path: '/trading/trade_entry', label: 'Trade Entry Log', group: 'Trading' },
         { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
+        { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
         { path: '/trading/tools', label: 'Tools', group: 'Learning' },
         { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
         { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
