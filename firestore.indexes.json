@@ -1,6 +1,16 @@
 {
   "indexes": [
     {
+      "collectionGroup": "userPrivateSettings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mt5IngestToken",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "daily",
       "queryScope": "COLLECTION",
       "fields": [

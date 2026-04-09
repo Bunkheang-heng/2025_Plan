@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 import type { User } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  setDoc,
+  type QueryDocumentSnapshot,
+} from 'firebase/firestore'
 import { FaArrowLeft, FaRedo } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { generateMt5IngestToken } from '@/lib/mt5IngestToken'
@@ -45,7 +53,7 @@ function parseCloseMs(t: Mt5TradeRow): number {
   return Number.isFinite(ms) ? ms : 0
 }
 
-/** Standalone MT5 log: Firestore `users/{uid}/mt5Trades`, token on `users/{uid}.mt5IngestToken`. */
+/** Standalone MT5 log: `userPrivateSettings/{uid}/mt5Trades` + token on that doc (avoids strict `users` role rules). */
 export default function Mt5TradesPageClient() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
@@ -59,23 +67,33 @@ export default function Mt5TradesPageClient() {
 
   const ensureUserIngestToken = useCallback(async (uid: string): Promise<string> => {
     const db = getFirestore()
-    const ref = doc(db, 'users', uid)
-    const snap = await getDoc(ref)
+    const privRef = doc(db, 'userPrivateSettings', uid)
+    const privSnap = await getDoc(privRef)
     let tok =
-      snap.exists() && typeof (snap.data() as { mt5IngestToken?: string }).mt5IngestToken === 'string'
-        ? (snap.data() as { mt5IngestToken: string }).mt5IngestToken
+      privSnap.exists() &&
+      typeof (privSnap.data() as { mt5IngestToken?: string }).mt5IngestToken === 'string'
+        ? (privSnap.data() as { mt5IngestToken: string }).mt5IngestToken
         : ''
     if (!tok || tok.length < 16) {
-      tok = generateMt5IngestToken()
-      await setDoc(ref, { mt5IngestToken: tok }, { merge: true })
+      const userSnap = await getDoc(doc(db, 'users', uid))
+      const legacyTok =
+        userSnap.exists() &&
+        typeof (userSnap.data() as { mt5IngestToken?: string }).mt5IngestToken === 'string'
+          ? (userSnap.data() as { mt5IngestToken: string }).mt5IngestToken
+          : ''
+      if (legacyTok.length >= 16) {
+        tok = legacyTok
+      } else {
+        tok = generateMt5IngestToken()
+      }
+      await setDoc(privRef, { mt5IngestToken: tok }, { merge: true })
     }
     return tok
   }, [])
 
   const fetchTrades = useCallback(async (uid: string) => {
     const db = getFirestore()
-    const snap = await getDocs(collection(db, 'users', uid, 'mt5Trades'))
-    const rows: Mt5TradeRow[] = snap.docs.map((d) => {
+    const mapRow = (d: QueryDocumentSnapshot): Mt5TradeRow => {
       const x = d.data() as Record<string, unknown>
       return {
         id: d.id,
@@ -96,7 +114,20 @@ export default function Mt5TradesPageClient() {
         magic_number: Number(x.magic_number) || 0,
         comment: String(x.comment || ''),
       }
-    })
+    }
+
+    const [privSnap, legacySnap] = await Promise.all([
+      getDocs(collection(db, 'userPrivateSettings', uid, 'mt5Trades')),
+      getDocs(collection(db, 'users', uid, 'mt5Trades')),
+    ])
+    const byTicket = new Map<string, Mt5TradeRow>()
+    for (const d of legacySnap.docs) {
+      byTicket.set(d.id, mapRow(d))
+    }
+    for (const d of privSnap.docs) {
+      byTicket.set(d.id, mapRow(d))
+    }
+    const rows = [...byTicket.values()]
     rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
     setTrades(rows)
   }, [])
@@ -220,7 +251,7 @@ export default function Mt5TradesPageClient() {
     try {
       const db = getFirestore()
       const tok = generateMt5IngestToken()
-      await setDoc(doc(db, 'users', user.uid), { mt5IngestToken: tok }, { merge: true })
+      await setDoc(doc(db, 'userPrivateSettings', user.uid), { mt5IngestToken: tok }, { merge: true })
       setIngestToken(tok)
       toast.success('New ingest token saved. Update TradeTracker.mq5 inputs.')
     } catch (e) {

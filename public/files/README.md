@@ -13,8 +13,8 @@ Build me a full-stack MT5 trading performance web app with the following archite
 ### Architecture (this repo: Firebase)
 
 - **MT5 EA (`TradeTracker.mq5`)** — `WebRequest` **POST** to `{APP_URL}/api/mt5/trades` with header `Authorization: Bearer <ingest token>` (no query params). Token is per **Firebase Auth user**, not per bot P&amp;L account.
-- **Next.js API + Firebase Admin** — Looks up `users` where `mt5IngestToken` matches; writes `users/{uid}/mt5Trades/{ticket}`. Requires **`FIREBASE_SERVICE_ACCOUNT`** in server `.env`.
-- **Web app** — **Trading → MT5 trade log** (`/trading/mt5_tracker`). First visit creates **`mt5IngestToken`** on your `users/{uid}` doc; **Regenerate** rotates it. Dashboard reads `users/{uid}/mt5Trades` with the client SDK (`NEXT_PUBLIC_FIREBASE_*`).
+- **Next.js API + Firebase Admin** — Looks up **`userPrivateSettings`** where `mt5IngestToken` matches; writes **`userPrivateSettings/{uid}/mt5Trades/{ticket}`** (keeps ingest token off the strict `users` profile rules). Requires **`FIREBASE_SERVICE_ACCOUNT`** in server `.env`.
+- **Web app** — **Trading → MT5 trade log** (`/trading/mt5_tracker`). First visit creates **`userPrivateSettings/{uid}`** with `mt5IngestToken`. **Regenerate** rotates it. Deploy **`firestore.rules`** and **`firestore.indexes.json`** (index on `userPrivateSettings.mt5IngestToken`).
 
 ---
 

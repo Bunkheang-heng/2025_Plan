@@ -7,7 +7,7 @@ export interface UserProfile {
   role: UserRole
   email?: string
   name?: string
-  /** Secret for MT5 EA POST /api/mt5/trades; set from /trading/mt5_tracker */
+  /** @deprecated Prefer userPrivateSettings/{uid}.mt5IngestToken */
   mt5IngestToken?: string
 }
 

@@ -156,10 +156,20 @@ service cloud.firestore {
           )
         );
 
-      // MT5 closed trades (written only via Admin /api/mt5/trades); read own only
+      // Legacy MT5 trades (older builds); read-only — new data uses userPrivateSettings
       match /mt5Trades/{tradeId} {
         allow read: if signedIn() && request.auth.uid == userId;
-        allow write, delete: if false;
+        allow write, delete, create: if false;
+      }
+    }
+
+    // MT5 ingest token + trade log (separate from users/* role rules; EA writes via Admin API only)
+    match /userPrivateSettings/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+
+      match /mt5Trades/{tradeId} {
+        allow read: if signedIn() && request.auth.uid == userId;
+        allow write, delete, create: if false;
       }
     }
 

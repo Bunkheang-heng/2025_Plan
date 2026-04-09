@@ -107,21 +107,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid trade payload' }, { status: 400 })
   }
 
-  const userSnap = await db.collection('users').where('mt5IngestToken', '==', token).limit(1).get()
-  if (userSnap.empty) {
+  const settingsSnap = await db
+    .collection('userPrivateSettings')
+    .where('mt5IngestToken', '==', token)
+    .limit(1)
+    .get()
+  if (settingsSnap.empty) {
     return NextResponse.json(
       { error: 'Invalid ingest token or user has no token. Open /trading/mt5_tracker once to create one.' },
       { status: 401 }
     )
   }
 
-  const userId = userSnap.docs[0].id
-  const stored = (userSnap.docs[0].data() as { mt5IngestToken?: string }).mt5IngestToken || ''
+  const userId = settingsSnap.docs[0].id
+  const stored = (settingsSnap.docs[0].data() as { mt5IngestToken?: string }).mt5IngestToken || ''
   if (!safeEqualString(token, stored)) {
     return NextResponse.json({ error: 'Invalid ingest token' }, { status: 401 })
   }
 
-  const tradeRef = db.collection('users').doc(userId).collection('mt5Trades').doc(String(trade.ticket))
+  const tradeRef = db
+    .collection('userPrivateSettings')
+    .doc(userId)
+    .collection('mt5Trades')
+    .doc(String(trade.ticket))
   await tradeRef.set({
     ticket: trade.ticket,
     symbol: trade.symbol,
