@@ -54,8 +54,10 @@ export default function Nav() {
       icon: TradingIcon,
       subLinks: [
         { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
+        { path: '/trading/bot_trading_pnl', label: 'Bot trading P&L', group: 'Trading' },
         { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
         { path: '/trading/trade_entry', label: 'Trade Entry Log', group: 'Trading' },
+        { path: '/trading/mt5_tracker', label: 'MT5 trade log', group: 'Trading' },
         { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
         { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
         { path: '/trading/tools', label: 'Tools', group: 'Learning' },

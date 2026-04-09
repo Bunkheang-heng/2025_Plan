@@ -155,6 +155,12 @@ service cloud.firestore {
             && request.resource.data.role == resource.data.role
           )
         );
+
+      // MT5 closed trades (written only via Admin /api/mt5/trades); read own only
+      match /mt5Trades/{tradeId} {
+        allow read: if signedIn() && request.auth.uid == userId;
+        allow write, delete: if false;
+      }
     }
 
     // School Classes - users can only access their own classes

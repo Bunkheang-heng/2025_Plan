@@ -51,7 +51,7 @@ export default function TradingPnLAccountsPage() {
           const data = d.data() as Omit<TradingAccount, 'id'>
           return { id: d.id, ...data }
         })
-        .filter(a => a.pnlCategory !== 'bot')
+        .filter(a => a.pnlCategory === 'bot')
       setAccounts(list)
     } catch (e: any) {
       if (e?.code === 'failed-precondition' || e?.message?.includes('index')) {
@@ -65,7 +65,7 @@ export default function TradingPnLAccountsPage() {
             const data = d.data() as Omit<TradingAccount, 'id'>
             return { id: d.id, ...data }
           })
-          .filter(a => a.pnlCategory !== 'bot')
+          .filter(a => a.pnlCategory === 'bot')
         setAccounts(list)
       } else {
         throw e
@@ -109,7 +109,7 @@ export default function TradingPnLAccountsPage() {
         name,
         type: formData.type,
         currency: formData.currency,
-        pnlCategory: 'manual',
+        pnlCategory: 'bot',
         capital: Number.isFinite(capital) ? capital : 0,
         target: Number.isFinite(target) && target > 0 ? target : null,
         maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
@@ -120,7 +120,7 @@ export default function TradingPnLAccountsPage() {
       setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', target: '', maxLoss: '', strategy: '', rules: '' })
       toast.success('Account created successfully!')
       await fetchAccounts()
-      router.push(`/trading/trading_pnl/${ref.id}`)
+      router.push(`/trading/bot_trading_pnl/${ref.id}`)
     } catch (e) {
       console.error('Error creating trading account:', e)
       toast.error('Failed to create account')
@@ -165,14 +165,14 @@ export default function TradingPnLAccountsPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-            Trading Accounts
+            Bot trading accounts
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
-            <span>Your Accounts</span>
+            <span>Bot P&amp;L accounts</span>
             <FaChartLine className="w-10 h-10 text-yellow-400" />
           </h1>
           <p className="text-xl text-theme-secondary font-medium">
-            Choose an account to view the P&amp;L calendar
+            Daily P&amp;L only — no trade count per day
           </p>
         </div>
 
@@ -181,7 +181,7 @@ export default function TradingPnLAccountsPage() {
             <div className="p-4 border-b border-theme-secondary flex items-center justify-between">
               <div>
                 <h2 className="text-theme-primary font-semibold">Accounts</h2>
-                <p className="text-xs text-theme-tertiary">Click to open P&amp;L</p>
+                <p className="text-xs text-theme-tertiary">Click to open bot P&amp;L</p>
               </div>
               <span className="text-xs text-theme-muted">{sortedAccounts.length}</span>
             </div>
@@ -196,7 +196,7 @@ export default function TradingPnLAccountsPage() {
                     className="w-full text-left px-4 py-4 rounded-xl border bg-black/20 border-theme-secondary text-gray-200 hover:bg-black/30 hover:border-gray-600 transition-colors"
                   >
                     <button
-                      onClick={() => router.push(`/trading/trading_pnl/${acc.id}`)}
+                      onClick={() => router.push(`/trading/bot_trading_pnl/${acc.id}`)}
                       className="w-full text-left"
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -234,7 +234,7 @@ export default function TradingPnLAccountsPage() {
                     </button>
                     <div className="mt-3 flex items-center gap-2">
                       <button
-                        onClick={() => router.push(`/trading/trading_pnl/${acc.id}/edit`)}
+                        onClick={() => router.push(`/trading/bot_trading_pnl/${acc.id}/edit`)}
                         className="px-3 py-1.5 rounded-lg bg-theme-card/60 border border-theme-secondary text-gray-200 hover:bg-theme-card transition-colors text-xs"
                       >
                         Edit
@@ -253,9 +253,9 @@ export default function TradingPnLAccountsPage() {
           </div>
 
           <div className="lg:col-span-5 bg-theme-card border border-yellow-500/20 rounded-2xl p-5">
-            <h2 className="text-lg font-semibold text-theme-primary mb-2">Create Account</h2>
+            <h2 className="text-lg font-semibold text-theme-primary mb-2">Create bot account</h2>
             <p className="text-xs text-theme-tertiary mb-4">
-              Add each trading account you want to track.
+              Same calendar as Trading P&amp;L, without logging number of trades per day.
             </p>
 
             <label className="block text-xs text-theme-tertiary mb-2">Account name</label>
