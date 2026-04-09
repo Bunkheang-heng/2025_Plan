@@ -130,25 +130,33 @@ export async function POST(request: NextRequest) {
     .doc(userId)
     .collection('mt5Trades')
     .doc(String(trade.ticket))
-  await tradeRef.set({
-    ticket: trade.ticket,
-    symbol: trade.symbol,
-    trade_type: trade.trade_type,
-    lot_size: trade.lot_size,
-    open_price: trade.open_price,
-    close_price: trade.close_price,
-    open_time: trade.open_time,
-    close_time: trade.close_time,
-    sl: trade.sl ?? 0,
-    tp: trade.tp ?? 0,
-    profit: trade.profit,
-    pips: trade.pips ?? 0,
-    commission: trade.commission ?? 0,
-    swap: trade.swap ?? 0,
-    magic_number: trade.magic_number ?? 0,
-    comment: trade.comment ?? '',
-    ingestedAt: FieldValue.serverTimestamp(),
-  })
+  try {
+    await tradeRef.set({
+      ticket: trade.ticket,
+      symbol: trade.symbol,
+      trade_type: trade.trade_type,
+      lot_size: trade.lot_size,
+      open_price: trade.open_price,
+      close_price: trade.close_price,
+      open_time: trade.open_time,
+      close_time: trade.close_time,
+      sl: trade.sl ?? 0,
+      tp: trade.tp ?? 0,
+      profit: trade.profit,
+      pips: trade.pips ?? 0,
+      commission: trade.commission ?? 0,
+      swap: trade.swap ?? 0,
+      magic_number: trade.magic_number ?? 0,
+      comment: trade.comment ?? '',
+      ingestedAt: FieldValue.serverTimestamp(),
+    })
+  } catch (err) {
+    console.error('[api/mt5/trades] Firestore write failed:', err)
+    return NextResponse.json(
+      { error: 'Failed to save trade (check server logs / FIREBASE_SERVICE_ACCOUNT).' },
+      { status: 500 }
+    )
+  }
 
   return NextResponse.json({ ok: true }, { status: 201 })
 }

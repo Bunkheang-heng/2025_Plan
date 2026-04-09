@@ -9,14 +9,16 @@
 //|  4. MT5: Tools → Options → Expert Advisors → Allow WebRequest    |
 //|     Add same host as APP_URL, e.g. https://plan2025.vercel.app   |
 //|  5. Attach EA to any chart (e.g. EURUSD M1)                      |
+//|  6. Experts tab: read HTTP code — 201 = saved; -1 = WebRequest   |
+//|     blocked (add URL) or wrong post buffer type                  |
 //+------------------------------------------------------------------+
 #property copyright "TradeTracker"
-#property version   "1.20"
+#property version   "1.21"
 #property strict
 
 //--- Inputs — POST /api/mt5/trades (Bearer only; no query string)
 input string  InpAppBaseURL  = "https://plan2025.vercel.app";   // = APP_URL in .env (no trailing /)
-input string  InpIngestToken = "PASTE_BEARER_FROM_MT5_TRADE_LOG_PAGE"; // Trading → MT5 trade log
+input string  InpIngestToken = "";                             // paste full token from MT5 trade log (do not share)
 input bool    InpDebugMode      = true;                                 // Print debug logs
 
 //--- Track open positions to capture SL/TP before close
@@ -34,6 +36,19 @@ struct PositionInfo {
 };
 
 PositionInfo openPositions[];
+
+//+------------------------------------------------------------------+
+//| Escape string for JSON "..." (comment / odd broker text)          |
+//+------------------------------------------------------------------+
+string JsonEscape(string s)
+{
+   StringReplace(s, "\\", "\\\\");
+   StringReplace(s, "\"", "\\\"");
+   StringReplace(s, "\r", " ");
+   StringReplace(s, "\n", " ");
+   StringReplace(s, "\t", " ");
+   return s;
+}
 
 //+------------------------------------------------------------------+
 bool SelectPositionByIdentifier(long posId)
@@ -104,7 +119,23 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 //+------------------------------------------------------------------+
 void SendTradeToFirebase(ulong dealTicket)
 {
-   if(!HistoryDealSelect(dealTicket)) { Print("[TradeTracker] Cannot select deal: ", dealTicket); return; }
+   if(StringLen(InpIngestToken) < 16)
+   {
+      Print("[TradeTracker] ❌ InpIngestToken empty — paste token from web: Trading → MT5 trade log");
+      return;
+   }
+
+   //--- Deal must be in terminal history (sometimes needs wide range on first select)
+   HistorySelect(0, TimeCurrent());
+   if(!HistoryDealSelect(dealTicket))
+   {
+      HistorySelect((datetime)(TimeCurrent() - 86400 * 365), TimeCurrent() + 300);
+      if(!HistoryDealSelect(dealTicket))
+      {
+         Print("[TradeTracker] ❌ Deal not in history: ", dealTicket);
+         return;
+      }
+   }
 
    long     positionId   = HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID);
    string   symbol       = HistoryDealGetString(dealTicket, DEAL_SYMBOL);
@@ -174,8 +205,8 @@ void SendTradeToFirebase(ulong dealTicket)
    string openTimeStr  = FormatISO(openTime);
    string closeTimeStr = FormatISO(closeTime);
 
-   //--- Escape any double-quotes in comment
-   StringReplace(comment, "\"", "'");
+   comment = JsonEscape(comment);
+   symbol  = JsonEscape(symbol);
 
    //--- Build JSON
    string json = StringFormat(
@@ -212,21 +243,29 @@ void SendTradeToFirebase(ulong dealTicket)
    if(n > 0 && StringGetCharacter(base, n - 1) == '/')
       base = StringSubstr(base, 0, n - 1);
    string url = base + "/api/mt5/trades";
-   string headers = "Content-Type: application/json\r\n"
+   string headers = "Content-Type: application/json; charset=utf-8\r\n"
                   + "Authorization: Bearer " + InpIngestToken + "\r\n";
 
-   char   postData[];
+   uchar  postData[];
    char   response[];
    string responseHeaders;
-   StringToCharArray(json, postData, 0, StringLen(json));
+   int    nBytes = StringToCharArray(json, postData, 0, WHOLE_ARRAY, CP_UTF8);
+   if(nBytes <= 0)
+   {
+      Print("[TradeTracker] ❌ StringToCharArray failed for JSON body");
+      return;
+   }
 
    ResetLastError();
-   int httpCode = WebRequest("POST", url, headers, 5000, postData, response, responseHeaders);
+   int httpCode = WebRequest("POST", url, headers, 15000, postData, response, responseHeaders);
 
-   if(httpCode == 201)
-      Print("[TradeTracker] ✅ Trade ", dealTicket, " (", symbol, " ", tradeType, " ", DoubleToString(pips,1), " pips / $", DoubleToString(profit,2), ") saved.");
+   if(httpCode == 201 || httpCode == 200)
+      Print("[TradeTracker] ✅ Trade ", dealTicket, " (", symbol, " ", tradeType, " ", DoubleToString(pips,1), " pips / $", DoubleToString(profit,2), ") saved. HTTP=", httpCode);
+   else if(httpCode == -1)
+      Print("[TradeTracker] ❌ WebRequest failed. WinError=", GetLastError(),
+            " (4014=URL not allowed in Tools→Options→Expert Advisors→Allow WebRequest: add ", base, " )");
    else
-      Print("[TradeTracker] ❌ Failed. HTTP:", httpCode, " WinError:", GetLastError(), " Response:", CharArrayToString(response));
+      Print("[TradeTracker] ❌ HTTP:", httpCode, " WinError:", GetLastError(), " Response:", CharArrayToString(response));
 }
 
 //+------------------------------------------------------------------+
