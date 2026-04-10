@@ -3,9 +3,8 @@ import { after } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { FieldValue, type DocumentReference } from 'firebase-admin/firestore'
 import { getAdminFirestore } from '@/lib/firebase-admin'
-import { anyMt5CoachProviderConfigured, parseMt5AiProvider } from '@/lib/mt5AiProvider'
-import type { Mt5AiProviderId } from '@/lib/mt5AiProvider'
-import { generateMt5TradeCoach } from '@/lib/mt5TradeCoach'
+import { anyMt5CoachProviderConfigured } from '@/lib/mt5AiProvider'
+import { runMt5CoachOnTradeRef } from '@/lib/mt5CoachRun'
 
 function safeEqualString(a: string, b: string): boolean {
   try {
@@ -157,44 +156,11 @@ export async function POST(request: NextRequest) {
     ...(useAiCoach ? { aiCoachPending: true } : {}),
   }
 
-  const readPreferredMt5AiProvider = async (userId: string | null): Promise<Mt5AiProviderId> => {
-    if (!userId) return 'gemini'
-    const snap = await db.collection('userPrivateSettings').doc(userId).get()
-    if (!snap.exists) return 'gemini'
-    return parseMt5AiProvider(snap.data()?.mt5AiProvider)
-  }
-
   const scheduleAiCoach = (tradeRef: DocumentReference, ownerUserId: string | null) => {
     if (!useAiCoach) return
     after(async () => {
-      const net = trade.profit + (trade.commission ?? 0) + (trade.swap ?? 0)
-      const coachInput = {
-        symbol: trade.symbol,
-        trade_type: trade.trade_type,
-        lot_size: trade.lot_size,
-        open_price: trade.open_price,
-        close_price: trade.close_price,
-        open_time: trade.open_time,
-        close_time: trade.close_time,
-        sl: trade.sl ?? 0,
-        tp: trade.tp ?? 0,
-        profit: trade.profit,
-        pips: trade.pips ?? 0,
-        commission: trade.commission ?? 0,
-        swap: trade.swap ?? 0,
-        net,
-        comment: trade.comment ?? '',
-      }
       try {
-        const provider = await readPreferredMt5AiProvider(ownerUserId)
-        const coach = await generateMt5TradeCoach(coachInput, provider)
-        await tradeRef.update({
-          aiCoach: coach,
-          aiCoachProvider: provider,
-          aiCoachGeneratedAt: FieldValue.serverTimestamp(),
-          aiCoachPending: false,
-          aiCoachError: FieldValue.delete(),
-        })
+        await runMt5CoachOnTradeRef(db, tradeRef, ownerUserId)
       } catch (err) {
         console.error('[api/mt5/trades] AI coach failed:', err)
         try {

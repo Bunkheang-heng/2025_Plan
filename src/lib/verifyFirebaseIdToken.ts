@@ -20,10 +20,6 @@ function projectIdFromFirebaseIss(iss: string | undefined): string | null {
   return m ? m[1].trim() : null
 }
 
-/**
- * Firebase ID tokens use aud = project ID, or iss = https://securetoken.google.com/<projectId>.
- * tokeninfo may return aud in slightly different shapes depending on token type.
- */
 function firebaseAudMatchesProject(aud: string | undefined, projectId: string): boolean {
   if (!aud || !projectId) return false
   const p = normPid(projectId)
@@ -35,20 +31,7 @@ function firebaseAudMatchesProject(aud: string | undefined, projectId: string): 
   return false
 }
 
-/**
- * Verify a Firebase Auth ID token.
- * 1) Prefer Admin SDK when it loads and accepts the token.
- * 2) If that fails (no Admin, wrong SA project, etc.), use Google's tokeninfo + project id check.
- */
-export async function verifyFirebaseIdToken(idToken: string): Promise<void> {
-  try {
-    const app = getAdminApp()
-    await getAuth(app).verifyIdToken(idToken)
-    return
-  } catch {
-    // Fall through: common when FIREBASE_SERVICE_ACCOUNT is missing, or SA is for another project.
-  }
-
+async function tokenInfoAssertValidAndGetUid(idToken: string): Promise<string> {
   const projectId = resolveFirebaseProjectId()
   if (!projectId) {
     throw new Error(
@@ -85,7 +68,6 @@ export async function verifyFirebaseIdToken(idToken: string): Promise<void> {
   const issOk = issProject !== null && normPid(issProject) === pEnv
   const audOk = firebaseAudMatchesProject(data.aud, projectId)
 
-  // aud is often the Firebase project id, but some tokens use the OAuth web client id instead — iss is authoritative.
   if (!issOk && !audOk) {
     throw new Error(
       `ID token does not match this app’s Firebase project (aud=${data.aud ?? '?'}, iss=${data.iss ?? '?'}; set NEXT_PUBLIC_FIREBASE_PROJECT_ID=${projectId} on the server to match the project you sign in with)`
@@ -101,4 +83,35 @@ export async function verifyFirebaseIdToken(idToken: string): Promise<void> {
   if (Number.isFinite(expSec) && expSec * 1000 < Date.now() - 30_000) {
     throw new Error('ID token expired — refresh or sign in again')
   }
+
+  return uid
+}
+
+/**
+ * Verify a Firebase Auth ID token.
+ * 1) Prefer Admin SDK when it loads and accepts the token.
+ * 2) If that fails (no Admin, wrong SA project, etc.), use Google's tokeninfo + project id check.
+ */
+export async function verifyFirebaseIdToken(idToken: string): Promise<void> {
+  try {
+    const app = getAdminApp()
+    await getAuth(app).verifyIdToken(idToken)
+    return
+  } catch {
+    // Fall through: common when FIREBASE_SERVICE_ACCOUNT is missing, or SA is for another project.
+  }
+
+  await tokenInfoAssertValidAndGetUid(idToken)
+}
+
+/** Same as verifyFirebaseIdToken but returns the authenticated user's uid. */
+export async function verifyFirebaseIdTokenAndGetUid(idToken: string): Promise<string> {
+  try {
+    const app = getAdminApp()
+    const decoded = await getAuth(app).verifyIdToken(idToken)
+    return decoded.uid
+  } catch {
+    /* fall through */
+  }
+  return tokenInfoAssertValidAndGetUid(idToken)
 }

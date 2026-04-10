@@ -111,7 +111,51 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'BUY' | 'SELL'>('ALL')
   const [resultFilter, setResultFilter] = useState<'ALL' | 'WIN' | 'LOSS'>('ALL')
   const [tableRows, setTableRows] = useState(30)
-  const [expandedCoachId, setExpandedCoachId] = useState<string | null>(null)
+  /** Trade doc id for AI coach modal; content synced from `trades` via onSnapshot */
+  const [coachModalTradeId, setCoachModalTradeId] = useState<string | null>(null)
+  const [coachRetrying, setCoachRetrying] = useState(false)
+
+  const coachModalTrade = useMemo(
+    () => (coachModalTradeId ? trades.find((x) => x.id === coachModalTradeId) ?? null : null),
+    [trades, coachModalTradeId]
+  )
+
+  const handleRetryCoach = useCallback(async () => {
+    if (!coachModalTradeId) return
+    const user = auth.currentUser
+    if (!user) {
+      toast.error('Sign in to retry')
+      return
+    }
+    setCoachRetrying(true)
+    try {
+      const token = await user.getIdToken(true)
+      const res = await fetch('/api/mt5/coach-retry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          tradeDocId: coachModalTradeId,
+          ...(typeof tradingAccountId === 'string' && tradingAccountId
+            ? { tradingAccountId }
+            : {}),
+        }),
+      })
+      const j = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) {
+        toast.error(typeof j.error === 'string' ? j.error : 'Retry failed')
+        return
+      }
+      toast.success('Analysis queued')
+    } catch (e) {
+      console.error(e)
+      toast.error('Retry failed')
+    } finally {
+      setCoachRetrying(false)
+    }
+  }, [coachModalTradeId, tradingAccountId])
 
   const mapTradeDoc = useCallback((d: QueryDocumentSnapshot): Mt5TradeRow => {
     const x = d.data() as Record<string, unknown>
@@ -842,7 +886,8 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
             >
               AI settings
             </button>
-            . The table updates live when the note is ready.
+            . Open the <span className="text-violet-300/90">AI coach</span> column to view it in a popup; if
+            analysis fails, use <span className="text-amber-300/90">Retry</span> there. The table updates live.
           </p>
 
           <div className="overflow-x-auto">
@@ -867,97 +912,58 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
               <tbody>
                 {filteredTable.slice(0, tableRows).map((t) => {
                   const n = netPnL(t)
-                  const expanded = expandedCoachId === t.id
+                  const coachLabel = t.aiCoachPending
+                    ? 'Analyzing…'
+                    : t.aiCoachError
+                      ? 'Unavailable'
+                      : t.aiCoach
+                        ? 'View'
+                        : 'Coach'
                   return (
-                    <React.Fragment key={t.id}>
-                      <tr className="border-b border-theme-secondary/40 text-theme-secondary">
-                        <td className="py-2 pr-3 whitespace-nowrap text-xs">{t.close_time}</td>
-                        <td className="py-2 pr-3 text-[11px] text-theme-muted max-w-[140px] truncate" title={accountLabel(t)}>
-                          {accountShort(t)}
-                        </td>
-                        <td className="py-2 pr-3 font-medium text-theme-primary">{t.symbol}</td>
-                        <td className="py-2 pr-3">
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded ${
-                              t.trade_type === 'BUY' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'
-                            }`}
-                          >
-                            {t.trade_type}
-                          </span>
-                        </td>
-                        <td className="py-2 pr-3">{t.lot_size.toFixed(2)}</td>
-                        <td className="py-2 pr-3 font-mono text-xs">{t.open_price.toFixed(5)}</td>
-                        <td className="py-2 pr-3 font-mono text-xs">{t.close_price.toFixed(5)}</td>
-                        <td className={`py-2 pr-3 ${t.pips >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {t.pips.toFixed(1)}
-                        </td>
-                        <td className={`py-2 pr-3 ${t.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {fmt(t.profit)}
-                        </td>
-                        <td className="py-2 pr-3">{fmt(t.commission)}</td>
-                        <td className="py-2 pr-3">{fmt(t.swap)}</td>
-                        <td className={`py-2 pr-3 font-medium ${n >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {fmt(n)}
-                        </td>
-                        <td className="py-2 pr-3 align-top">
-                          {t.aiCoachPending ? (
-                            <span className="text-[11px] text-cyan-400 animate-pulse">Analyzing…</span>
-                          ) : t.aiCoachError ? (
-                            <span className="text-[11px] text-amber-400" title={t.aiCoachError}>
-                              Unavailable
-                            </span>
-                          ) : t.aiCoach ? (
-                            <button
-                              type="button"
-                              onClick={() => setExpandedCoachId(expanded ? null : t.id)}
-                              className="text-[11px] px-2 py-1 rounded-lg border border-violet-500/40 text-violet-200 hover:bg-violet-500/10"
-                            >
-                              {expanded ? 'Hide' : 'View'}
-                            </button>
-                          ) : (
-                            <span className="text-[11px] text-theme-muted">—</span>
-                          )}
-                        </td>
-                      </tr>
-                      {expanded && t.aiCoach ? (
-                        <tr className="border-b border-theme-secondary/40 bg-violet-500/5">
-                          <td colSpan={13} className="py-4 px-3">
-                            <div className="text-xs text-theme-secondary space-y-3 max-w-3xl">
-                              <p className="text-sm text-violet-200/95 font-medium">{t.aiCoach.verdict}</p>
-                              <div>
-                                <div className="text-[10px] uppercase tracking-wide text-emerald-400/90 mb-1">
-                                  What you did right
-                                </div>
-                                <ul className="list-disc pl-4 space-y-1 text-theme-secondary">
-                                  {t.aiCoach.strengths.length ? (
-                                    t.aiCoach.strengths.map((s, i) => <li key={i}>{s}</li>)
-                                  ) : (
-                                    <li className="text-theme-muted">—</li>
-                                  )}
-                                </ul>
-                              </div>
-                              <div>
-                                <div className="text-[10px] uppercase tracking-wide text-amber-400/90 mb-1">
-                                  What to improve
-                                </div>
-                                <ul className="list-disc pl-4 space-y-1 text-theme-secondary">
-                                  {t.aiCoach.improvements.length ? (
-                                    t.aiCoach.improvements.map((s, i) => <li key={i}>{s}</li>)
-                                  ) : (
-                                    <li className="text-theme-muted">—</li>
-                                  )}
-                                </ul>
-                              </div>
-                              {t.aiCoach.keyTakeaway ? (
-                                <p className="text-[11px] text-cyan-200/85 border-l-2 border-cyan-500/50 pl-3 italic">
-                                  {t.aiCoach.keyTakeaway}
-                                </p>
-                              ) : null}
-                            </div>
-                          </td>
-                        </tr>
-                      ) : null}
-                    </React.Fragment>
+                    <tr key={t.id} className="border-b border-theme-secondary/40 text-theme-secondary">
+                      <td className="py-2 pr-3 whitespace-nowrap text-xs">{t.close_time}</td>
+                      <td className="py-2 pr-3 text-[11px] text-theme-muted max-w-[140px] truncate" title={accountLabel(t)}>
+                        {accountShort(t)}
+                      </td>
+                      <td className="py-2 pr-3 font-medium text-theme-primary">{t.symbol}</td>
+                      <td className="py-2 pr-3">
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded ${
+                            t.trade_type === 'BUY' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'
+                          }`}
+                        >
+                          {t.trade_type}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3">{t.lot_size.toFixed(2)}</td>
+                      <td className="py-2 pr-3 font-mono text-xs">{t.open_price.toFixed(5)}</td>
+                      <td className="py-2 pr-3 font-mono text-xs">{t.close_price.toFixed(5)}</td>
+                      <td className={`py-2 pr-3 ${t.pips >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {t.pips.toFixed(1)}
+                      </td>
+                      <td className={`py-2 pr-3 ${t.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {fmt(t.profit)}
+                      </td>
+                      <td className="py-2 pr-3">{fmt(t.commission)}</td>
+                      <td className="py-2 pr-3">{fmt(t.swap)}</td>
+                      <td className={`py-2 pr-3 font-medium ${n >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {fmt(n)}
+                      </td>
+                      <td className="py-2 pr-3 align-top">
+                        <button
+                          type="button"
+                          onClick={() => setCoachModalTradeId(t.id)}
+                          className={`text-[11px] px-2 py-1 rounded-lg border text-left max-w-[100px] ${
+                            t.aiCoachError
+                              ? 'border-amber-500/50 text-amber-200 hover:bg-amber-500/10'
+                              : 'border-violet-500/40 text-violet-200 hover:bg-violet-500/10'
+                          }`}
+                          title={t.aiCoachError ?? 'Open AI coach'}
+                        >
+                          {coachLabel}
+                        </button>
+                      </td>
+                    </tr>
                   )
                 })}
               </tbody>
@@ -974,6 +980,127 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
           )}
         </div>
       </div>
+
+      {coachModalTradeId ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mt5-coach-modal-title"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70"
+          onClick={() => setCoachModalTradeId(null)}
+        >
+          <div
+            className="max-w-lg w-full max-h-[85vh] overflow-y-auto rounded-xl border border-theme-secondary bg-zinc-950 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-theme-secondary/60 px-4 py-3">
+              <div>
+                <h2 id="mt5-coach-modal-title" className="text-sm font-semibold text-theme-primary">
+                  AI trade analysis
+                </h2>
+                {coachModalTrade ? (
+                  <p className="text-[11px] text-theme-muted mt-1">
+                    {coachModalTrade.symbol} {coachModalTrade.trade_type} · Net {fmt(netPnL(coachModalTrade))} ·{' '}
+                    {coachModalTrade.close_time}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCoachModalTradeId(null)}
+                className="shrink-0 rounded-lg px-2 py-1 text-xs text-theme-muted hover:bg-white/10 hover:text-theme-primary"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="px-4 py-4 text-sm text-theme-secondary space-y-4">
+              {!coachModalTrade ? (
+                <p className="text-theme-muted">
+                  This trade is not in the current list (filters may have changed). Close and pick the row again.
+                </p>
+              ) : coachModalTrade.aiCoachPending ? (
+                <div className="flex items-center gap-3 text-cyan-300">
+                  <span
+                    className="inline-block h-5 w-5 shrink-0 border-2 border-cyan-400/25 border-t-cyan-400 rounded-full animate-spin"
+                    aria-hidden
+                  />
+                  <span>Analyzing this trade… Results appear here when ready.</span>
+                </div>
+              ) : coachModalTrade.aiCoachError ? (
+                <>
+                  <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-amber-100 text-[13px]">
+                    {coachModalTrade.aiCoachError}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRetryCoach}
+                    disabled={coachRetrying}
+                    className="w-full py-2.5 rounded-lg border border-amber-500/50 text-amber-100 text-sm font-medium hover:bg-amber-500/10 disabled:opacity-50"
+                  >
+                    {coachRetrying ? 'Retrying…' : 'Retry analysis'}
+                  </button>
+                </>
+              ) : coachModalTrade.aiCoach ? (
+                <>
+                  <p className="text-[15px] text-violet-200/95 font-medium leading-snug">
+                    {coachModalTrade.aiCoach.verdict}
+                  </p>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-emerald-400/90 mb-1">
+                      What you did right
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1 text-theme-secondary text-[13px]">
+                      {coachModalTrade.aiCoach.strengths.length ? (
+                        coachModalTrade.aiCoach.strengths.map((s, i) => <li key={i}>{s}</li>)
+                      ) : (
+                        <li className="text-theme-muted">—</li>
+                      )}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-amber-400/90 mb-1">
+                      What to improve
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1 text-theme-secondary text-[13px]">
+                      {coachModalTrade.aiCoach.improvements.length ? (
+                        coachModalTrade.aiCoach.improvements.map((s, i) => <li key={i}>{s}</li>)
+                      ) : (
+                        <li className="text-theme-muted">—</li>
+                      )}
+                    </ul>
+                  </div>
+                  {coachModalTrade.aiCoach.keyTakeaway ? (
+                    <p className="text-[12px] text-cyan-200/85 border-l-2 border-cyan-500/50 pl-3 italic">
+                      {coachModalTrade.aiCoach.keyTakeaway}
+                    </p>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleRetryCoach}
+                    disabled={coachRetrying}
+                    className="text-xs text-violet-300/90 underline hover:text-violet-200 disabled:opacity-50"
+                  >
+                    {coachRetrying ? 'Queuing…' : 'Run analysis again'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-theme-muted">No AI analysis for this trade yet.</p>
+                  <button
+                    type="button"
+                    onClick={handleRetryCoach}
+                    disabled={coachRetrying}
+                    className="w-full py-2.5 rounded-lg border border-violet-500/40 text-violet-200 text-sm font-medium hover:bg-violet-500/10 disabled:opacity-50"
+                  >
+                    {coachRetrying ? 'Starting…' : 'Run analysis'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
