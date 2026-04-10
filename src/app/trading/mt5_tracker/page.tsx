@@ -1,7 +1,7 @@
 'use client'
 
-import Mt5TradesPageClient from '../_pnl/Mt5TradesPageClient'
+import Mt5TrackerAccountsPage from '../_pnl/Mt5TrackerAccountsPage'
 
 export default function Mt5TrackerPage() {
-  return <Mt5TradesPageClient />
+  return <Mt5TrackerAccountsPage />
 }

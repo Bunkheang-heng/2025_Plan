@@ -5,7 +5,7 @@
 //|  SETUP:                                                          |
 //|  1. Deploy myPlan; set .env FIREBASE_SERVICE_ACCOUNT (Admin SDK)|
 //|  2. Web: Trading → MT5 trade log — token auto-created on first load|
-//|  3. EA: InpAppBaseURL = .env APP_URL; InpIngestToken = Bearer token |
+//|  3. EA: InpAppBaseURL = .env APP_URL; InpIngestToken = token from that log account |
 //|  4. MT5: Tools → Options → Expert Advisors → Allow WebRequest    |
 //|     Add same host as APP_URL, e.g. https://plan2025.vercel.app   |
 //|  5. Attach EA to any chart (e.g. EURUSD M1)                      |
@@ -13,7 +13,7 @@
 //|     blocked (add URL) or wrong post buffer type                  |
 //+------------------------------------------------------------------+
 #property copyright "TradeTracker"
-#property version   "1.21"
+#property version   "1.22"
 #property strict
 
 //--- Inputs — POST /api/mt5/trades (Bearer only; no query string)
@@ -208,10 +208,15 @@ void SendTradeToFirebase(ulong dealTicket)
    comment = JsonEscape(comment);
    symbol  = JsonEscape(symbol);
 
-   //--- Build JSON
+   long   accountLogin = (long)AccountInfoInteger(ACCOUNT_LOGIN);
+   string accountServer = JsonEscape(AccountInfoString(ACCOUNT_SERVER));
+
+   //--- Build JSON (account_* keeps multi-account logs separate in Firebase)
    string json = StringFormat(
       "{"
         "\"ticket\":%lld,"
+        "\"account_login\":%lld,"
+        "\"account_server\":\"%s\","
         "\"symbol\":\"%s\","
         "\"trade_type\":\"%s\","
         "\"lot_size\":%.2f,"
@@ -228,7 +233,7 @@ void SendTradeToFirebase(ulong dealTicket)
         "\"magic_number\":%lld,"
         "\"comment\":\"%s\""
       "}",
-      (long)dealTicket, symbol, tradeType,
+      (long)dealTicket, accountLogin, accountServer, symbol, tradeType,
       lotSize, openPrice, closePrice,
       openTimeStr, closeTimeStr,
       sl, tp, profit, pips,

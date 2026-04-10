@@ -11,6 +11,34 @@
       ]
     },
     {
+      "collectionGroup": "tradingAccounts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mt5IngestToken",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tradingAccounts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pnlCategory",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "daily",
       "queryScope": "COLLECTION",
       "fields": [

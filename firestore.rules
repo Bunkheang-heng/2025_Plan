@@ -54,6 +54,13 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if signedIn()
         && resource.data.userId == request.auth.uid;
+
+      // MT5 EA writes via Admin API only; client reads for trade log UI
+      match /mt5Trades/{tradeId} {
+        allow read: if signedIn()
+          && get(/databases/$(database)/documents/tradingAccounts/$(accountId)).data.userId == request.auth.uid;
+        allow write, delete, create: if false;
+      }
     }
     
     // Projects - authenticated users can access

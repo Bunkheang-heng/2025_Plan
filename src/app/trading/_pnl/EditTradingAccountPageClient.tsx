@@ -22,22 +22,28 @@ type TradingAccount = {
   maxLoss?: number
   strategy?: string
   rules?: string
-  pnlCategory?: 'manual' | 'bot'
+  pnlCategory?: 'manual' | 'bot' | 'mt5'
 }
 
 type TradingAccountBasic = {
   id: string
   name: string
   type: AccountType
-  pnlCategory?: 'manual' | 'bot'
+  pnlCategory?: 'manual' | 'bot' | 'mt5'
 }
 
 export default function EditTradingAccountPageClient({
   routeBase
 }: {
-  routeBase: '/trading/trading_pnl' | '/trading/bot_trading_pnl'
+  routeBase: '/trading/trading_pnl' | '/trading/bot_trading_pnl' | '/trading/mt5_tracker'
 }) {
-  const isBotPnL = routeBase === '/trading/bot_trading_pnl'
+  const pnlKind: 'manual' | 'bot' | 'mt5' =
+    routeBase === '/trading/bot_trading_pnl'
+      ? 'bot'
+      : routeBase === '/trading/mt5_tracker'
+        ? 'mt5'
+        : 'manual'
+  const isBotPnL = pnlKind === 'bot'
   const router = useRouter()
   const params = useParams<{ accountId: string }>()
   const accountId = params?.accountId
@@ -111,12 +117,16 @@ export default function EditTradingAccountPageClient({
           type: (d.data() as TradingAccount).type,
           pnlCategory: (d.data() as TradingAccount).pnlCategory
         }))
-        .filter(a => (a.pnlCategory === 'bot') === isBotPnL)
+        .filter((a) => {
+          if (pnlKind === 'bot') return a.pnlCategory === 'bot'
+          if (pnlKind === 'mt5') return a.pnlCategory === 'mt5'
+          return a.pnlCategory !== 'bot' && a.pnlCategory !== 'mt5'
+        })
       setAllAccounts(list)
     } catch (e) {
       console.error('Error fetching accounts:', e)
     }
-  }, [isBotPnL])
+  }, [pnlKind])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
@@ -132,13 +142,18 @@ export default function EditTradingAccountPageClient({
 
   useEffect(() => {
     if (!account || !accountId) return
-    const isBotAccount = account.pnlCategory === 'bot'
-    if (isBotAccount && !isBotPnL) {
-      router.replace(`/trading/bot_trading_pnl/${accountId}/edit`)
-    } else if (!isBotAccount && isBotPnL) {
-      router.replace(`/trading/trading_pnl/${accountId}/edit`)
+    const cat = account.pnlCategory
+    if (pnlKind === 'bot' && cat !== 'bot') {
+      if (cat === 'mt5') router.replace(`/trading/mt5_tracker/${accountId}/edit`)
+      else router.replace(`/trading/trading_pnl/${accountId}/edit`)
+    } else if (pnlKind === 'mt5' && cat !== 'mt5') {
+      if (cat === 'bot') router.replace(`/trading/bot_trading_pnl/${accountId}/edit`)
+      else router.replace(`/trading/trading_pnl/${accountId}/edit`)
+    } else if (pnlKind === 'manual' && (cat === 'bot' || cat === 'mt5')) {
+      if (cat === 'bot') router.replace(`/trading/bot_trading_pnl/${accountId}/edit`)
+      else router.replace(`/trading/mt5_tracker/${accountId}/edit`)
     }
-  }, [account, accountId, isBotPnL, router])
+  }, [account, accountId, pnlKind, router])
 
   const handleSave = async () => {
     const user = auth.currentUser
@@ -191,6 +206,15 @@ export default function EditTradingAccountPageClient({
     setIsResetting(true)
     try {
       const db = getFirestore()
+
+      if (pnlKind === 'mt5') {
+        const mt5Snap = await getDocs(collection(db, 'tradingAccounts', accountId, 'mt5Trades'))
+        await Promise.all(mt5Snap.docs.map((d) => deleteDoc(d.ref)))
+        setShowResetModal(false)
+        toast.success(`Cleared ${mt5Snap.docs.length} MT5 trade(s) for this log.`)
+        router.push(`${routeBase}/${accountId}`)
+        return
+      }
 
       const [pnlQuery, withdrawQuery, lessonsQuery] = [
         query(collection(db, 'trading_pnl'), where('userId', '==', user.uid), where('accountId', '==', accountId)),
@@ -431,19 +455,21 @@ export default function EditTradingAccountPageClient({
               <p className="text-xs text-theme-muted mt-3">Set specific rules to follow when trading this account</p>
             </div>
 
-            {/* Danger Zone - Reset P&L */}
+            {/* Danger Zone - Reset P&L / MT5 trades */}
             <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/30 rounded-2xl p-6">
               <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
                 ⚠️ Danger Zone
               </h2>
               <p className="text-sm text-theme-secondary mb-4">
-                Reset all P&L data for this account. This will permanently delete all daily entries, trades, and lessons recorded for this account.
+                {pnlKind === 'mt5'
+                  ? 'Delete every closed trade stored for this MT5 log (Firebase only). Your MetaTrader history is unchanged.'
+                  : 'Reset all P&L data for this account. This will permanently delete all daily entries, trades, and lessons recorded for this account.'}
               </p>
               <button
                 onClick={() => setShowResetModal(true)}
                 className="px-4 py-2 bg-red-500/20 text-red-300 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-medium"
               >
-                🗑️ Reset All P&L Data
+                {pnlKind === 'mt5' ? '🗑️ Clear all MT5 trades' : '🗑️ Reset All P&L Data'}
               </button>
             </div>
           </div>
@@ -475,7 +501,7 @@ export default function EditTradingAccountPageClient({
           <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-theme-secondary/60">
               <h3 className="text-xl font-bold text-red-400 flex items-center gap-2">
-                ⚠️ Reset P&L Data
+                {pnlKind === 'mt5' ? '⚠️ Clear MT5 trades' : '⚠️ Reset P&L Data'}
               </h3>
               <p className="text-sm text-theme-tertiary mt-1">
                 This action cannot be undone!
@@ -483,10 +509,26 @@ export default function EditTradingAccountPageClient({
             </div>
             <div className="p-6 space-y-3">
               <p className="text-theme-secondary">
-                Are you sure you want to delete <span className="font-bold text-red-400">all P&L entries</span> for this account?
+                {pnlKind === 'mt5' ? (
+                  <>
+                    Delete <span className="font-bold text-red-400">all ingested MT5 trades</span> for{' '}
+                    <span className="font-semibold text-theme-primary">{account?.name}</span>?
+                  </>
+                ) : (
+                  <>
+                    Are you sure you want to delete <span className="font-bold text-red-400">all P&L entries</span> for this account?
+                  </>
+                )}
               </p>
               <p className="text-sm text-theme-tertiary">
-                This will permanently remove all daily profit/loss records, trade counts, and lessons for <span className="font-semibold text-theme-primary">{account?.name}</span>.
+                {pnlKind === 'mt5' ? (
+                  <>This only removes rows in your web log (Firestore). It does not change MT5.</>
+                ) : (
+                  <>
+                    This will permanently remove all daily profit/loss records, trade counts, and lessons for{' '}
+                    <span className="font-semibold text-theme-primary">{account?.name}</span>.
+                  </>
+                )}
               </p>
             </div>
             <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
@@ -502,7 +544,7 @@ export default function EditTradingAccountPageClient({
                 disabled={isResetting}
                 className="px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
               >
-                {isResetting ? 'Resetting...' : '🗑️ Yes, Reset All P&L'}
+                {isResetting ? 'Resetting...' : pnlKind === 'mt5' ? '🗑️ Yes, clear trades' : '🗑️ Yes, Reset All P&L'}
               </button>
             </div>
           </div>

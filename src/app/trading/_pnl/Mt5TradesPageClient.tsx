@@ -12,6 +12,7 @@ import {
   getDocs,
   getFirestore,
   setDoc,
+  updateDoc,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore'
 import { FaArrowLeft, FaRedo } from 'react-icons/fa'
@@ -21,6 +22,8 @@ import { generateMt5IngestToken } from '@/lib/mt5IngestToken'
 export type Mt5TradeRow = {
   id: string
   ticket: number
+  account_login: number
+  account_server: string
   symbol: string
   trade_type: string
   lot_size: number
@@ -38,6 +41,22 @@ export type Mt5TradeRow = {
   comment: string
 }
 
+function accountKey(t: Mt5TradeRow): string {
+  return `${t.account_login}|${t.account_server}`
+}
+
+function accountLabel(t: Mt5TradeRow): string {
+  if (t.account_login <= 0 && !t.account_server) return 'Legacy (no account id)'
+  return `Login ${t.account_login} · ${t.account_server || '—'}`
+}
+
+function accountShort(t: Mt5TradeRow): string {
+  if (t.account_login <= 0 && !t.account_server) return '—'
+  const srv =
+    t.account_server.length > 18 ? `${t.account_server.slice(0, 16)}…` : t.account_server
+  return `${t.account_login} / ${srv}`
+}
+
 function netPnL(t: Mt5TradeRow): number {
   return t.profit + t.commission + t.swap
 }
@@ -53,12 +72,19 @@ function parseCloseMs(t: Mt5TradeRow): number {
   return Number.isFinite(ms) ? ms : 0
 }
 
-/** Standalone MT5 log: `userPrivateSettings/{uid}/mt5Trades` + token on that doc (avoids strict `users` role rules). */
-export default function Mt5TradesPageClient() {
+/**
+ * Linked: `tradingAccounts/{id}/mt5Trades` + token on that account doc (`pnlCategory: mt5`).
+ * Legacy (no prop): `userPrivateSettings/{uid}/mt5Trades` + token on userPrivateSettings.
+ */
+export default function Mt5TradesPageClient(props?: { tradingAccountId?: string }) {
+  const { tradingAccountId } = props ?? {}
   const router = useRouter()
+  const isLinked = Boolean(tradingAccountId)
   const [isLoading, setIsLoading] = useState(true)
   const [ingestToken, setIngestToken] = useState<string | null>(null)
+  const [linkedAccountName, setLinkedAccountName] = useState<string | null>(null)
   const [trades, setTrades] = useState<Mt5TradeRow[]>([])
+  const [accountFilter, setAccountFilter] = useState<'ALL' | string>('ALL')
   const [symbolFilter, setSymbolFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'BUY' | 'SELL'>('ALL')
   const [resultFilter, setResultFilter] = useState<'ALL' | 'WIN' | 'LOSS'>('ALL')
@@ -91,54 +117,107 @@ export default function Mt5TradesPageClient() {
     return tok
   }, [])
 
-  const fetchTrades = useCallback(async (uid: string) => {
-    const db = getFirestore()
-    const mapRow = (d: QueryDocumentSnapshot): Mt5TradeRow => {
-      const x = d.data() as Record<string, unknown>
-      return {
-        id: d.id,
-        ticket: Number(x.ticket) || 0,
-        symbol: String(x.symbol || ''),
-        trade_type: String(x.trade_type || ''),
-        lot_size: Number(x.lot_size) || 0,
-        open_price: Number(x.open_price) || 0,
-        close_price: Number(x.close_price) || 0,
-        open_time: String(x.open_time || ''),
-        close_time: String(x.close_time || ''),
-        sl: Number(x.sl) || 0,
-        tp: Number(x.tp) || 0,
-        profit: Number(x.profit) || 0,
-        pips: Number(x.pips) || 0,
-        commission: Number(x.commission) || 0,
-        swap: Number(x.swap) || 0,
-        magic_number: Number(x.magic_number) || 0,
-        comment: String(x.comment || ''),
-      }
+  const mapTradeDoc = useCallback((d: QueryDocumentSnapshot): Mt5TradeRow => {
+    const x = d.data() as Record<string, unknown>
+    return {
+      id: d.id,
+      ticket: Number(x.ticket) || 0,
+      account_login: Number(x.account_login) || 0,
+      account_server: String(x.account_server || ''),
+      symbol: String(x.symbol || ''),
+      trade_type: String(x.trade_type || ''),
+      lot_size: Number(x.lot_size) || 0,
+      open_price: Number(x.open_price) || 0,
+      close_price: Number(x.close_price) || 0,
+      open_time: String(x.open_time || ''),
+      close_time: String(x.close_time || ''),
+      sl: Number(x.sl) || 0,
+      tp: Number(x.tp) || 0,
+      profit: Number(x.profit) || 0,
+      pips: Number(x.pips) || 0,
+      commission: Number(x.commission) || 0,
+      swap: Number(x.swap) || 0,
+      magic_number: Number(x.magic_number) || 0,
+      comment: String(x.comment || ''),
     }
-
-    const [privSnap, legacySnap] = await Promise.all([
-      getDocs(collection(db, 'userPrivateSettings', uid, 'mt5Trades')),
-      getDocs(collection(db, 'users', uid, 'mt5Trades')),
-    ])
-    const byTicket = new Map<string, Mt5TradeRow>()
-    for (const d of legacySnap.docs) {
-      byTicket.set(d.id, mapRow(d))
-    }
-    for (const d of privSnap.docs) {
-      byTicket.set(d.id, mapRow(d))
-    }
-    const rows = [...byTicket.values()]
-    rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
-    setTrades(rows)
   }, [])
+
+  const fetchTradesLegacy = useCallback(
+    async (uid: string) => {
+      const db = getFirestore()
+      const [privSnap, legacySnap] = await Promise.all([
+        getDocs(collection(db, 'userPrivateSettings', uid, 'mt5Trades')),
+        getDocs(collection(db, 'users', uid, 'mt5Trades')),
+      ])
+      const byTicket = new Map<string, Mt5TradeRow>()
+      for (const d of legacySnap.docs) {
+        byTicket.set(d.id, mapTradeDoc(d))
+      }
+      for (const d of privSnap.docs) {
+        byTicket.set(d.id, mapTradeDoc(d))
+      }
+      const rows = [...byTicket.values()]
+      rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
+      setTrades(rows)
+    },
+    [mapTradeDoc]
+  )
+
+  const fetchTradesLinked = useCallback(
+    async (accountId: string) => {
+      const db = getFirestore()
+      const snap = await getDocs(collection(db, 'tradingAccounts', accountId, 'mt5Trades'))
+      const rows = snap.docs.map((d) => mapTradeDoc(d))
+      rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
+      setTrades(rows)
+    },
+    [mapTradeDoc]
+  )
 
   const load = useCallback(
     async (uid: string) => {
-      const tok = await ensureUserIngestToken(uid)
-      setIngestToken(tok)
-      await fetchTrades(uid)
+      if (tradingAccountId) {
+        const db = getFirestore()
+        const accRef = doc(db, 'tradingAccounts', tradingAccountId)
+        const accSnap = await getDoc(accRef)
+        if (!accSnap.exists()) {
+          toast.error('MT5 log account not found')
+          router.push('/trading/mt5_tracker')
+          return
+        }
+        const data = accSnap.data() as {
+          userId?: string
+          name?: string
+          pnlCategory?: string
+          mt5IngestToken?: string
+        }
+        if (data.userId !== uid || data.pnlCategory !== 'mt5') {
+          toast.error('Account not found')
+          router.push('/trading/mt5_tracker')
+          return
+        }
+        setLinkedAccountName(data.name || 'MT5 log')
+        let tok = typeof data.mt5IngestToken === 'string' ? data.mt5IngestToken : ''
+        if (!tok || tok.length < 16) {
+          tok = generateMt5IngestToken()
+          await updateDoc(accRef, { mt5IngestToken: tok })
+        }
+        setIngestToken(tok)
+        await fetchTradesLinked(tradingAccountId)
+      } else {
+        setLinkedAccountName(null)
+        const tok = await ensureUserIngestToken(uid)
+        setIngestToken(tok)
+        await fetchTradesLegacy(uid)
+      }
     },
-    [ensureUserIngestToken, fetchTrades]
+    [
+      tradingAccountId,
+      router,
+      ensureUserIngestToken,
+      fetchTradesLegacy,
+      fetchTradesLinked,
+    ]
   )
 
   useEffect(() => {
@@ -158,9 +237,23 @@ export default function Mt5TradesPageClient() {
     return () => unsub()
   }, [router, load])
 
-  const sortedFull = useMemo(() => {
-    return [...trades].sort((a, b) => parseCloseMs(a) - parseCloseMs(b))
+  const accountOptions = useMemo(() => {
+    const labels = new Map<string, string>()
+    for (const t of trades) {
+      const k = accountKey(t)
+      if (!labels.has(k)) labels.set(k, accountLabel(t))
+    }
+    return [...labels.entries()].sort((a, b) => a[1].localeCompare(b[1]))
   }, [trades])
+
+  const tradesInScope = useMemo(() => {
+    if (accountFilter === 'ALL') return trades
+    return trades.filter((t) => accountKey(t) === accountFilter)
+  }, [trades, accountFilter])
+
+  const sortedFull = useMemo(() => {
+    return [...tradesInScope].sort((a, b) => parseCloseMs(a) - parseCloseMs(b))
+  }, [tradesInScope])
 
   const chartTrades = sortedFull
 
@@ -232,7 +325,7 @@ export default function Mt5TradesPageClient() {
 
   const filteredTable = useMemo(() => {
     const sym = symbolFilter.trim().toUpperCase()
-    return trades.filter((t) => {
+    return tradesInScope.filter((t) => {
       if (sym && !t.symbol.toUpperCase().includes(sym)) return false
       if (typeFilter !== 'ALL' && t.trade_type !== typeFilter) return false
       const n = netPnL(t)
@@ -240,7 +333,7 @@ export default function Mt5TradesPageClient() {
       if (resultFilter === 'LOSS' && n >= 0) return false
       return true
     })
-  }, [trades, symbolFilter, typeFilter, resultFilter])
+  }, [tradesInScope, symbolFilter, typeFilter, resultFilter])
 
   const appOrigin = typeof window !== 'undefined' ? window.location.origin : ''
 
@@ -251,7 +344,11 @@ export default function Mt5TradesPageClient() {
     try {
       const db = getFirestore()
       const tok = generateMt5IngestToken()
-      await setDoc(doc(db, 'userPrivateSettings', user.uid), { mt5IngestToken: tok }, { merge: true })
+      if (tradingAccountId) {
+        await updateDoc(doc(db, 'tradingAccounts', tradingAccountId), { mt5IngestToken: tok })
+      } else {
+        await setDoc(doc(db, 'userPrivateSettings', user.uid), { mt5IngestToken: tok }, { merge: true })
+      }
       setIngestToken(tok)
       toast.success('New ingest token saved. Update TradeTracker.mq5 inputs.')
     } catch (e) {
@@ -304,13 +401,33 @@ export default function Mt5TradesPageClient() {
     <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
-          >
-            <FaArrowLeft /> Dashboard
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+            >
+              <FaArrowLeft /> Dashboard
+            </button>
+            {isLinked ? (
+              <button
+                type="button"
+                onClick={() => router.push('/trading/mt5_tracker')}
+                className="px-4 py-2 bg-gray-900/60 border border-cyan-500/30 text-cyan-200 rounded-lg hover:bg-gray-900 transition-colors text-sm"
+              >
+                MT5 accounts
+              </button>
+            ) : null}
+            {isLinked && tradingAccountId ? (
+              <button
+                type="button"
+                onClick={() => router.push(`/trading/mt5_tracker/${tradingAccountId}/edit`)}
+                className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors text-sm"
+              >
+                Edit account
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="text-center mb-10">
@@ -319,9 +436,18 @@ export default function Mt5TradesPageClient() {
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-yellow-500 mb-2">
             MT5 trade log
+            {linkedAccountName ? (
+              <span className="block text-lg font-semibold text-cyan-200/90 mt-2">{linkedAccountName}</span>
+            ) : null}
           </h1>
           <p className="text-theme-secondary text-sm">
+            {isLinked
+              ? 'Bearer token below is only for this log account. '
+              : 'Legacy single-token log. Create named accounts from MT5 trade log home for separate tokens. '}
             Closed deals from your EA → Firebase · {trades.length} trade{trades.length === 1 ? '' : 's'}
+            {accountOptions.length > 1
+              ? ` · ${accountOptions.length} MT5 terminal${accountOptions.length === 1 ? '' : 's'}`
+              : ''}
           </p>
         </div>
 
@@ -342,7 +468,9 @@ export default function Mt5TradesPageClient() {
             Use <code className="text-yellow-200/90">public/files/TradeTracker.mq5</code>. In MT5, allow WebRequest for{' '}
             <code className="text-cyan-300/90">{appOrigin || 'your deploy URL'}</code>. Server needs{' '}
             <code className="text-cyan-300/90">FIREBASE_SERVICE_ACCOUNT</code> in <code className="text-cyan-300/90">.env</code>.
-            This page is separate from Bot trading P&amp;L.
+            {isLinked
+              ? 'Each MT5 log account has its own token; paste it into TradeTracker InpIngestToken for that broker only.'
+              : 'This legacy view uses your profile ingest token (userPrivateSettings).'}
           </p>
           <div className="grid gap-2 text-xs font-mono break-all">
             <div>
@@ -437,6 +565,23 @@ export default function Mt5TradesPageClient() {
 
         <div className="rounded-2xl border border-theme-secondary bg-theme-card p-4 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-end gap-4 mb-4">
+            {accountOptions.length > 1 ? (
+              <div className="lg:min-w-[220px]">
+                <label className="block text-xs text-theme-muted mb-1">MT5 account</label>
+                <select
+                  value={accountFilter}
+                  onChange={(e) => setAccountFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/30 border border-theme-secondary rounded-lg text-sm text-theme-primary"
+                >
+                  <option value="ALL">All accounts</option>
+                  {accountOptions.map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
             <div className="flex-1">
               <label className="block text-xs text-theme-muted mb-1">Symbol contains</label>
               <input
@@ -477,6 +622,7 @@ export default function Mt5TradesPageClient() {
               <thead>
                 <tr className="text-xs text-theme-muted border-b border-theme-secondary">
                   <th className="py-2 pr-3">Close</th>
+                  <th className="py-2 pr-3">Account</th>
                   <th className="py-2 pr-3">Symbol</th>
                   <th className="py-2 pr-3">Type</th>
                   <th className="py-2 pr-3">Lots</th>
@@ -495,6 +641,9 @@ export default function Mt5TradesPageClient() {
                   return (
                     <tr key={t.id} className="border-b border-theme-secondary/40 text-theme-secondary">
                       <td className="py-2 pr-3 whitespace-nowrap text-xs">{t.close_time}</td>
+                      <td className="py-2 pr-3 text-[11px] text-theme-muted max-w-[140px] truncate" title={accountLabel(t)}>
+                        {accountShort(t)}
+                      </td>
                       <td className="py-2 pr-3 font-medium text-theme-primary">{t.symbol}</td>
                       <td className="py-2 pr-3">
                         <span
