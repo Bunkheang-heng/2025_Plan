@@ -834,8 +834,15 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
 
           <p className="text-[11px] text-theme-muted mb-3">
             After each close, the server can attach an <span className="text-cyan-400/90">AI coach</span> (what
-            went well vs what to improve) when <code className="text-yellow-200/80">GEMINI_API_KEY</code> is set.
-            The table updates live when the note is ready.
+            went well vs what to improve) using the provider you pick in{' '}
+            <button
+              type="button"
+              onClick={() => router.push('/settings/ai')}
+              className="text-cyan-400 underline hover:text-cyan-300"
+            >
+              AI settings
+            </button>
+            . The table updates live when the note is ready.
           </p>
 
           <div className="overflow-x-auto">

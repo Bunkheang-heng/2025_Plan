@@ -3,6 +3,8 @@ import { after } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { FieldValue, type DocumentReference } from 'firebase-admin/firestore'
 import { getAdminFirestore } from '@/lib/firebase-admin'
+import { anyMt5CoachProviderConfigured, parseMt5AiProvider } from '@/lib/mt5AiProvider'
+import type { Mt5AiProviderId } from '@/lib/mt5AiProvider'
 import { generateMt5TradeCoach } from '@/lib/mt5TradeCoach'
 
 function safeEqualString(a: string, b: string): boolean {
@@ -131,7 +133,7 @@ export async function POST(request: NextRequest) {
   }
 
   const docId = mt5TradeDocId(trade.ticket, trade.account_login, trade.account_server)
-  const useAiCoach = Boolean(process.env.GEMINI_API_KEY)
+  const useAiCoach = anyMt5CoachProviderConfigured()
   const tradePayload = {
     ticket: trade.ticket,
     account_login: trade.account_login,
@@ -155,30 +157,40 @@ export async function POST(request: NextRequest) {
     ...(useAiCoach ? { aiCoachPending: true } : {}),
   }
 
-  const scheduleAiCoach = (tradeRef: DocumentReference) => {
+  const readPreferredMt5AiProvider = async (userId: string | null): Promise<Mt5AiProviderId> => {
+    if (!userId) return 'gemini'
+    const snap = await db.collection('userPrivateSettings').doc(userId).get()
+    if (!snap.exists) return 'gemini'
+    return parseMt5AiProvider(snap.data()?.mt5AiProvider)
+  }
+
+  const scheduleAiCoach = (tradeRef: DocumentReference, ownerUserId: string | null) => {
     if (!useAiCoach) return
     after(async () => {
       const net = trade.profit + (trade.commission ?? 0) + (trade.swap ?? 0)
+      const coachInput = {
+        symbol: trade.symbol,
+        trade_type: trade.trade_type,
+        lot_size: trade.lot_size,
+        open_price: trade.open_price,
+        close_price: trade.close_price,
+        open_time: trade.open_time,
+        close_time: trade.close_time,
+        sl: trade.sl ?? 0,
+        tp: trade.tp ?? 0,
+        profit: trade.profit,
+        pips: trade.pips ?? 0,
+        commission: trade.commission ?? 0,
+        swap: trade.swap ?? 0,
+        net,
+        comment: trade.comment ?? '',
+      }
       try {
-        const coach = await generateMt5TradeCoach({
-          symbol: trade.symbol,
-          trade_type: trade.trade_type,
-          lot_size: trade.lot_size,
-          open_price: trade.open_price,
-          close_price: trade.close_price,
-          open_time: trade.open_time,
-          close_time: trade.close_time,
-          sl: trade.sl ?? 0,
-          tp: trade.tp ?? 0,
-          profit: trade.profit,
-          pips: trade.pips ?? 0,
-          commission: trade.commission ?? 0,
-          swap: trade.swap ?? 0,
-          net,
-          comment: trade.comment ?? '',
-        })
+        const provider = await readPreferredMt5AiProvider(ownerUserId)
+        const coach = await generateMt5TradeCoach(coachInput, provider)
         await tradeRef.update({
           aiCoach: coach,
+          aiCoachProvider: provider,
           aiCoachGeneratedAt: FieldValue.serverTimestamp(),
           aiCoachPending: false,
           aiCoachError: FieldValue.delete(),
@@ -206,7 +218,11 @@ export async function POST(request: NextRequest) {
 
   if (!accSnap.empty) {
     const accDoc = accSnap.docs[0]
-    const accData = accDoc.data() as { mt5IngestToken?: string; pnlCategory?: string }
+    const accData = accDoc.data() as {
+      userId?: string
+      mt5IngestToken?: string
+      pnlCategory?: string
+    }
     const storedAcc = accData.mt5IngestToken || ''
     if (!safeEqualString(token, storedAcc)) {
       return NextResponse.json({ error: 'Invalid ingest token' }, { status: 401 })
@@ -224,7 +240,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
-    scheduleAiCoach(tradeRef)
+    const ownerUserId = typeof accData.userId === 'string' ? accData.userId : null
+    scheduleAiCoach(tradeRef, ownerUserId)
     return NextResponse.json({ ok: true }, { status: 201 })
   }
 
@@ -264,6 +281,6 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  scheduleAiCoach(tradeRef)
+  scheduleAiCoach(tradeRef, userId)
   return NextResponse.json({ ok: true }, { status: 201 })
 }
