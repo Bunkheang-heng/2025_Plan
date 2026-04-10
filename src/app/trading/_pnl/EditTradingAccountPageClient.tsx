@@ -20,6 +20,8 @@ type TradingAccount = {
   capital?: number
   target?: number
   maxLoss?: number
+  /** MT5: optional daily profit goal (same currency as capital). */
+  dailyProfitTarget?: number | null
   strategy?: string
   rules?: string
   pnlCategory?: 'manual' | 'bot' | 'mt5'
@@ -60,6 +62,7 @@ export default function EditTradingAccountPageClient({
     capital: '',
     target: '',
     maxLoss: '',
+    dailyProfitTarget: '',
     strategy: '',
     rules: '',
   })
@@ -89,6 +92,7 @@ export default function EditTradingAccountPageClient({
         capital: String(acc.capital ?? 0),
         target: String(acc.target ?? ''),
         maxLoss: String(acc.maxLoss ?? ''),
+        dailyProfitTarget: String(acc.dailyProfitTarget ?? ''),
         strategy: acc.strategy || '',
         rules: acc.rules || '',
       })
@@ -173,6 +177,11 @@ export default function EditTradingAccountPageClient({
       toast.error('Please enter a valid max loss amount')
       return
     }
+    const dailyProfitTarget = Number(formData.dailyProfitTarget)
+    if (formData.dailyProfitTarget && Number.isNaN(dailyProfitTarget)) {
+      toast.error('Please enter a valid daily profit target')
+      return
+    }
 
     setIsSaving(true)
     try {
@@ -185,6 +194,12 @@ export default function EditTradingAccountPageClient({
         capital: Number.isFinite(capital) ? capital : 0,
         target: Number.isFinite(target) && target > 0 ? target : null,
         maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
+        dailyProfitTarget:
+          pnlKind === 'mt5' &&
+          Number.isFinite(dailyProfitTarget) &&
+          dailyProfitTarget > 0
+            ? dailyProfitTarget
+            : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         updatedAt: new Date().toISOString(),
@@ -392,6 +407,27 @@ export default function EditTradingAccountPageClient({
                   />
                   <p className="text-xs text-theme-muted mt-2">We’ll warn you when your daily P&amp;L loss reaches this amount.</p>
                 </div>
+
+                {pnlKind === 'mt5' ? (
+                  <div>
+                    <label className="block text-sm text-theme-tertiary mb-2 font-medium">
+                      Daily profit target ({formData.currency === 'cent' ? '¢' : '$'})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.dailyProfitTarget}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, dailyProfitTarget: e.target.value }))
+                      }
+                      placeholder="Optional — net profit goal for the trading day"
+                      className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                    />
+                    <p className="text-xs text-theme-muted mt-2">
+                      Shown on the MT5 trade log and sent to the AI coach with your other plan fields.
+                    </p>
+                  </div>
+                ) : null}
 
                 <div>
                   <label className="block text-sm text-theme-tertiary mb-2 font-medium">Account Type</label>

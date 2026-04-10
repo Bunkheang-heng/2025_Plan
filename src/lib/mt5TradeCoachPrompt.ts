@@ -43,6 +43,40 @@ function formatAccountSection(
       )
     }
   }
+  if (
+    account.dailyProfitTarget != null &&
+    Number.isFinite(account.dailyProfitTarget) &&
+    account.dailyProfitTarget > 0
+  ) {
+    lines.push(`- Daily profit target (app): ${account.dailyProfitTarget}`)
+    const dPct = (trade.net / account.dailyProfitTarget) * 100
+    if (Number.isFinite(dPct)) {
+      lines.push(
+        `- This trade's net P&L is about ${dPct.toFixed(1)}% of the stated daily profit target (single trade)`
+      )
+    }
+    if (
+      account.loggedNetSameCloseDate != null &&
+      Number.isFinite(account.loggedNetSameCloseDate)
+    ) {
+      lines.push(
+        `- Logged net P&L for the same calendar date as this trade's close (all closed trades stored in this app for that date): ${account.loggedNetSameCloseDate}`
+      )
+      const cumPct = (account.loggedNetSameCloseDate / account.dailyProfitTarget) * 100
+      if (Number.isFinite(cumPct)) {
+        lines.push(
+          `- That same-date logged total is about ${cumPct.toFixed(1)}% of the stated daily profit target (cumulative for that date in the log, not live broker P&L)`
+        )
+      }
+    }
+  } else if (
+    account.loggedNetSameCloseDate != null &&
+    Number.isFinite(account.loggedNetSameCloseDate)
+  ) {
+    lines.push(
+      `- Logged net P&L for the same calendar date as this trade's close (all trades in this app log for that date): ${account.loggedNetSameCloseDate}`
+    )
+  }
   if (account.strategy?.trim()) {
     lines.push(`- Stated strategy (app): ${account.strategy.trim().slice(0, COACH_TEXT_MAX)}`)
   }
@@ -97,7 +131,7 @@ Output requirements (STRICT):
 
 Guidelines:
 - Focus on process and risk (SL/TP distance, position size vs volatility) when data allows.
-- When account plan fields are present, relate the trade to capital, profit target, and max-loss budget (e.g. impact of this net vs their stated cap, consistency with rules/strategy). Do not invent live account balance.
+- When account plan fields are present, relate the trade to capital, monthly profit target, daily profit target, and max-loss budget (e.g. impact of this net vs caps, same-date logged total vs daily goal when given, consistency with rules/strategy). Do not invent live broker balance or off-platform trades.
 - A loss can still include real strengths; a win can still list improvements.
 - Be direct and supportive; no fluff.
 `.trim()

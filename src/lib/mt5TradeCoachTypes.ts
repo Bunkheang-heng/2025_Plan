@@ -26,6 +26,13 @@ export type Mt5CoachAccountContext = {
   profitTarget?: number | null
   /** App “max loss” budget (UI: often treated as daily cap). */
   maxLoss?: number | null
+  /** Daily profit goal (MT5 account plan). */
+  dailyProfitTarget?: number | null
+  /**
+   * Sum of net P&L for trades in this log closed on the same calendar date as this trade
+   * (YYYY-MM-DD prefix of `close_time` from the EA; logged trades only).
+   */
+  loggedNetSameCloseDate?: number | null
   strategy?: string
   rules?: string
 }

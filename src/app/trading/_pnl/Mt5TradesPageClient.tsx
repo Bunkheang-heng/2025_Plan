@@ -103,6 +103,7 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
   const [linkedAccountName, setLinkedAccountName] = useState<string | null>(null)
   const [linkedCapital, setLinkedCapital] = useState<number | null>(null)
   const [linkedTarget, setLinkedTarget] = useState<number | null>(null)
+  const [linkedDailyProfitTarget, setLinkedDailyProfitTarget] = useState<number | null>(null)
   const [linkedMaxLoss, setLinkedMaxLoss] = useState<number | null>(null)
   const [linkedCurrency, setLinkedCurrency] = useState<'usd' | 'cent'>('usd')
   const [trades, setTrades] = useState<Mt5TradeRow[]>([])
@@ -232,6 +233,7 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
               pnlCategory?: string
               capital?: number
               target?: number | null
+              dailyProfitTarget?: number | null
               maxLoss?: number | null
               currency?: string
             }
@@ -246,6 +248,8 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
             setLinkedTarget(Number.isFinite(t) && t > 0 ? t : null)
             const ml = Number(data.maxLoss)
             setLinkedMaxLoss(Number.isFinite(ml) && ml > 0 ? ml : null)
+            const dpt = Number(data.dailyProfitTarget)
+            setLinkedDailyProfitTarget(Number.isFinite(dpt) && dpt > 0 ? dpt : null)
             setLinkedCurrency(data.currency === 'cent' ? 'cent' : 'usd')
 
             const colRef = collection(db, 'tradingAccounts', tradingAccountId, 'mt5Trades')
@@ -265,6 +269,7 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
             setLinkedAccountName(null)
             setLinkedCapital(null)
             setLinkedTarget(null)
+            setLinkedDailyProfitTarget(null)
             setLinkedMaxLoss(null)
             setLinkedCurrency('usd')
 
@@ -424,6 +429,23 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
   const currencySym = isLinked && linkedCurrency === 'cent' ? '¢' : '$'
   const fmt = useCallback((n: number) => formatWithSymbol(n, currencySym), [currencySym])
 
+  const dailyProfitTargetProgress = useMemo(() => {
+    if (!isLinked || linkedDailyProfitTarget === null || linkedDailyProfitTarget <= 0) return null
+    const today = new Date()
+    let todayNet = 0
+    for (const t of tradesInScope) {
+      if (isCloseOnLocalCalendarDay(t.close_time, today)) {
+        todayNet += netPnL(t)
+      }
+    }
+    const pctRaw = (todayNet / linkedDailyProfitTarget) * 100
+    const pctBar = Math.min(100, Math.max(0, pctRaw))
+    const reached = todayNet >= linkedDailyProfitTarget
+    const toGo = Math.max(0, linkedDailyProfitTarget - todayNet)
+    const overBy = todayNet > linkedDailyProfitTarget ? todayNet - linkedDailyProfitTarget : 0
+    return { todayNet, pctRaw, pctBar, reached, toGo, overBy, target: linkedDailyProfitTarget }
+  }, [isLinked, linkedDailyProfitTarget, tradesInScope])
+
   type StatCard = { label: string; value: string; tone: string; sub?: string }
 
   const statCards = useMemo((): StatCard[] => {
@@ -464,6 +486,28 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
         sub: targetSub,
       },
       {
+        label: 'Daily profit goal',
+        value:
+          isLinked && linkedDailyProfitTarget !== null && linkedDailyProfitTarget > 0
+            ? fmt(linkedDailyProfitTarget)
+            : '—',
+        tone:
+          isLinked &&
+          linkedDailyProfitTarget !== null &&
+          linkedDailyProfitTarget > 0 &&
+          dailyProfitTargetProgress?.reached
+            ? 'text-emerald-400'
+            : 'text-theme-primary',
+        sub:
+          isLinked && linkedDailyProfitTarget !== null && linkedDailyProfitTarget > 0
+            ? dailyProfitTargetProgress?.reached
+              ? 'Hit today'
+              : `${fmt(dailyProfitTargetProgress?.toGo ?? linkedDailyProfitTarget)} to go today`
+            : isLinked
+              ? 'Set in Edit account'
+              : 'Named log accounts only',
+      },
+      {
         label: 'Win trades',
         value: String(stats.winCount),
         tone: 'text-emerald-400',
@@ -488,7 +532,15 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
       },
       { label: 'Max drawdown', value: fmt(stats.maxDd), tone: 'text-red-300' },
     ]
-  }, [isLinked, linkedCapital, linkedTarget, stats, fmt])
+  }, [
+    isLinked,
+    linkedCapital,
+    linkedTarget,
+    linkedDailyProfitTarget,
+    dailyProfitTargetProgress,
+    stats,
+    fmt,
+  ])
 
   const dailyLossBudget = useMemo(() => {
     if (!isLinked || linkedMaxLoss === null || linkedMaxLoss <= 0) return null
@@ -612,7 +664,7 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
             ) : null}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-8">
           {statCards.map((c) => (
             <div key={c.label} className="rounded-xl border border-theme-secondary bg-theme-card p-3">
               <div className="text-[10px] uppercase tracking-wide text-theme-muted">{c.label}</div>
@@ -691,6 +743,78 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
               </span>
             </div>
           </div>
+        ) : null}
+
+        {dailyProfitTargetProgress ? (
+          <div className="mb-8 rounded-2xl border border-emerald-500/35 bg-theme-card p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-lg shrink-0" aria-hidden>
+                  ☀️
+                </span>
+                <div>
+                  <h3 className="text-sm font-semibold text-emerald-300/95">Daily profit goal (today)</h3>
+                  <p className="text-[10px] text-theme-muted mt-0.5">
+                    Today&apos;s net vs daily target · local date · closed trades only
+                  </p>
+                </div>
+              </div>
+              <div className="text-sm text-theme-secondary tabular-nums shrink-0">
+                <span
+                  className={`font-bold ${
+                    dailyProfitTargetProgress.todayNet >= 0 ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {fmt(dailyProfitTargetProgress.todayNet)}
+                </span>
+                <span className="text-theme-tertiary"> / </span>
+                <span className="font-bold text-emerald-200/90">
+                  {fmt(dailyProfitTargetProgress.target)}
+                </span>
+              </div>
+            </div>
+            <div className="relative h-3 rounded-full bg-black/45 overflow-hidden border border-theme-secondary/60 mb-3">
+              <div
+                className={`absolute top-0 left-0 h-full rounded-full transition-[width] duration-500 ${
+                  dailyProfitTargetProgress.reached
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                    : dailyProfitTargetProgress.todayNet >= 0
+                      ? 'bg-gradient-to-r from-lime-500 to-emerald-400'
+                      : 'bg-gradient-to-r from-amber-600 to-amber-500'
+                }`}
+                style={{ width: `${dailyProfitTargetProgress.pctBar}%` }}
+              />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-theme-muted">
+              <span>
+                {dailyProfitTargetProgress.reached
+                  ? dailyProfitTargetProgress.overBy > 0
+                    ? `Goal beat by ${fmt(dailyProfitTargetProgress.overBy)}`
+                    : '🎉 Daily goal reached'
+                  : dailyProfitTargetProgress.todayNet >= 0
+                    ? `${Math.min(100, dailyProfitTargetProgress.pctRaw).toFixed(1)}% of today&apos;s profit goal`
+                    : 'Below today&apos;s profit goal — net so far is negative'}
+              </span>
+              <span className="text-theme-secondary">
+                {dailyProfitTargetProgress.reached ? (
+                  'On or above goal'
+                ) : (
+                  <>
+                    <span className="text-emerald-400/90 font-mono tabular-nums">
+                      {fmt(dailyProfitTargetProgress.toGo)}
+                    </span>{' '}
+                    to go today
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        ) : isLinked ? (
+          <p className="mb-8 text-xs text-theme-tertiary">
+            Add a <span className="text-emerald-400/90">daily profit target</span> in{' '}
+            <span className="text-cyan-400/90">Edit account</span> to track today&apos;s net against your
+            day goal.
+          </p>
         ) : null}
 
         {dailyLossBudget ? (

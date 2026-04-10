@@ -23,12 +23,54 @@ function numOrNull(v: unknown): number | null {
   return null
 }
 
+/** YYYY-MM-DD at start of EA `close_time` (ISO-like, no timezone suffix). */
+function closeDatePrefix(closeTimeStr: string): string | null {
+  const m = /^\d{4}-\d{2}-\d{2}/.exec(closeTimeStr.trim())
+  return m ? m[0] : null
+}
+
+/**
+ * Sum net P&L for trades in this log closed on the same calendar date as `closeTimeStr`
+ * (string range on `close_time`, matches TradeTracker FormatISO).
+ */
+async function sumLoggedNetForCloseDate(
+  db: Firestore,
+  tradeRef: DocumentReference,
+  closeTimeStr: string
+): Promise<number | null> {
+  const accountId = mt5TradingAccountIdFromTradeRef(tradeRef)
+  if (!accountId) return null
+  const prefix = closeDatePrefix(closeTimeStr)
+  if (!prefix) return null
+
+  const col = db.collection('tradingAccounts').doc(accountId).collection('mt5Trades')
+  const start = `${prefix}T00:00:00`
+  const end = `${prefix}T23:59:59`
+  const snap = await col.where('close_time', '>=', start).where('close_time', '<=', end).get()
+
+  let sum = 0
+  for (const doc of snap.docs) {
+    const x = doc.data() as Record<string, unknown>
+    const profit = Number(x.profit) || 0
+    const commission = Number(x.commission) || 0
+    const swap = Number(x.swap) || 0
+    sum += profit + commission + swap
+  }
+  return sum
+}
+
+type LoadCoachAccountOpts = {
+  /** Enables same-day logged net (linked MT5 log only). */
+  tradeCloseTime?: string
+}
+
 /**
  * Loads `tradingAccounts` plan fields when the trade lives under that account's `mt5Trades` subcollection.
  */
 export async function loadMt5CoachAccountContext(
   db: Firestore,
-  tradeRef: DocumentReference
+  tradeRef: DocumentReference,
+  opts?: LoadCoachAccountOpts
 ): Promise<Mt5CoachAccountContext | null> {
   const accountId = mt5TradingAccountIdFromTradeRef(tradeRef)
   if (!accountId) return null
@@ -40,6 +82,7 @@ export async function loadMt5CoachAccountContext(
   const capital = numOrNull(d.capital)
   const target = numOrNull(d.target)
   const maxLoss = numOrNull(d.maxLoss)
+  const dailyProfitTarget = numOrNull(d.dailyProfitTarget)
 
   const strategy =
     typeof d.strategy === 'string' && d.strategy.trim()
@@ -50,6 +93,11 @@ export async function loadMt5CoachAccountContext(
       ? d.rules.trim().slice(0, COACH_ACCOUNT_TEXT_MAX)
       : undefined
 
+  let loggedNetSameCloseDate: number | null | undefined
+  if (opts?.tradeCloseTime?.trim()) {
+    loggedNetSameCloseDate = await sumLoggedNetForCloseDate(db, tradeRef, opts.tradeCloseTime)
+  }
+
   const ctx: Mt5CoachAccountContext = {
     accountName: typeof d.name === 'string' && d.name.trim() ? d.name.trim() : undefined,
     accountType: typeof d.type === 'string' && d.type.trim() ? d.type.trim() : undefined,
@@ -57,6 +105,9 @@ export async function loadMt5CoachAccountContext(
     capital: capital !== null ? capital : null,
     profitTarget: target !== null && target > 0 ? target : null,
     maxLoss: maxLoss !== null && maxLoss > 0 ? maxLoss : null,
+    dailyProfitTarget:
+      dailyProfitTarget !== null && dailyProfitTarget > 0 ? dailyProfitTarget : null,
+    ...(loggedNetSameCloseDate != null ? { loggedNetSameCloseDate } : {}),
     strategy,
     rules,
   }
@@ -68,6 +119,8 @@ export async function loadMt5CoachAccountContext(
     ctx.capital != null ||
     ctx.profitTarget != null ||
     ctx.maxLoss != null ||
+    ctx.dailyProfitTarget != null ||
+    ctx.loggedNetSameCloseDate != null ||
     strategy ||
     rules
 
@@ -122,7 +175,9 @@ export async function runMt5CoachOnTradeRef(
   const raw = snap.data() as Record<string, unknown>
   const coachInput = tradeFirestoreDataToCoachInput(raw)
   const provider = await readPreferredMt5AiProvider(db, ownerUserId)
-  const accountContext = await loadMt5CoachAccountContext(db, tradeRef)
+  const accountContext = await loadMt5CoachAccountContext(db, tradeRef, {
+    tradeCloseTime: coachInput.close_time,
+  })
   const coach = await generateMt5TradeCoach(coachInput, provider, accountContext)
   await tradeRef.update({
     aiCoach: coach,

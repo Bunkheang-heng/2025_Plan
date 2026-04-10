@@ -31,6 +31,7 @@ type Mt5TrackerAccount = {
   capital?: number
   target?: number
   maxLoss?: number
+  dailyProfitTarget?: number | null
   strategy?: string
   rules?: string
   createdAt?: string
@@ -49,6 +50,7 @@ export default function Mt5TrackerAccountsPage() {
     capital: '',
     target: '',
     maxLoss: '',
+    dailyProfitTarget: '',
     strategy: '',
     rules: '',
   })
@@ -132,6 +134,11 @@ export default function Mt5TrackerAccountsPage() {
       toast.error('Please enter a valid max loss amount')
       return
     }
+    const dailyProfitTarget = Number(formData.dailyProfitTarget)
+    if (formData.dailyProfitTarget && Number.isNaN(dailyProfitTarget)) {
+      toast.error('Please enter a valid daily profit target')
+      return
+    }
 
     setIsCreating(true)
     try {
@@ -148,6 +155,8 @@ export default function Mt5TrackerAccountsPage() {
         capital: Number.isFinite(capital) ? capital : 0,
         target: Number.isFinite(target) && target > 0 ? target : null,
         maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
+        dailyProfitTarget:
+          Number.isFinite(dailyProfitTarget) && dailyProfitTarget > 0 ? dailyProfitTarget : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         createdAt: new Date().toISOString(),
@@ -159,6 +168,7 @@ export default function Mt5TrackerAccountsPage() {
         capital: '',
         target: '',
         maxLoss: '',
+        dailyProfitTarget: '',
         strategy: '',
         rules: '',
       })
@@ -283,6 +293,12 @@ export default function Mt5TrackerAccountsPage() {
                               <span className="ml-2 text-indigo-400">
                                 | 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}
                                 {Number(acc.target).toFixed(2)}
+                              </span>
+                            ) : null}
+                            {acc.dailyProfitTarget && acc.dailyProfitTarget > 0 ? (
+                              <span className="ml-2 text-emerald-400/90">
+                                | ☀️ Daily: {acc.currency === 'cent' ? '¢' : '$'}
+                                {Number(acc.dailyProfitTarget).toFixed(2)}
                               </span>
                             ) : null}
                           </div>
@@ -412,6 +428,20 @@ export default function Mt5TrackerAccountsPage() {
               value={formData.maxLoss}
               onChange={(e) => setFormData((prev) => ({ ...prev, maxLoss: e.target.value }))}
               placeholder="Optional"
+              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-cyan-500"
+            />
+
+            <label className="block text-xs text-theme-tertiary mt-4 mb-2">
+              Daily profit target ({formData.currency === 'cent' ? '¢' : '$'})
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.dailyProfitTarget}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, dailyProfitTarget: e.target.value }))
+              }
+              placeholder="Optional — net profit goal for the day"
               className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-cyan-500"
             />
 
