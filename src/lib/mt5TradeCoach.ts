@@ -2,9 +2,9 @@ import { GoogleGenAI } from '@google/genai'
 import type { Mt5AiProviderId } from './mt5AiProvider'
 import { isMt5AiProviderConfigured } from './mt5AiProvider'
 import { buildMt5CoachPrompt } from './mt5TradeCoachPrompt'
-import type { Mt5CoachTradeInput } from './mt5TradeCoachTypes'
+import type { Mt5CoachAccountContext, Mt5CoachTradeInput } from './mt5TradeCoachTypes'
 
-export type { Mt5CoachTradeInput } from './mt5TradeCoachTypes'
+export type { Mt5CoachAccountContext, Mt5CoachTradeInput } from './mt5TradeCoachTypes'
 
 export type Mt5AiCoachResult = {
   verdict: string
@@ -46,13 +46,16 @@ function normalizeCoach(parsed: Partial<Mt5AiCoachResult>): Mt5AiCoachResult {
   }
 }
 
-async function coachWithGemini(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachResult> {
+async function coachWithGemini(
+  trade: Mt5CoachTradeInput,
+  account: Mt5CoachAccountContext | null | undefined
+): Promise<Mt5AiCoachResult> {
   const apiKey = process.env.GEMINI_API_KEY?.trim()
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set on the server')
 
   const model = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash'
   const ai = new GoogleGenAI({ apiKey })
-  const prompt = buildMt5CoachPrompt(trade)
+  const prompt = buildMt5CoachPrompt(trade, account)
 
   const response = await ai.models.generateContent({
     model,
@@ -66,9 +69,10 @@ async function coachWithGemini(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachRes
 
 async function coachWithOpenAiCompatible(
   trade: Mt5CoachTradeInput,
+  account: Mt5CoachAccountContext | null | undefined,
   config: { apiKey: string; baseUrl: string; model: string; label: string; jsonObjectMode?: boolean }
 ): Promise<Mt5AiCoachResult> {
-  const prompt = buildMt5CoachPrompt(trade)
+  const prompt = buildMt5CoachPrompt(trade, account)
   const url = `${config.baseUrl.replace(/\/$/, '')}/chat/completions`
 
   const body: Record<string, unknown> = {
@@ -109,13 +113,16 @@ async function coachWithOpenAiCompatible(
   return normalizeCoach(parsed)
 }
 
-async function coachWithOpenAI(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachResult> {
+async function coachWithOpenAI(
+  trade: Mt5CoachTradeInput,
+  account: Mt5CoachAccountContext | null | undefined
+): Promise<Mt5AiCoachResult> {
   const apiKey = process.env.OPENAI_API_KEY?.trim()
   if (!apiKey) throw new Error('OPENAI_API_KEY is not set on the server')
 
   const baseUrl = process.env.OPENAI_BASE_URL?.trim() || 'https://api.openai.com/v1'
   const model = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini'
-  return coachWithOpenAiCompatible(trade, {
+  return coachWithOpenAiCompatible(trade, account, {
     apiKey,
     baseUrl,
     model,
@@ -124,7 +131,10 @@ async function coachWithOpenAI(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachRes
   })
 }
 
-async function coachWithSeaLion(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachResult> {
+async function coachWithSeaLion(
+  trade: Mt5CoachTradeInput,
+  account: Mt5CoachAccountContext | null | undefined
+): Promise<Mt5AiCoachResult> {
   const apiKey = (process.env.SEALION_API_KEY || process.env.SEA_LION_API_KEY)?.trim()
   if (!apiKey) throw new Error('SEALION_API_KEY (or SEA_LION_API_KEY) is not set on the server')
 
@@ -137,7 +147,7 @@ async function coachWithSeaLion(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachRe
     process.env.SEALION_MODEL?.trim() ||
     'aisingapore/Llama-SEA-LION-v3.5-70B-R'
 
-  return coachWithOpenAiCompatible(trade, {
+  return coachWithOpenAiCompatible(trade, account, {
     apiKey,
     baseUrl,
     model,
@@ -151,7 +161,8 @@ async function coachWithSeaLion(trade: Mt5CoachTradeInput): Promise<Mt5AiCoachRe
  */
 export async function generateMt5TradeCoach(
   trade: Mt5CoachTradeInput,
-  provider: Mt5AiProviderId
+  provider: Mt5AiProviderId,
+  account?: Mt5CoachAccountContext | null
 ): Promise<Mt5AiCoachResult> {
   if (!isMt5AiProviderConfigured(provider)) {
     throw new Error(
@@ -159,7 +170,7 @@ export async function generateMt5TradeCoach(
     )
   }
 
-  if (provider === 'gemini') return coachWithGemini(trade)
-  if (provider === 'openai') return coachWithOpenAI(trade)
-  return coachWithSeaLion(trade)
+  if (provider === 'gemini') return coachWithGemini(trade, account)
+  if (provider === 'openai') return coachWithOpenAI(trade, account)
+  return coachWithSeaLion(trade, account)
 }

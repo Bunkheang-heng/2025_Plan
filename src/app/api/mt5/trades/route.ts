@@ -109,7 +109,10 @@ export async function POST(request: NextRequest) {
     db = getAdminFirestore()
   } catch {
     return NextResponse.json(
-      { error: 'Server Firebase Admin is not configured (FIREBASE_SERVICE_ACCOUNT).' },
+      {
+        error:
+          'Firebase Admin is not configured. Set FIREBASE_SERVICE_ACCOUNT or GOOGLE_APPLICATION_CREDENTIALS (see .env comments).',
+      },
       { status: 503 }
     )
   }

@@ -15,3 +15,17 @@ export type Mt5CoachTradeInput = {
   net: number
   comment: string
 }
+
+/** Optional plan context from `tradingAccounts` (linked MT5 log). */
+export type Mt5CoachAccountContext = {
+  accountName?: string
+  accountType?: string
+  currency?: string
+  /** Starting / reference capital from the app (not live broker equity). */
+  capital?: number | null
+  profitTarget?: number | null
+  /** App “max loss” budget (UI: often treated as daily cap). */
+  maxLoss?: number | null
+  strategy?: string
+  rules?: string
+}

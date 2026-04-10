@@ -607,21 +607,9 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
           <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-semibold mb-4">
             MetaTrader 5
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-yellow-500 mb-2">
-            MT5 trade log
             {linkedAccountName ? (
               <span className="block text-lg font-semibold text-cyan-200/90 mt-2">{linkedAccountName}</span>
             ) : null}
-          </h1>
-          <p className="text-theme-secondary text-sm">
-            {isLinked
-              ? 'EA token and POST URL are on Settings. '
-              : 'Legacy single-token log — EA setup under Settings. '}
-            Closed deals from your EA → Firebase · {trades.length} trade{trades.length === 1 ? '' : 's'}
-            {accountOptions.length > 1
-              ? ` · ${accountOptions.length} MT5 terminal${accountOptions.length === 1 ? '' : 's'}`
-              : ''}
-          </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-8">

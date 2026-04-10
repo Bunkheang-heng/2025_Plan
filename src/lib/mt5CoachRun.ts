@@ -1,7 +1,78 @@
 import { FieldValue, type DocumentReference, type Firestore } from 'firebase-admin/firestore'
 import { parseMt5AiProvider, type Mt5AiProviderId } from '@/lib/mt5AiProvider'
 import { generateMt5TradeCoach } from '@/lib/mt5TradeCoach'
-import type { Mt5CoachTradeInput } from '@/lib/mt5TradeCoachTypes'
+import type { Mt5CoachAccountContext, Mt5CoachTradeInput } from '@/lib/mt5TradeCoachTypes'
+
+const COACH_ACCOUNT_TEXT_MAX = 2800
+
+function mt5TradingAccountIdFromTradeRef(ref: DocumentReference): string | null {
+  const parts = ref.path.split('/')
+  const i = parts.indexOf('tradingAccounts')
+  if (i >= 0 && parts[i + 1] && parts[i + 2] === 'mt5Trades') {
+    return parts[i + 1]
+  }
+  return null
+}
+
+function numOrNull(v: unknown): number | null {
+  if (typeof v === 'number' && Number.isFinite(v)) return v
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = Number(v)
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+}
+
+/**
+ * Loads `tradingAccounts` plan fields when the trade lives under that account's `mt5Trades` subcollection.
+ */
+export async function loadMt5CoachAccountContext(
+  db: Firestore,
+  tradeRef: DocumentReference
+): Promise<Mt5CoachAccountContext | null> {
+  const accountId = mt5TradingAccountIdFromTradeRef(tradeRef)
+  if (!accountId) return null
+
+  const snap = await db.collection('tradingAccounts').doc(accountId).get()
+  if (!snap.exists) return null
+
+  const d = snap.data() as Record<string, unknown>
+  const capital = numOrNull(d.capital)
+  const target = numOrNull(d.target)
+  const maxLoss = numOrNull(d.maxLoss)
+
+  const strategy =
+    typeof d.strategy === 'string' && d.strategy.trim()
+      ? d.strategy.trim().slice(0, COACH_ACCOUNT_TEXT_MAX)
+      : undefined
+  const rules =
+    typeof d.rules === 'string' && d.rules.trim()
+      ? d.rules.trim().slice(0, COACH_ACCOUNT_TEXT_MAX)
+      : undefined
+
+  const ctx: Mt5CoachAccountContext = {
+    accountName: typeof d.name === 'string' && d.name.trim() ? d.name.trim() : undefined,
+    accountType: typeof d.type === 'string' && d.type.trim() ? d.type.trim() : undefined,
+    currency: typeof d.currency === 'string' && d.currency.trim() ? d.currency.trim() : undefined,
+    capital: capital !== null ? capital : null,
+    profitTarget: target !== null && target > 0 ? target : null,
+    maxLoss: maxLoss !== null && maxLoss > 0 ? maxLoss : null,
+    strategy,
+    rules,
+  }
+
+  const hasAny =
+    ctx.accountName ||
+    ctx.accountType ||
+    ctx.currency ||
+    ctx.capital != null ||
+    ctx.profitTarget != null ||
+    ctx.maxLoss != null ||
+    strategy ||
+    rules
+
+  return hasAny ? ctx : null
+}
 
 export async function readPreferredMt5AiProvider(
   db: Firestore,
@@ -51,7 +122,8 @@ export async function runMt5CoachOnTradeRef(
   const raw = snap.data() as Record<string, unknown>
   const coachInput = tradeFirestoreDataToCoachInput(raw)
   const provider = await readPreferredMt5AiProvider(db, ownerUserId)
-  const coach = await generateMt5TradeCoach(coachInput, provider)
+  const accountContext = await loadMt5CoachAccountContext(db, tradeRef)
+  const coach = await generateMt5TradeCoach(coachInput, provider, accountContext)
   await tradeRef.update({
     aiCoach: coach,
     aiCoachProvider: provider,
