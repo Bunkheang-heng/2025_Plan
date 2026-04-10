@@ -125,6 +125,15 @@ export default function Mt5EaSettingsClient(props?: { tradingAccountId?: string 
             </div>
           </div>
         </div>
+
+        <div className="rounded-2xl border border-sky-500/30 bg-theme-card p-5 space-y-2 mt-6">
+          <h2 className="text-sm font-semibold text-sky-300">Telegram · AI trade analysis</h2>
+          <p className="text-xs text-theme-tertiary">
+            After each AI coach run, the server can send one message to the chat configured in deploy env:{' '}
+            <code className="text-cyan-300/90">TELEGRAM_BOT_TOKEN</code> and{' '}
+            <code className="text-cyan-300/90">TELEGRAM_CHAT_ID</code> only (no per-user chat ID in the app).
+          </p>
+        </div>
       </div>
     </div>
   )

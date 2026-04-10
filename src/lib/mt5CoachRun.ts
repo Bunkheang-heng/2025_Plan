@@ -1,6 +1,7 @@
 import { FieldValue, type DocumentReference, type Firestore } from 'firebase-admin/firestore'
 import { parseMt5AiProvider, type Mt5AiProviderId } from '@/lib/mt5AiProvider'
 import { generateMt5TradeCoach } from '@/lib/mt5TradeCoach'
+import { notifyMt5CoachTelegramIfConfigured } from '@/lib/mt5TelegramNotify'
 import type { Mt5CoachAccountContext, Mt5CoachTradeInput } from '@/lib/mt5TradeCoachTypes'
 
 const COACH_ACCOUNT_TEXT_MAX = 2800
@@ -185,6 +186,11 @@ export async function runMt5CoachOnTradeRef(
     aiCoachGeneratedAt: FieldValue.serverTimestamp(),
     aiCoachPending: false,
     aiCoachError: FieldValue.delete(),
+  })
+  void notifyMt5CoachTelegramIfConfigured({
+    trade: coachInput,
+    coach,
+    accountName: accountContext?.accountName ?? null,
   })
   return { provider }
 }

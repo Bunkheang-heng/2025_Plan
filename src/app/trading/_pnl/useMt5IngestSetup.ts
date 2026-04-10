@@ -47,8 +47,8 @@ export function useMt5IngestSetup(tradingAccountId?: string) {
 
   const load = useCallback(
     async (uid: string) => {
+      const db = getFirestore()
       if (tradingAccountId) {
-        const db = getFirestore()
         const accRef = doc(db, 'tradingAccounts', tradingAccountId)
         const accSnap = await getDoc(accRef)
         if (!accSnap.exists()) {
