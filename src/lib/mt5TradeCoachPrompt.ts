@@ -68,6 +68,15 @@ function formatAccountSection(
           `- That same-date logged total is about ${cumPct.toFixed(1)}% of the stated daily profit target (cumulative for that date in the log, not live broker P&L)`
         )
       }
+      if (account.loggedNetSameCloseDate >= account.dailyProfitTarget) {
+        lines.push(
+          '- Daily target status: REACHED/EXCEEDED for that same close date. Coaching should explicitly tell trader to stop trading for the rest of that day to protect gains.'
+        )
+      } else {
+        lines.push(
+          '- Daily target status: NOT reached yet for that same close date.'
+        )
+      }
     }
   } else if (
     account.loggedNetSameCloseDate != null &&
@@ -132,6 +141,7 @@ Output requirements (STRICT):
 Guidelines:
 - Focus on process and risk (SL/TP distance, position size vs volatility) when data allows.
 - When account plan fields are present, relate the trade to capital, monthly profit target, daily profit target, and max-loss budget (e.g. impact of this net vs caps, same-date logged total vs daily goal when given, consistency with rules/strategy). Do not invent live broker balance or off-platform trades.
+- If daily target status is marked as REACHED/EXCEEDED, include a direct instruction to stop trading for the rest of that day (state it clearly in verdict or improvements).
 - A loss can still include real strengths; a win can still list improvements.
 - Be direct and supportive; no fluff.
 `.trim()

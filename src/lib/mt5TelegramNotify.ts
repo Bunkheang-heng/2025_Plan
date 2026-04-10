@@ -2,6 +2,7 @@ import type { Mt5AiCoachResult } from '@/lib/mt5TradeCoach'
 import type { Mt5CoachTradeInput } from '@/lib/mt5TradeCoachTypes'
 
 const TELEGRAM_MESSAGE_MAX = 4096
+const TELEGRAM_RETRY_ATTEMPTS = 2
 
 function escapeTelegramHtml(s: string): string {
   return s
@@ -14,6 +15,16 @@ function escapeTelegramHtml(s: string): string {
 function telegramChatIdFromEnv(): string | null {
   const id = process.env.TELEGRAM_CHAT_ID?.trim()
   return id && id.length > 0 ? id : null
+}
+
+
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function shouldRetryTelegramHttp(status: number): boolean {
+  return status === 429 || status >= 500
 }
 
 function formatTradeLine(trade: Mt5CoachTradeInput): string {
@@ -63,21 +74,44 @@ export async function sendMt5CoachTelegramNotification(params: {
       : body
 
   const url = `https://api.telegram.org/bot${token}/sendMessage`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: params.chatId,
-      text,
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-    }),
-  })
+  let lastError: Error | null = null
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '')
-    throw new Error(`Telegram sendMessage HTTP ${res.status}: ${errText.slice(0, 300)}`)
+  for (let attempt = 1; attempt <= TELEGRAM_RETRY_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: params.chatId,
+          text,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+        }),
+      })
+
+      if (res.ok) return
+
+      const errText = await res.text().catch(() => '')
+      const err = new Error(`Telegram sendMessage HTTP ${res.status}: ${errText.slice(0, 300)}`)
+      lastError = err
+
+      if (attempt < TELEGRAM_RETRY_ATTEMPTS && shouldRetryTelegramHttp(res.status)) {
+        await sleep(700 * attempt)
+        continue
+      }
+      throw err
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error('Unknown telegram send error')
+      lastError = err
+      if (attempt < TELEGRAM_RETRY_ATTEMPTS) {
+        await sleep(700 * attempt)
+        continue
+      }
+      throw err
+    }
   }
+
+  if (lastError) throw lastError
 }
 
 /**

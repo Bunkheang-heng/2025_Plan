@@ -187,7 +187,7 @@ export async function runMt5CoachOnTradeRef(
     aiCoachPending: false,
     aiCoachError: FieldValue.delete(),
   })
-  void notifyMt5CoachTelegramIfConfigured({
+  await notifyMt5CoachTelegramIfConfigured({
     trade: coachInput,
     coach,
     accountName: accountContext?.accountName ?? null,
