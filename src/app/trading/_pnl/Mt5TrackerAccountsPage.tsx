@@ -248,7 +248,7 @@ export default function Mt5TrackerAccountsPage() {
             <div className="p-4 border-b border-theme-secondary flex items-center justify-between">
               <div>
                 <h2 className="text-theme-primary font-semibold">Your MT5 logs</h2>
-                <p className="text-xs text-theme-tertiary">Click to view trades &amp; copy token</p>
+                <p className="text-xs text-theme-tertiary">Click to view trades · EA token under Settings</p>
               </div>
               <span className="text-xs text-theme-muted">{sortedAccounts.length}</span>
             </div>
@@ -310,7 +310,14 @@ export default function Mt5TrackerAccountsPage() {
                       </div>
                       <div className="mt-2 text-xs text-cyan-300">Open trade log →</div>
                     </button>
-                    <div className="mt-3 flex items-center gap-2">
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/trading/mt5_tracker/${acc.id}/settings`)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/25 transition-colors text-xs"
+                      >
+                        Settings
+                      </button>
                       <button
                         type="button"
                         onClick={() => router.push(`/trading/mt5_tracker/${acc.id}/edit`)}

@@ -9,15 +9,19 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
   getFirestore,
-  setDoc,
-  updateDoc,
+  onSnapshot,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore'
-import { FaArrowLeft, FaRedo } from 'react-icons/fa'
+import { FaArrowLeft } from 'react-icons/fa'
 import { toast } from 'react-toastify'
-import { generateMt5IngestToken } from '@/lib/mt5IngestToken'
+
+export type Mt5AiCoach = {
+  verdict: string
+  strengths: string[]
+  improvements: string[]
+  keyTakeaway: string
+}
 
 export type Mt5TradeRow = {
   id: string
@@ -39,6 +43,9 @@ export type Mt5TradeRow = {
   swap: number
   magic_number: number
   comment: string
+  aiCoach?: Mt5AiCoach
+  aiCoachPending?: boolean
+  aiCoachError?: string
 }
 
 function accountKey(t: Mt5TradeRow): string {
@@ -61,15 +68,27 @@ function netPnL(t: Mt5TradeRow): number {
   return t.profit + t.commission + t.swap
 }
 
-function formatUsd(n: number): string {
+function formatWithSymbol(n: number, sym: string): string {
   const abs = Math.abs(n)
-  const s = `$${abs.toFixed(2)}`
+  const s = `${sym}${abs.toFixed(2)}`
   return n < 0 ? `\u2212${s}` : s
 }
 
 function parseCloseMs(t: Mt5TradeRow): number {
   const ms = Date.parse(t.close_time)
   return Number.isFinite(ms) ? ms : 0
+}
+
+/** Whether trade close timestamp falls on the same local calendar day as `day`. */
+function isCloseOnLocalCalendarDay(closeTimeStr: string, day: Date): boolean {
+  const ms = Date.parse(closeTimeStr)
+  if (!Number.isFinite(ms)) return false
+  const d = new Date(ms)
+  return (
+    d.getFullYear() === day.getFullYear() &&
+    d.getMonth() === day.getMonth() &&
+    d.getDate() === day.getDate()
+  )
 }
 
 /**
@@ -81,44 +100,36 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
   const router = useRouter()
   const isLinked = Boolean(tradingAccountId)
   const [isLoading, setIsLoading] = useState(true)
-  const [ingestToken, setIngestToken] = useState<string | null>(null)
   const [linkedAccountName, setLinkedAccountName] = useState<string | null>(null)
+  const [linkedCapital, setLinkedCapital] = useState<number | null>(null)
+  const [linkedTarget, setLinkedTarget] = useState<number | null>(null)
+  const [linkedMaxLoss, setLinkedMaxLoss] = useState<number | null>(null)
+  const [linkedCurrency, setLinkedCurrency] = useState<'usd' | 'cent'>('usd')
   const [trades, setTrades] = useState<Mt5TradeRow[]>([])
   const [accountFilter, setAccountFilter] = useState<'ALL' | string>('ALL')
   const [symbolFilter, setSymbolFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'BUY' | 'SELL'>('ALL')
   const [resultFilter, setResultFilter] = useState<'ALL' | 'WIN' | 'LOSS'>('ALL')
   const [tableRows, setTableRows] = useState(30)
-  const [regenerating, setRegenerating] = useState(false)
-
-  const ensureUserIngestToken = useCallback(async (uid: string): Promise<string> => {
-    const db = getFirestore()
-    const privRef = doc(db, 'userPrivateSettings', uid)
-    const privSnap = await getDoc(privRef)
-    let tok =
-      privSnap.exists() &&
-      typeof (privSnap.data() as { mt5IngestToken?: string }).mt5IngestToken === 'string'
-        ? (privSnap.data() as { mt5IngestToken: string }).mt5IngestToken
-        : ''
-    if (!tok || tok.length < 16) {
-      const userSnap = await getDoc(doc(db, 'users', uid))
-      const legacyTok =
-        userSnap.exists() &&
-        typeof (userSnap.data() as { mt5IngestToken?: string }).mt5IngestToken === 'string'
-          ? (userSnap.data() as { mt5IngestToken: string }).mt5IngestToken
-          : ''
-      if (legacyTok.length >= 16) {
-        tok = legacyTok
-      } else {
-        tok = generateMt5IngestToken()
-      }
-      await setDoc(privRef, { mt5IngestToken: tok }, { merge: true })
-    }
-    return tok
-  }, [])
+  const [expandedCoachId, setExpandedCoachId] = useState<string | null>(null)
 
   const mapTradeDoc = useCallback((d: QueryDocumentSnapshot): Mt5TradeRow => {
     const x = d.data() as Record<string, unknown>
+    let aiCoach: Mt5AiCoach | undefined
+    const rawCoach = x.aiCoach
+    if (rawCoach && typeof rawCoach === 'object' && !Array.isArray(rawCoach)) {
+      const c = rawCoach as Record<string, unknown>
+      aiCoach = {
+        verdict: typeof c.verdict === 'string' ? c.verdict : '',
+        strengths: Array.isArray(c.strengths)
+          ? c.strengths.filter((s): s is string => typeof s === 'string')
+          : [],
+        improvements: Array.isArray(c.improvements)
+          ? c.improvements.filter((s): s is string => typeof s === 'string')
+          : [],
+        keyTakeaway: typeof c.keyTakeaway === 'string' ? c.keyTakeaway : '',
+      }
+    }
     return {
       id: d.id,
       ticket: Number(x.ticket) || 0,
@@ -139,103 +150,132 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
       swap: Number(x.swap) || 0,
       magic_number: Number(x.magic_number) || 0,
       comment: String(x.comment || ''),
+      aiCoach,
+      aiCoachPending: x.aiCoachPending === true,
+      aiCoachError: typeof x.aiCoachError === 'string' ? x.aiCoachError : undefined,
     }
   }, [])
 
-  const fetchTradesLegacy = useCallback(
-    async (uid: string) => {
-      const db = getFirestore()
-      const [privSnap, legacySnap] = await Promise.all([
-        getDocs(collection(db, 'userPrivateSettings', uid, 'mt5Trades')),
-        getDocs(collection(db, 'users', uid, 'mt5Trades')),
-      ])
-      const byTicket = new Map<string, Mt5TradeRow>()
-      for (const d of legacySnap.docs) {
-        byTicket.set(d.id, mapTradeDoc(d))
-      }
-      for (const d of privSnap.docs) {
-        byTicket.set(d.id, mapTradeDoc(d))
-      }
-      const rows = [...byTicket.values()]
-      rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
-      setTrades(rows)
-    },
-    [mapTradeDoc]
-  )
-
-  const fetchTradesLinked = useCallback(
-    async (accountId: string) => {
-      const db = getFirestore()
-      const snap = await getDocs(collection(db, 'tradingAccounts', accountId, 'mt5Trades'))
-      const rows = snap.docs.map((d) => mapTradeDoc(d))
-      rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
-      setTrades(rows)
-    },
-    [mapTradeDoc]
-  )
-
-  const load = useCallback(
-    async (uid: string) => {
-      if (tradingAccountId) {
-        const db = getFirestore()
-        const accRef = doc(db, 'tradingAccounts', tradingAccountId)
-        const accSnap = await getDoc(accRef)
-        if (!accSnap.exists()) {
-          toast.error('MT5 log account not found')
-          router.push('/trading/mt5_tracker')
-          return
-        }
-        const data = accSnap.data() as {
-          userId?: string
-          name?: string
-          pnlCategory?: string
-          mt5IngestToken?: string
-        }
-        if (data.userId !== uid || data.pnlCategory !== 'mt5') {
-          toast.error('Account not found')
-          router.push('/trading/mt5_tracker')
-          return
-        }
-        setLinkedAccountName(data.name || 'MT5 log')
-        let tok = typeof data.mt5IngestToken === 'string' ? data.mt5IngestToken : ''
-        if (!tok || tok.length < 16) {
-          tok = generateMt5IngestToken()
-          await updateDoc(accRef, { mt5IngestToken: tok })
-        }
-        setIngestToken(tok)
-        await fetchTradesLinked(tradingAccountId)
-      } else {
-        setLinkedAccountName(null)
-        const tok = await ensureUserIngestToken(uid)
-        setIngestToken(tok)
-        await fetchTradesLegacy(uid)
-      }
-    },
-    [
-      tradingAccountId,
-      router,
-      ensureUserIngestToken,
-      fetchTradesLegacy,
-      fetchTradesLinked,
-    ]
-  )
-
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged((user: User | null) => {
+    let unsubTrades: (() => void) | undefined
+    const unsubAuth = auth.onAuthStateChanged((user: User | null) => {
+      unsubTrades?.()
+      unsubTrades = undefined
+      setTrades([])
+
       if (!user) {
         router.push('/login')
         return
       }
+
       setIsLoading(true)
-      load(user.uid)
-        .catch((e) => {
+
+      void (async () => {
+        try {
+          const uid = user.uid
+          const db = getFirestore()
+
+          if (tradingAccountId) {
+            const accSnap = await getDoc(doc(db, 'tradingAccounts', tradingAccountId))
+            if (!accSnap.exists()) {
+              toast.error('MT5 log account not found')
+              router.push('/trading/mt5_tracker')
+              return
+            }
+            const data = accSnap.data() as {
+              userId?: string
+              name?: string
+              pnlCategory?: string
+              capital?: number
+              target?: number | null
+              maxLoss?: number | null
+              currency?: string
+            }
+            if (data.userId !== uid || data.pnlCategory !== 'mt5') {
+              toast.error('Account not found')
+              router.push('/trading/mt5_tracker')
+              return
+            }
+            setLinkedAccountName(data.name || 'MT5 log')
+            setLinkedCapital(Number.isFinite(Number(data.capital)) ? Number(data.capital) : 0)
+            const t = Number(data.target)
+            setLinkedTarget(Number.isFinite(t) && t > 0 ? t : null)
+            const ml = Number(data.maxLoss)
+            setLinkedMaxLoss(Number.isFinite(ml) && ml > 0 ? ml : null)
+            setLinkedCurrency(data.currency === 'cent' ? 'cent' : 'usd')
+
+            const colRef = collection(db, 'tradingAccounts', tradingAccountId, 'mt5Trades')
+            unsubTrades = onSnapshot(
+              colRef,
+              (snap) => {
+                const rows = snap.docs.map((d) => mapTradeDoc(d))
+                rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
+                setTrades(rows)
+              },
+              (err) => {
+                console.error(err)
+                toast.error('Failed to subscribe to MT5 trades')
+              }
+            )
+          } else {
+            setLinkedAccountName(null)
+            setLinkedCapital(null)
+            setLinkedTarget(null)
+            setLinkedMaxLoss(null)
+            setLinkedCurrency('usd')
+
+            const privCol = collection(db, 'userPrivateSettings', uid, 'mt5Trades')
+            const usrCol = collection(db, 'users', uid, 'mt5Trades')
+            let privMap = new Map<string, Mt5TradeRow>()
+            let usrMap = new Map<string, Mt5TradeRow>()
+            const mergeLegacy = () => {
+              const merged = new Map<string, Mt5TradeRow>(usrMap)
+              for (const [id, row] of privMap) merged.set(id, row)
+              const rows = [...merged.values()]
+              rows.sort((a, b) => parseCloseMs(b) - parseCloseMs(a))
+              setTrades(rows)
+            }
+            const u1 = onSnapshot(
+              privCol,
+              (snap) => {
+                privMap = new Map(snap.docs.map((d) => [d.id, mapTradeDoc(d)]))
+                mergeLegacy()
+              },
+              (err) => {
+                console.error(err)
+                toast.error('Failed to subscribe to MT5 trades')
+              }
+            )
+            const u2 = onSnapshot(
+              usrCol,
+              (snap) => {
+                usrMap = new Map(snap.docs.map((d) => [d.id, mapTradeDoc(d)]))
+                mergeLegacy()
+              },
+              (err) => {
+                console.error(err)
+                toast.error('Failed to subscribe to MT5 trades')
+              }
+            )
+            unsubTrades = () => {
+              u1()
+              u2()
+            }
+          }
+        } catch (e) {
           console.error(e)
           toast.error('Failed to load MT5 data')
-        })
-        .finally(() => setIsLoading(false))
+        } finally {
+          setIsLoading(false)
+        }
+      })()
     })
-    return () => unsub()
-  }, [router, load])
+
+    return () => {
+      unsubAuth()
+      unsubTrades?.()
+    }
+  }, [router, tradingAccountId, mapTradeDoc])
 
   const accountOptions = useMemo(() => {
     const labels = new Map<string, string>()
@@ -288,6 +328,8 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
       totalNet,
       winRate,
       count: chartTrades.length,
+      winCount: wins.length,
+      lossCount: losses.length,
       avgRR,
       profitFactor: Number.isFinite(profitFactor) ? profitFactor : 0,
       maxDd,
@@ -335,29 +377,108 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
     })
   }, [tradesInScope, symbolFilter, typeFilter, resultFilter])
 
-  const appOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+  const currencySym = isLinked && linkedCurrency === 'cent' ? '¢' : '$'
+  const fmt = useCallback((n: number) => formatWithSymbol(n, currencySym), [currencySym])
 
-  const handleRegenerateToken = async () => {
-    const user = auth.currentUser
-    if (!user) return
-    setRegenerating(true)
-    try {
-      const db = getFirestore()
-      const tok = generateMt5IngestToken()
-      if (tradingAccountId) {
-        await updateDoc(doc(db, 'tradingAccounts', tradingAccountId), { mt5IngestToken: tok })
-      } else {
-        await setDoc(doc(db, 'userPrivateSettings', user.uid), { mt5IngestToken: tok }, { merge: true })
+  type StatCard = { label: string; value: string; tone: string; sub?: string }
+
+  const statCards = useMemo((): StatCard[] => {
+    const balance = isLinked && linkedCapital !== null ? linkedCapital + stats.totalNet : null
+    const targetSub =
+      isLinked && linkedTarget !== null && linkedTarget > 0
+        ? stats.totalNet >= linkedTarget
+          ? 'Target reached'
+          : `${fmt(Math.max(0, linkedTarget - stats.totalNet))} to go`
+        : isLinked
+          ? 'Set in Edit account'
+          : 'Named log accounts only'
+    const targetValue =
+      isLinked && linkedTarget !== null && linkedTarget > 0 ? fmt(linkedTarget) : '—'
+
+    return [
+      {
+        label: 'Balance',
+        value: balance !== null ? fmt(balance) : '—',
+        tone:
+          balance === null
+            ? 'text-theme-primary'
+            : stats.totalNet >= 0
+              ? 'text-emerald-400'
+              : 'text-red-300',
+        sub:
+          isLinked && linkedCapital !== null
+            ? `Start ${fmt(linkedCapital)}`
+            : 'Link an MT5 log for capital',
+      },
+      {
+        label: 'Profit target',
+        value: targetValue,
+        tone:
+          isLinked && linkedTarget !== null && linkedTarget > 0 && stats.totalNet >= linkedTarget
+            ? 'text-yellow-300'
+            : 'text-theme-primary',
+        sub: targetSub,
+      },
+      {
+        label: 'Win trades',
+        value: String(stats.winCount),
+        tone: 'text-emerald-400',
+      },
+      {
+        label: 'Losing trades',
+        value: String(stats.lossCount),
+        tone: 'text-red-400',
+      },
+      {
+        label: 'Net P&L',
+        value: fmt(stats.totalNet),
+        tone: stats.totalNet >= 0 ? 'text-emerald-400' : 'text-red-400',
+      },
+      { label: 'Win rate', value: `${stats.winRate.toFixed(1)}%`, tone: 'text-theme-primary' },
+      { label: 'Trades', value: String(stats.count), tone: 'text-theme-primary' },
+      { label: 'Avg R:R', value: stats.avgRR.toFixed(2), tone: 'text-theme-primary' },
+      {
+        label: 'Profit factor',
+        value: stats.profitFactor > 0 ? stats.profitFactor.toFixed(2) : '—',
+        tone: 'text-theme-primary',
+      },
+      { label: 'Max drawdown', value: fmt(stats.maxDd), tone: 'text-red-300' },
+    ]
+  }, [isLinked, linkedCapital, linkedTarget, stats, fmt])
+
+  const dailyLossBudget = useMemo(() => {
+    if (!isLinked || linkedMaxLoss === null || linkedMaxLoss <= 0) return null
+    const today = new Date()
+    let todayNet = 0
+    for (const t of tradesInScope) {
+      if (isCloseOnLocalCalendarDay(t.close_time, today)) {
+        todayNet += netPnL(t)
       }
-      setIngestToken(tok)
-      toast.success('New ingest token saved. Update TradeTracker.mq5 inputs.')
-    } catch (e) {
-      console.error(e)
-      toast.error('Failed to regenerate token')
-    } finally {
-      setRegenerating(false)
     }
-  }
+    const lossUsed = Math.max(0, -todayNet)
+    const remaining = Math.max(0, linkedMaxLoss - lossUsed)
+    const pctUsed = (lossUsed / linkedMaxLoss) * 100
+    const over = lossUsed > linkedMaxLoss
+    return {
+      todayNet,
+      lossUsed,
+      remaining,
+      pctUsed,
+      over,
+      limit: linkedMaxLoss,
+    }
+  }, [isLinked, linkedMaxLoss, tradesInScope])
+
+  const profitTargetProgress = useMemo(() => {
+    if (!isLinked || linkedTarget === null || linkedTarget <= 0) return null
+    const net = stats.totalNet
+    const pctRaw = (net / linkedTarget) * 100
+    const pctBar = Math.min(100, Math.max(0, pctRaw))
+    const reached = net >= linkedTarget
+    const toGo = Math.max(0, linkedTarget - net)
+    const overBy = net > linkedTarget ? net - linkedTarget : 0
+    return { net, pctRaw, pctBar, reached, toGo, overBy, target: linkedTarget }
+  }, [isLinked, linkedTarget, stats.totalNet])
 
   const miniChart = (points: { x: number; y: number }[], strokePositive: string, height = 120) => {
     if (points.length === 0) {
@@ -394,9 +515,6 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
 
   if (isLoading) return <Loading />
 
-  const postUrl = `${appOrigin}/api/mt5/trades`
-  const hasToken = Boolean(ingestToken && ingestToken.length > 0)
-
   return (
     <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
@@ -427,6 +545,17 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
                 Edit account
               </button>
             ) : null}
+            <button
+              type="button"
+              onClick={() =>
+                tradingAccountId
+                  ? router.push(`/trading/mt5_tracker/${tradingAccountId}/settings`)
+                  : router.push('/trading/mt5_tracker/settings')
+              }
+              className="px-4 py-2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 rounded-lg hover:bg-emerald-500/25 transition-colors text-sm"
+            >
+              Settings
+            </button>
           </div>
         </div>
 
@@ -442,8 +571,8 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
           </h1>
           <p className="text-theme-secondary text-sm">
             {isLinked
-              ? 'Bearer token below is only for this log account. '
-              : 'Legacy single-token log. Create named accounts from MT5 trade log home for separate tokens. '}
+              ? 'EA token and POST URL are on Settings. '
+              : 'Legacy single-token log — EA setup under Settings. '}
             Closed deals from your EA → Firebase · {trades.length} trade{trades.length === 1 ? '' : 's'}
             {accountOptions.length > 1
               ? ` · ${accountOptions.length} MT5 terminal${accountOptions.length === 1 ? '' : 's'}`
@@ -451,78 +580,164 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
           </p>
         </div>
 
-        <div className="mb-8 rounded-2xl border border-emerald-500/30 bg-theme-card p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <h2 className="text-sm font-semibold text-emerald-300">Expert Advisor setup</h2>
-            <button
-              type="button"
-              disabled={regenerating}
-              onClick={handleRegenerateToken}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-200 border border-emerald-500/40 text-xs hover:bg-emerald-500/30 disabled:opacity-50"
-            >
-              <FaRedo className="w-3 h-3" />
-              {regenerating ? 'Saving…' : 'Regenerate ingest token'}
-            </button>
-          </div>
-          <p className="text-xs text-theme-tertiary">
-            Use <code className="text-yellow-200/90">public/files/TradeTracker.mq5</code>. In MT5, allow WebRequest for{' '}
-            <code className="text-cyan-300/90">{appOrigin || 'your deploy URL'}</code>. Server needs{' '}
-            <code className="text-cyan-300/90">FIREBASE_SERVICE_ACCOUNT</code> in <code className="text-cyan-300/90">.env</code>.
-            {isLinked
-              ? 'Each MT5 log account has its own token; paste it into TradeTracker InpIngestToken for that broker only.'
-              : 'This legacy view uses your profile ingest token (userPrivateSettings).'}
-          </p>
-          <div className="grid gap-2 text-xs font-mono break-all">
-            <div>
-              <span className="text-theme-muted">POST URL (no query params)</span>
-              <div className="mt-1 p-2 rounded-lg bg-black/40 border border-theme-secondary text-yellow-200/80">{postUrl}</div>
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-theme-muted">Bearer token (paste into EA)</span>
-                {hasToken ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(ingestToken!)
-                        toast.success('Token copied — paste into TradeTracker InpIngestToken')
-                      } catch {
-                        toast.error('Copy failed')
-                      }
-                    }}
-                    className="px-2 py-1 rounded border border-orange-500/40 text-orange-200 text-[11px] hover:bg-orange-500/10"
-                  >
-                    Copy full token
-                  </button>
-                ) : null}
-              </div>
-              <div className="mt-1 p-2 rounded-lg bg-black/40 border border-theme-secondary text-orange-200/80 break-all">
-                {hasToken ? `${ingestToken!.slice(0, 20)}…` : 'Loading…'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-8">
-          {[
-            { label: 'Net P&L', value: formatUsd(stats.totalNet), tone: stats.totalNet >= 0 ? 'text-emerald-400' : 'text-red-400' },
-            { label: 'Win rate', value: `${stats.winRate.toFixed(1)}%`, tone: 'text-theme-primary' },
-            { label: 'Trades', value: String(stats.count), tone: 'text-theme-primary' },
-            { label: 'Avg R:R', value: stats.avgRR.toFixed(2), tone: 'text-theme-primary' },
-            {
-              label: 'Profit factor',
-              value: stats.profitFactor > 0 ? stats.profitFactor.toFixed(2) : '—',
-              tone: 'text-theme-primary',
-            },
-            { label: 'Max drawdown', value: formatUsd(stats.maxDd), tone: 'text-red-300' },
-          ].map((c) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-8">
+          {statCards.map((c) => (
             <div key={c.label} className="rounded-xl border border-theme-secondary bg-theme-card p-3">
               <div className="text-[10px] uppercase tracking-wide text-theme-muted">{c.label}</div>
               <div className={`text-lg font-semibold mt-1 ${c.tone}`}>{c.value}</div>
+              {c.sub ? <div className="text-[10px] text-theme-muted mt-1 leading-snug">{c.sub}</div> : null}
             </div>
           ))}
         </div>
+
+        {profitTargetProgress ? (
+          <div className="mb-8 rounded-2xl border border-yellow-500/35 bg-theme-card p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-lg shrink-0" aria-hidden>
+                  🎯
+                </span>
+                <div>
+                  <h3 className="text-sm font-semibold text-yellow-400">Profit target progress</h3>
+                  <p className="text-[10px] text-theme-muted mt-0.5">
+                    Net P&amp;L vs monthly target · same scope as stat cards
+                  </p>
+                </div>
+              </div>
+              <div className="text-sm text-theme-secondary tabular-nums shrink-0">
+                <span
+                  className={`font-bold ${
+                    profitTargetProgress.net >= 0 ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {fmt(profitTargetProgress.net)}
+                </span>
+                <span className="text-theme-tertiary"> / </span>
+                <span className="font-bold text-yellow-400">{fmt(profitTargetProgress.target)}</span>
+              </div>
+            </div>
+            <div className="relative h-3 rounded-full bg-black/45 overflow-hidden border border-theme-secondary/60 mb-3">
+              <div
+                className={`absolute top-0 left-0 h-full rounded-full transition-[width] duration-500 ${
+                  profitTargetProgress.reached
+                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                    : profitTargetProgress.net >= 0
+                      ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
+                      : 'bg-gradient-to-r from-red-600 to-red-500'
+                }`}
+                style={{ width: `${profitTargetProgress.pctBar}%` }}
+              />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-theme-muted">
+              <span>
+                {profitTargetProgress.reached
+                  ? '🎉 Target reached'
+                  : profitTargetProgress.net >= 0
+                    ? `${Math.min(100, profitTargetProgress.pctRaw).toFixed(1)}% complete`
+                    : 'Below target — net P&amp;L is negative'}
+              </span>
+              <span className="text-theme-secondary">
+                {profitTargetProgress.reached ? (
+                  profitTargetProgress.overBy > 0 ? (
+                    <>
+                      <span className="text-emerald-400 font-mono tabular-nums">
+                        +{fmt(profitTargetProgress.overBy)}
+                      </span>{' '}
+                      over target
+                    </>
+                  ) : (
+                    'On target'
+                  )
+                ) : (
+                  <>
+                    <span className="text-yellow-400/90 font-mono tabular-nums">
+                      {fmt(profitTargetProgress.toGo)}
+                    </span>{' '}
+                    to go
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        {dailyLossBudget ? (
+          <div className="mb-8 rounded-2xl border border-rose-500/30 bg-theme-card p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h3 className="text-sm font-semibold text-rose-200/95">Daily max loss (today)</h3>
+              <span className="text-[10px] uppercase tracking-wide text-theme-muted">Local date · closed trades only</span>
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-theme-secondary mb-4">
+              <span>
+                Cap{' '}
+                <span className="font-mono text-theme-primary tabular-nums">{fmt(dailyLossBudget.limit)}</span>
+              </span>
+              <span>
+                Used today{' '}
+                <span className="font-mono text-red-300 tabular-nums">{fmt(dailyLossBudget.lossUsed)}</span>
+              </span>
+              <span>
+                Room left{' '}
+                <span
+                  className={`font-mono tabular-nums ${
+                    dailyLossBudget.over ? 'text-red-400' : 'text-emerald-400'
+                  }`}
+                >
+                  {fmt(dailyLossBudget.remaining)}
+                </span>
+              </span>
+              <span>
+                Today net{' '}
+                <span
+                  className={`font-mono tabular-nums ${
+                    dailyLossBudget.todayNet >= 0 ? 'text-emerald-400' : 'text-red-300'
+                  }`}
+                >
+                  {fmt(dailyLossBudget.todayNet)}
+                </span>
+              </span>
+            </div>
+            <div className="h-3 rounded-full bg-black/45 overflow-hidden border border-theme-secondary/60">
+              <div
+                className={`h-full rounded-full transition-[width] duration-300 ${
+                  dailyLossBudget.over
+                    ? 'bg-red-500'
+                    : dailyLossBudget.pctUsed >= 85
+                      ? 'bg-amber-500'
+                      : 'bg-rose-400/85'
+                }`}
+                style={{ width: `${Math.min(100, dailyLossBudget.pctUsed)}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-theme-muted mt-3 leading-relaxed">
+              {dailyLossBudget.over ? (
+                <>
+                  Over daily cap by{' '}
+                  <span className="text-red-400 font-mono tabular-nums">
+                    {fmt(dailyLossBudget.lossUsed - dailyLossBudget.limit)}
+                  </span>
+                  .
+                </>
+              ) : (
+                <>
+                  <span className="text-theme-secondary tabular-nums">
+                    {Math.min(100, dailyLossBudget.pctUsed).toFixed(0)}%
+                  </span>{' '}
+                  of today&apos;s loss budget used. You can still lose up to{' '}
+                  <span className="text-emerald-400/90 font-mono tabular-nums">
+                    {fmt(dailyLossBudget.remaining)}
+                  </span>{' '}
+                  on closed trades today before hitting the cap.
+                </>
+              )}
+            </p>
+          </div>
+        ) : isLinked ? (
+          <p className="mb-8 text-xs text-theme-tertiary">
+            Add a daily max loss in <span className="text-cyan-400/90">Edit account</span> to see how much
+            loss room is left today.
+          </p>
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="rounded-2xl border border-theme-secondary bg-theme-card p-4">
@@ -547,7 +762,7 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
                     <div key={row.symbol}>
                       <div className="flex justify-between text-[11px] text-theme-secondary mb-0.5">
                         <span>{row.symbol}</span>
-                        <span className={pos ? 'text-emerald-400' : 'text-red-400'}>{formatUsd(row.total)}</span>
+                        <span className={pos ? 'text-emerald-400' : 'text-red-400'}>{fmt(row.total)}</span>
                       </div>
                       <div className="h-2 rounded bg-black/40 overflow-hidden">
                         <div
@@ -617,6 +832,12 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
             </div>
           </div>
 
+          <p className="text-[11px] text-theme-muted mb-3">
+            After each close, the server can attach an <span className="text-cyan-400/90">AI coach</span> (what
+            went well vs what to improve) when <code className="text-yellow-200/80">GEMINI_API_KEY</code> is set.
+            The table updates live when the note is ready.
+          </p>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
@@ -633,42 +854,103 @@ export default function Mt5TradesPageClient(props?: { tradingAccountId?: string 
                   <th className="py-2 pr-3">Comm</th>
                   <th className="py-2 pr-3">Swap</th>
                   <th className="py-2 pr-3">Net</th>
+                  <th className="py-2 pr-3 w-[100px]">AI coach</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTable.slice(0, tableRows).map((t) => {
                   const n = netPnL(t)
+                  const expanded = expandedCoachId === t.id
                   return (
-                    <tr key={t.id} className="border-b border-theme-secondary/40 text-theme-secondary">
-                      <td className="py-2 pr-3 whitespace-nowrap text-xs">{t.close_time}</td>
-                      <td className="py-2 pr-3 text-[11px] text-theme-muted max-w-[140px] truncate" title={accountLabel(t)}>
-                        {accountShort(t)}
-                      </td>
-                      <td className="py-2 pr-3 font-medium text-theme-primary">{t.symbol}</td>
-                      <td className="py-2 pr-3">
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded ${
-                            t.trade_type === 'BUY' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'
-                          }`}
-                        >
-                          {t.trade_type}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">{t.lot_size.toFixed(2)}</td>
-                      <td className="py-2 pr-3 font-mono text-xs">{t.open_price.toFixed(5)}</td>
-                      <td className="py-2 pr-3 font-mono text-xs">{t.close_price.toFixed(5)}</td>
-                      <td className={`py-2 pr-3 ${t.pips >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {t.pips.toFixed(1)}
-                      </td>
-                      <td className={`py-2 pr-3 ${t.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {formatUsd(t.profit)}
-                      </td>
-                      <td className="py-2 pr-3">{formatUsd(t.commission)}</td>
-                      <td className="py-2 pr-3">{formatUsd(t.swap)}</td>
-                      <td className={`py-2 pr-3 font-medium ${n >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {formatUsd(n)}
-                      </td>
-                    </tr>
+                    <React.Fragment key={t.id}>
+                      <tr className="border-b border-theme-secondary/40 text-theme-secondary">
+                        <td className="py-2 pr-3 whitespace-nowrap text-xs">{t.close_time}</td>
+                        <td className="py-2 pr-3 text-[11px] text-theme-muted max-w-[140px] truncate" title={accountLabel(t)}>
+                          {accountShort(t)}
+                        </td>
+                        <td className="py-2 pr-3 font-medium text-theme-primary">{t.symbol}</td>
+                        <td className="py-2 pr-3">
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded ${
+                              t.trade_type === 'BUY' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'
+                            }`}
+                          >
+                            {t.trade_type}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-3">{t.lot_size.toFixed(2)}</td>
+                        <td className="py-2 pr-3 font-mono text-xs">{t.open_price.toFixed(5)}</td>
+                        <td className="py-2 pr-3 font-mono text-xs">{t.close_price.toFixed(5)}</td>
+                        <td className={`py-2 pr-3 ${t.pips >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {t.pips.toFixed(1)}
+                        </td>
+                        <td className={`py-2 pr-3 ${t.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {fmt(t.profit)}
+                        </td>
+                        <td className="py-2 pr-3">{fmt(t.commission)}</td>
+                        <td className="py-2 pr-3">{fmt(t.swap)}</td>
+                        <td className={`py-2 pr-3 font-medium ${n >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {fmt(n)}
+                        </td>
+                        <td className="py-2 pr-3 align-top">
+                          {t.aiCoachPending ? (
+                            <span className="text-[11px] text-cyan-400 animate-pulse">Analyzing…</span>
+                          ) : t.aiCoachError ? (
+                            <span className="text-[11px] text-amber-400" title={t.aiCoachError}>
+                              Unavailable
+                            </span>
+                          ) : t.aiCoach ? (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedCoachId(expanded ? null : t.id)}
+                              className="text-[11px] px-2 py-1 rounded-lg border border-violet-500/40 text-violet-200 hover:bg-violet-500/10"
+                            >
+                              {expanded ? 'Hide' : 'View'}
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-theme-muted">—</span>
+                          )}
+                        </td>
+                      </tr>
+                      {expanded && t.aiCoach ? (
+                        <tr className="border-b border-theme-secondary/40 bg-violet-500/5">
+                          <td colSpan={13} className="py-4 px-3">
+                            <div className="text-xs text-theme-secondary space-y-3 max-w-3xl">
+                              <p className="text-sm text-violet-200/95 font-medium">{t.aiCoach.verdict}</p>
+                              <div>
+                                <div className="text-[10px] uppercase tracking-wide text-emerald-400/90 mb-1">
+                                  What you did right
+                                </div>
+                                <ul className="list-disc pl-4 space-y-1 text-theme-secondary">
+                                  {t.aiCoach.strengths.length ? (
+                                    t.aiCoach.strengths.map((s, i) => <li key={i}>{s}</li>)
+                                  ) : (
+                                    <li className="text-theme-muted">—</li>
+                                  )}
+                                </ul>
+                              </div>
+                              <div>
+                                <div className="text-[10px] uppercase tracking-wide text-amber-400/90 mb-1">
+                                  What to improve
+                                </div>
+                                <ul className="list-disc pl-4 space-y-1 text-theme-secondary">
+                                  {t.aiCoach.improvements.length ? (
+                                    t.aiCoach.improvements.map((s, i) => <li key={i}>{s}</li>)
+                                  ) : (
+                                    <li className="text-theme-muted">—</li>
+                                  )}
+                                </ul>
+                              </div>
+                              {t.aiCoach.keyTakeaway ? (
+                                <p className="text-[11px] text-cyan-200/85 border-l-2 border-cyan-500/50 pl-3 italic">
+                                  {t.aiCoach.keyTakeaway}
+                                </p>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </React.Fragment>
                   )
                 })}
               </tbody>

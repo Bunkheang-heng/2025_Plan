@@ -58,6 +58,7 @@ export default function Nav() {
         { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
         { path: '/trading/trade_entry', label: 'Trade Entry Log', group: 'Trading' },
         { path: '/trading/mt5_tracker', label: 'MT5 trade log', group: 'Trading' },
+        { path: '/trading/mt5_tracker/settings', label: 'MT5 Settings', group: 'Trading' },
         { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
         { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
         { path: '/trading/tools', label: 'Tools', group: 'Learning' },

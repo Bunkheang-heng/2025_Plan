@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { timingSafeEqual } from 'crypto'
-import { FieldValue } from 'firebase-admin/firestore'
+import { FieldValue, type DocumentReference } from 'firebase-admin/firestore'
 import { getAdminFirestore } from '@/lib/firebase-admin'
+import { generateMt5TradeCoach } from '@/lib/mt5TradeCoach'
 
 function safeEqualString(a: string, b: string): boolean {
   try {
@@ -129,6 +131,7 @@ export async function POST(request: NextRequest) {
   }
 
   const docId = mt5TradeDocId(trade.ticket, trade.account_login, trade.account_server)
+  const useAiCoach = Boolean(process.env.GEMINI_API_KEY)
   const tradePayload = {
     ticket: trade.ticket,
     account_login: trade.account_login,
@@ -149,6 +152,50 @@ export async function POST(request: NextRequest) {
     magic_number: trade.magic_number ?? 0,
     comment: trade.comment ?? '',
     ingestedAt: FieldValue.serverTimestamp(),
+    ...(useAiCoach ? { aiCoachPending: true } : {}),
+  }
+
+  const scheduleAiCoach = (tradeRef: DocumentReference) => {
+    if (!useAiCoach) return
+    after(async () => {
+      const net = trade.profit + (trade.commission ?? 0) + (trade.swap ?? 0)
+      try {
+        const coach = await generateMt5TradeCoach({
+          symbol: trade.symbol,
+          trade_type: trade.trade_type,
+          lot_size: trade.lot_size,
+          open_price: trade.open_price,
+          close_price: trade.close_price,
+          open_time: trade.open_time,
+          close_time: trade.close_time,
+          sl: trade.sl ?? 0,
+          tp: trade.tp ?? 0,
+          profit: trade.profit,
+          pips: trade.pips ?? 0,
+          commission: trade.commission ?? 0,
+          swap: trade.swap ?? 0,
+          net,
+          comment: trade.comment ?? '',
+        })
+        await tradeRef.update({
+          aiCoach: coach,
+          aiCoachGeneratedAt: FieldValue.serverTimestamp(),
+          aiCoachPending: false,
+          aiCoachError: FieldValue.delete(),
+        })
+      } catch (err) {
+        console.error('[api/mt5/trades] AI coach failed:', err)
+        try {
+          await tradeRef.update({
+            aiCoachPending: false,
+            aiCoachError:
+              err instanceof Error ? err.message.slice(0, 500) : 'Coach generation failed',
+          })
+        } catch (e2) {
+          console.error('[api/mt5/trades] AI coach error write failed:', e2)
+        }
+      }
+    })
   }
 
   const accSnap = await db
@@ -167,8 +214,9 @@ export async function POST(request: NextRequest) {
     if (accData.pnlCategory !== 'mt5') {
       return NextResponse.json({ error: 'Invalid ingest token' }, { status: 401 })
     }
+    const tradeRef = accDoc.ref.collection('mt5Trades').doc(docId)
     try {
-      await accDoc.ref.collection('mt5Trades').doc(docId).set(tradePayload)
+      await tradeRef.set(tradePayload)
     } catch (err) {
       console.error('[api/mt5/trades] Firestore write failed:', err)
       return NextResponse.json(
@@ -176,6 +224,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+    scheduleAiCoach(tradeRef)
     return NextResponse.json({ ok: true }, { status: 201 })
   }
 
@@ -215,5 +264,6 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  scheduleAiCoach(tradeRef)
   return NextResponse.json({ ok: true }, { status: 201 })
 }
