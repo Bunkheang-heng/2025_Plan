@@ -38,6 +38,7 @@ export default function WorkingProjectDetailPage() {
     description: '',
     status: 'next' as FeatureStatus,
   })
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState({ name: '', description: '', status: 'next' as FeatureStatus })
 
@@ -120,6 +121,12 @@ export default function WorkingProjectDetailPage() {
     ]
     await persistFeatures(nextFeatures)
     setNewTask({ name: '', description: '', status: newTask.status })
+    setIsAddTaskOpen(false)
+  }
+
+  const closeAddTaskModal = () => {
+    setIsAddTaskOpen(false)
+    setNewTask((prev) => ({ ...prev, name: '', description: '' }))
   }
 
   const handleDeleteTask = async (id: string) => {
@@ -177,8 +184,16 @@ export default function WorkingProjectDetailPage() {
           >
             Back to Projects
           </button>
-          <div className={`text-xs px-3 py-1 rounded-full border ${getStatusColor(project.status)}`}>
-            {project.status.replace('-', ' ').toUpperCase()}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsAddTaskOpen(true)}
+              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all text-sm"
+            >
+              Add Task
+            </button>
+            <div className={`text-xs px-3 py-1 rounded-full border ${getStatusColor(project.status)}`}>
+              {project.status.replace('-', ' ').toUpperCase()}
+            </div>
           </div>
         </div>
 
@@ -207,51 +222,12 @@ export default function WorkingProjectDetailPage() {
           </div>
         </div>
 
-        <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-theme-primary mb-4">Add Task</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs text-theme-tertiary mb-2">Task name</label>
-              <input
-                value={newTask.name}
-                onChange={(e) => setNewTask((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Example: Create login screen"
-                className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-              />
-              <label className="block text-xs text-theme-tertiary mt-3 mb-2">Description (optional)</label>
-              <textarea
-                value={newTask.description}
-                onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Add more detail..."
-                rows={2}
-                className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-theme-tertiary mb-2">Status</label>
-              <select
-                value={newTask.status}
-                onChange={(e) => setNewTask((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-              >
-                <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
-                <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
-                <option value="done" className="bg-theme-secondary text-theme-primary">Done</option>
-              </select>
-              <button
-                onClick={handleAddTask}
-                disabled={isSaving || !newTask.name.trim()}
-                className="mt-4 w-full px-4 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50"
-              >
-                {isSaving ? 'Saving...' : 'Add Task'}
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {statusColumns.map((column) => (
-            <div key={column.key} className="bg-theme-card border border-theme-secondary rounded-2xl p-4">
+            <div
+              key={column.key}
+              className="bg-theme-card border border-theme-secondary rounded-2xl p-4 h-[520px] flex flex-col"
+            >
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-theme-primary font-semibold">{column.label}</div>
@@ -260,7 +236,7 @@ export default function WorkingProjectDetailPage() {
                 <span className="text-xs text-theme-muted">{groupedFeatures[column.key].length}</span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-y-auto pr-1 flex-1 min-h-0">
                 {groupedFeatures[column.key].length === 0 ? (
                   <div className="text-xs text-theme-muted">No tasks yet.</div>
                 ) : (
@@ -350,6 +326,61 @@ export default function WorkingProjectDetailPage() {
           ))}
         </div>
       </div>
+
+      {isAddTaskOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4">
+          <div className="w-full max-w-2xl bg-theme-card border border-theme-secondary rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-theme-primary">Add Task</h2>
+              <button
+                onClick={closeAddTaskModal}
+                className="px-3 py-1 text-xs rounded-lg bg-theme-secondary border border-theme-secondary text-theme-secondary hover:text-theme-primary"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-xs text-theme-tertiary mb-2">Task name</label>
+                <input
+                  value={newTask.name}
+                  onChange={(e) => setNewTask((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Example: Create login screen"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                />
+                <label className="block text-xs text-theme-tertiary mt-3 mb-2">Description (optional)</label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Add more detail..."
+                  rows={2}
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-theme-tertiary mb-2">Status</label>
+                <select
+                  value={newTask.status}
+                  onChange={(e) => setNewTask((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                >
+                  <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
+                  <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
+                  <option value="done" className="bg-theme-secondary text-theme-primary">Done</option>
+                </select>
+                <button
+                  onClick={handleAddTask}
+                  disabled={isSaving || !newTask.name.trim()}
+                  className="mt-4 w-full px-4 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50"
+                >
+                  {isSaving ? 'Saving...' : 'Add Task'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
