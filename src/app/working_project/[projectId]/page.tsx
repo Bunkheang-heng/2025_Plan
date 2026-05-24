@@ -199,7 +199,7 @@ export default function WorkingProjectDetailPage() {
 
         <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-theme-tertiary/50 border border-theme-secondary text-yellow-300">
+            <div className="p-3 rounded-xl bg-theme-tertiary/50 border border-theme-secondary text-accent">
               {getTypeIcon(project.type)}
             </div>
             <div className="flex-1">
@@ -298,20 +298,20 @@ export default function WorkingProjectDetailPage() {
                               <button
                                 key={item.key}
                                 onClick={() => handleChangeStatus(feature.id, item.key)}
-                                className="px-2 py-1 text-[10px] rounded-full border border-theme-secondary text-theme-secondary hover:text-yellow-300 hover:border-yellow-500/40"
+                                className="px-2 py-1 text-[10px] rounded-full border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-theme-primary"
                               >
                                 {item.label}
                               </button>
                             ))}
                             <button
                               onClick={() => startEditTask(feature)}
-                              className="px-2 py-1 text-[10px] rounded-full border border-theme-secondary text-theme-secondary hover:text-yellow-300 hover:border-yellow-500/40"
+                              className="px-2 py-1 text-[10px] rounded-full border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-theme-primary"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeleteTask(feature.id)}
-                              className="px-2 py-1 text-[10px] rounded-full border border-red-500/30 text-red-300 hover:border-red-500/60"
+                              className="px-2 py-1 text-[10px] rounded-full border border-red-500/40 text-red-500 hover:text-red-600 hover:border-red-500"
                             >
                               Delete
                             </button>

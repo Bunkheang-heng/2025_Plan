@@ -3,7 +3,6 @@ import { useRouter } from 'next/navigation'
 import { useState, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/contexts/ThemeContext'
 import { canAccessRoute } from '@/utils/userRole'
 
 interface AuthButtonProps {
@@ -27,7 +26,6 @@ export default function Nav() {
   const router = useRouter()
   const pathname = usePathname()
   const { isAuthenticated, role, isLoading: roleLoading, signOut } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
@@ -573,27 +571,6 @@ export default function Nav() {
     </button>
   )
 
-  const ThemeToggle = () => (
-    <button
-      onClick={toggleTheme}
-      className="w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50 flex items-center justify-between"
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-    >
-      <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
-      <span className="w-5 h-5">
-        {theme === 'dark' ? (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3a1 1 0 011 1v1a1 1 0 11-2 0V4a1 1 0 011-1zm0 14a5 5 0 100-10 5 5 0 000 10zm8-5a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5 12a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zm12.364 6.364a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM8.757 6.343a1 1 0 01-1.414 0L6.636 5.636A1 1 0 118.05 4.222l.707.707a1 1 0 010 1.414zm8.486-1.414a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM6.343 17.657a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0z" />
-          </svg>
-        ) : (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-          </svg>
-        )}
-      </span>
-    </button>
-  )
-
   return (
     <>
       {/* Desktop Sidebar */}
@@ -621,9 +598,6 @@ export default function Nav() {
 
         <div className="mt-4">
           <AuthButton isLoggedIn={isAuthenticated} />
-          <div className="mt-2">
-            <ThemeToggle />
-          </div>
         </div>
       </aside>
 
@@ -645,21 +619,6 @@ export default function Nav() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-md text-theme-secondary hover:text-accent focus:outline-none transition-colors"
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            >
-              {theme === 'dark' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3a1 1 0 011 1v1a1 1 0 11-2 0V4a1 1 0 011-1zm0 14a5 5 0 100-10 5 5 0 000 10zm8-5a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5 12a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zm12.364 6.364a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM8.757 6.343a1 1 0 01-1.414 0L6.636 5.636A1 1 0 118.05 4.222l.707.707a1 1 0 010 1.414zm8.486-1.414a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM6.343 17.657a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0z" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-                </svg>
-              )}
-            </button>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="p-2 rounded-md text-theme-secondary hover:text-accent focus:outline-none transition-colors"

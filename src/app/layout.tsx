@@ -4,7 +4,6 @@ import "./globals.css";
 import { Nav } from "@/components";
 import AuthGate from "@/components/layout/AuthGate";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -41,31 +40,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <ThemeProvider>
-          <AuthProvider>
-            <AuthGate />
-            <Nav/>
-            <main className="flex-1 md:pl-72 pt-0 bg-theme-primary text-theme-primary">
-              {children}
-            </main>
-            <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="dark"
-            />
-          </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <AuthGate />
+          <Nav/>
+          <main className="flex-1 md:pl-72 pt-0 bg-theme-primary text-theme-primary">
+            {children}
+          </main>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+          />
+        </AuthProvider>
       </body>
     </html>
   );

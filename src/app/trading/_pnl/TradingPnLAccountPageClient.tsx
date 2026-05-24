@@ -4,8 +4,17 @@ import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore'
-import { FaArrowLeft, FaEdit, FaChartLine, FaCalendarAlt } from 'react-icons/fa'
+import { FaArrowLeft, FaEdit } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import {
+  DashboardTabs,
+  DetailField,
+  ObjectiveCard,
+  SemiCircleGauge,
+  StatTile,
+  SummaryMetricCard,
+} from './PnLDashboardUI'
+import TradingViewChartsPanel from './TradingViewChartsPanel'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -176,15 +185,18 @@ export default function TradingPnLAccountPageClient({
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [selectedWeekKey, setSelectedWeekKey] = useState<string | null>(null)
   const [weekLessonText, setWeekLessonText] = useState('')
+  const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'stats' | 'charts'>('overview')
   const capitalAmount = useMemo(() => Number(account?.capital || 0), [account?.capital])
   const currencySymbol = useMemo(() => account?.currency === 'cent' ? '¢' : '$', [account?.currency])
+  const allowsWithdrawals = useMemo(() => account?.type === 'real', [account?.type])
   const monthWithdrawalsTotal = useMemo(() => {
     return Object.values(state.withdrawalData).reduce((sum, amt) => sum + amt, 0)
   }, [state.withdrawalData])
   // Balance now uses cumulative all-time data (continuous, not reset monthly)
   const balanceAmount = useMemo(() => {
-    return capitalAmount + cumulativeData.allTimePnL - cumulativeData.allTimeWithdrawals
-  }, [capitalAmount, cumulativeData.allTimePnL, cumulativeData.allTimeWithdrawals])
+    const base = capitalAmount + cumulativeData.allTimePnL
+    return allowsWithdrawals ? base - cumulativeData.allTimeWithdrawals : base
+  }, [capitalAmount, cumulativeData.allTimePnL, cumulativeData.allTimeWithdrawals, allowsWithdrawals])
 
   const maxLossAmount = useMemo(() => Number(account?.maxLoss || 0), [account?.maxLoss])
   const todayStr = useMemo(() => formatLocalDate(new Date()), [])
@@ -195,10 +207,6 @@ export default function TradingPnLAccountPageClient({
   }, [state.dailyData, activeLossDate])
   const activeDayLoss = useMemo(() => Math.max(0, -activeDayAmount), [activeDayAmount])
   const activeMaxLossReached = useMemo(() => maxLossAmount > 0 && activeDayLoss >= maxLossAmount, [maxLossAmount, activeDayLoss])
-  const activeMaxLossProgress = useMemo(() => {
-    if (maxLossAmount <= 0) return 0
-    return Math.min((activeDayLoss / maxLossAmount) * 100, 100)
-  }, [activeDayLoss, maxLossAmount])
 
   const popupLossDate = maxLossPopupDate ?? activeLossDate
   const popupDayAmount = useMemo(() => {
@@ -210,6 +218,20 @@ export default function TradingPnLAccountPageClient({
     if (maxLossAmount <= 0) return 0
     return Math.min((popupDayLoss / maxLossAmount) * 100, 100)
   }, [popupDayLoss, maxLossAmount])
+
+  const targetAmount = useMemo(() => Number(account?.target || 0), [account?.target])
+  const profitTargetPct = useMemo(() => {
+    if (targetAmount <= 0) return 0
+    return Math.min(100, Math.max(0, (cumulativeData.allTimePnL / targetAmount) * 100))
+  }, [cumulativeData.allTimePnL, targetAmount])
+  const dailyLossPct = useMemo(() => {
+    if (maxLossAmount <= 0) return 0
+    return Math.min(100, (activeDayLoss / maxLossAmount) * 100)
+  }, [activeDayLoss, maxLossAmount])
+  const monthTradingDays = useMemo(
+    () => Object.values(state.dailyData).filter((d) => d.amount !== 0 || d.trades > 0).length,
+    [state.dailyData]
+  )
 
   const fetchAccount = useCallback(async () => {
     const user = auth.currentUser
@@ -286,33 +308,33 @@ export default function TradingPnLAccountPageClient({
         }
       }
 
-      // Fetch all withdrawals for this account
-      try {
-        const withdrawQuery = query(
-          collection(db, 'trading_withdrawals'),
-          where('userId', '==', user.uid),
-          where('accountId', '==', accountId)
-        )
-        const withdrawSnapshot = await getDocs(withdrawQuery)
-        withdrawSnapshot.docs.forEach(d => {
-          const data = d.data() as DailyWithdrawal
-          allTimeWithdrawals += data.amount || 0
-        })
-      } catch (_) {
-        // Fallback
+      if (account?.type === 'real') {
         try {
-          const fallbackQuery = query(
+          const withdrawQuery = query(
             collection(db, 'trading_withdrawals'),
-            where('userId', '==', user.uid)
+            where('userId', '==', user.uid),
+            where('accountId', '==', accountId)
           )
-          const fallbackSnapshot = await getDocs(fallbackQuery)
-          fallbackSnapshot.docs.forEach(d => {
+          const withdrawSnapshot = await getDocs(withdrawQuery)
+          withdrawSnapshot.docs.forEach(d => {
             const data = d.data() as DailyWithdrawal
-            if (data.accountId === accountId) {
-              allTimeWithdrawals += data.amount || 0
-            }
+            allTimeWithdrawals += data.amount || 0
           })
-        } catch (_) {}
+        } catch (_) {
+          try {
+            const fallbackQuery = query(
+              collection(db, 'trading_withdrawals'),
+              where('userId', '==', user.uid)
+            )
+            const fallbackSnapshot = await getDocs(fallbackQuery)
+            fallbackSnapshot.docs.forEach(d => {
+              const data = d.data() as DailyWithdrawal
+              if (data.accountId === accountId) {
+                allTimeWithdrawals += data.amount || 0
+              }
+            })
+          } catch (_) {}
+        }
       }
 
       // Calculate all-time stats from all entries
@@ -349,7 +371,7 @@ export default function TradingPnLAccountPageClient({
     } catch (error) {
       console.error('Error fetching all-time data:', error)
     }
-  }, [accountId])
+  }, [accountId, account?.type])
 
   const fetchMonthData = useCallback(async (date: Date) => {
     try {
@@ -400,18 +422,20 @@ export default function TradingPnLAccountPageClient({
         const querySnapshot = await getDocs(q)
         const rows = querySnapshot.docs.map(d => d.data() as DailyPnL)
 
-        const withdrawQuery = query(
-          collection(db, 'trading_withdrawals'),
-          where('userId', '==', user.uid),
-          where('accountId', '==', accountId),
-          where('date', '>=', startDate),
-          where('date', '<=', endDate)
-        )
         let withdrawalRows: DailyWithdrawal[] = []
-        try {
-          const withdrawSnapshot = await getDocs(withdrawQuery)
-          withdrawalRows = withdrawSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as DailyWithdrawal))
-        } catch (_) {
+        if (account?.type === 'real') {
+          const withdrawQuery = query(
+            collection(db, 'trading_withdrawals'),
+            where('userId', '==', user.uid),
+            where('accountId', '==', accountId),
+            where('date', '>=', startDate),
+            where('date', '<=', endDate)
+          )
+          try {
+            const withdrawSnapshot = await getDocs(withdrawQuery)
+            withdrawalRows = withdrawSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as DailyWithdrawal))
+          } catch (_) {
+          }
         }
 
         let weeklyLessons: Record<string, string> = {}
@@ -442,11 +466,13 @@ export default function TradingPnLAccountPageClient({
           const rows = fallbackSnapshot.docs.map(d => d.data() as DailyPnL).filter(r => r.date >= startDate && r.date <= endDate && r.accountId === accountId)
           let withdrawalRows: DailyWithdrawal[] = []
           let weeklyLessons: Record<string, string> = {}
-          try {
-            const wq = query(collection(db, 'trading_withdrawals'), where('userId', '==', user.uid))
-            const ws = await getDocs(wq)
-            withdrawalRows = ws.docs.map(d => ({ id: d.id, ...d.data() } as DailyWithdrawal)).filter(w => w.accountId === accountId && w.date >= startDate && w.date <= endDate)
-          } catch (_) { }
+          if (account?.type === 'real') {
+            try {
+              const wq = query(collection(db, 'trading_withdrawals'), where('userId', '==', user.uid))
+              const ws = await getDocs(wq)
+              withdrawalRows = ws.docs.map(d => ({ id: d.id, ...d.data() } as DailyWithdrawal)).filter(w => w.accountId === accountId && w.date >= startDate && w.date <= endDate)
+            } catch (_) { }
+          }
           try {
             const lq = query(collection(db, 'trading_weekly_lessons'), where('userId', '==', user.uid))
             const ls = await getDocs(lq)
@@ -466,7 +492,7 @@ export default function TradingPnLAccountPageClient({
       console.error('Error fetching data:', error)
       setState(prev => ({ ...prev, isLoading: false }))
     }
-  }, [accountId])
+  }, [accountId, account?.type])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -512,14 +538,19 @@ export default function TradingPnLAccountPageClient({
       setFormData({ amount: '', trades: '', winTrades: '', lossTrades: '', lessons: '' })
       setIsEditing(true)
     }
-    const existingWithdrawal = state.withdrawalData[dateStr] || 0
-    setWithdrawAmount(existingWithdrawal > 0 ? existingWithdrawal.toString() : '')
-    setModalMode('choice')
+    if (allowsWithdrawals) {
+      const existingWithdrawal = state.withdrawalData[dateStr] || 0
+      setWithdrawAmount(existingWithdrawal > 0 ? existingWithdrawal.toString() : '')
+    } else {
+      setWithdrawAmount('')
+    }
+    setModalMode(allowsWithdrawals ? 'choice' : 'entry')
     setSelectedDate(dateStr)
   }
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!allowsWithdrawals) return
     if (!selectedDate || !accountId) return
     const amount = parseFloat(withdrawAmount)
     if (isNaN(amount) || amount < 0) {
@@ -755,24 +786,29 @@ export default function TradingPnLAccountPageClient({
   const accountLabel = account?.name || 'Trading Account'
   const accountTypeLabel = account?.type === 'real' ? 'Real' : account?.type === 'funded' ? 'Funded' : 'Account'
 
+  const accountStatusLabel =
+    targetAmount > 0 && cumulativeData.allTimePnL >= targetAmount ? 'Target Met' : 'Active'
+
   return (
     <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28 lg:pt-32">
+        {/* Top bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => router.push(routeBase)}
-              className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+              className="p-2 rounded-lg border border-theme-secondary bg-theme-card text-theme-secondary hover:text-theme-primary hover:border-slate-500 transition-colors"
+              aria-label="Back to accounts"
             >
-              <FaArrowLeft /> Accounts
+              <FaArrowLeft className="w-4 h-4" />
             </button>
             {allAccounts.length > 1 && (
               <select
                 value={accountId}
                 onChange={(e) => router.push(`${routeBase}/${e.target.value}`)}
-                className="px-4 py-2 bg-gray-900/60 border border-yellow-500/30 rounded-lg text-yellow-400 font-medium focus:outline-none focus:border-yellow-500 text-sm cursor-pointer"
+                className="px-3 py-2 min-w-[200px] bg-theme-card border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-sky-500/50 cursor-pointer"
               >
-                {allAccounts.map(acc => (
+                {allAccounts.map((acc) => (
                   <option key={acc.id} value={acc.id}>
                     {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
                   </option>
@@ -780,180 +816,185 @@ export default function TradingPnLAccountPageClient({
               </select>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push(`${routeBase}/${accountId}/edit`)}
-              className="px-3 py-1.5 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-1.5 text-xs"
-            >
-              <FaEdit className="w-3 h-3" /> Edit
-            </button>
-            <div className={`text-xs px-3 py-1 rounded-full border ${
-              account?.type === 'real'
-                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-            }`}>
-              {accountTypeLabel}
-            </div>
-            <div className={`text-xs px-3 py-1 rounded-full border ${
-              account?.currency === 'cent'
-                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                : 'bg-green-500/20 text-green-300 border-green-500/30'
-            }`}>
-              {account?.currency === 'cent' ? '¢ Cent' : '$ USD'}
-            </div>
-          </div>
+          <button
+            onClick={() => router.push(`${routeBase}/${accountId}/edit`)}
+            className="px-4 py-2 rounded-lg border border-theme-secondary bg-theme-card text-sm font-medium text-theme-primary hover:border-sky-500/40 transition-colors flex items-center gap-2"
+          >
+            <FaEdit className="w-3.5 h-3.5" /> Edit account
+          </button>
         </div>
 
-        {/* Page Toggle */}
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex flex-wrap items-center justify-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 gap-1">
-            <button
-              className="px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black"
-            >
-              <FaCalendarAlt className="w-4 h-4" />
-              P&L Calendar
-            </button>
-            <button
-              onClick={() => router.push(`${routeBase}/${accountId}/chart`)}
-              className="px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-theme-tertiary hover:text-theme-secondary"
-            >
-              <FaChartLine className="w-4 h-4" />
-              Trading Chart
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-            Daily Trading Tracker
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
-            <span>{accountLabel}</span>
-            <svg className="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </h1>
-          <p className="text-xl text-theme-secondary font-medium">
-            {isBotPnL ? 'Track your bot account daily profit &amp; loss (no per-day trade count)' : 'Track your daily profit &amp; loss'}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary tracking-tight">{accountLabel}</h1>
+          <p className="text-sm text-theme-tertiary mt-1">
+            {accountTypeLabel} · {account?.currency === 'cent' ? 'Cent account' : 'USD account'}
+            {isBotPnL ? ' · Bot P&L' : ''}
           </p>
         </div>
 
-        {maxLossAmount > 0 && (
-          <div className={`mb-8 border rounded-2xl p-5 shadow-lg ${
-            activeMaxLossReached
-              ? 'bg-red-500/10 border-red-500/40 shadow-red-500/10'
-              : 'bg-amber-500/10 border-amber-500/40 shadow-amber-500/10'
-          }`}>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className={`text-sm font-bold ${
-                    activeMaxLossReached ? 'text-red-300' : 'text-amber-300'
-                  }`}>
-                    {activeMaxLossReached ? 'Daily Max Loss Reached' : 'Daily Max Loss Warning'}
-                  </span>
-                  <span className="text-xs text-theme-tertiary">
-                    ({activeLossDate}: {currencySymbol}{activeDayLoss.toFixed(2)} / {currencySymbol}{maxLossAmount.toFixed(2)})
-                  </span>
-                </div>
-                <p className="text-sm text-theme-secondary">
-                  This limit is per day. If you keep trading after hitting it, log a self punishment to stay accountable.
-                </p>
-                <div className="mt-3 h-2 w-full bg-gray-800/60 border border-theme-secondary rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${
-                      activeMaxLossReached ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'
-                    }`}
-                    style={{ width: `${activeMaxLossProgress}%` }}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const base = new Date(`${activeLossDate}T00:00:00`)
-                    const today = activeLossDate
-                    const tomorrow = formatLocalDate(new Date(base.getTime() + 24 * 60 * 60 * 1000))
-                    const ruleBroken = `Daily max loss reached on ${today} (${accountLabel}): ${currencySymbol}${activeDayLoss.toFixed(2)} / ${currencySymbol}${maxLossAmount.toFixed(2)}`
-                    const punishment = 'No trading tomorrow'
-                    router.push(`/self_punishment?${encodeQuery({ ruleBroken, punishment, date: today, expiresAt: tomorrow })}`)
-                  }}
-                  className={`px-4 py-2 rounded-xl font-bold transition-all ${
-                    activeMaxLossReached
-                      ? 'bg-red-600 hover:bg-red-500 text-white'
-                      : 'bg-amber-500 hover:bg-amber-400 text-gray-900'
-                  }`}
-                >
-                  Log punishment
-                </button>
-              </div>
+        {/* Account details card */}
+        <div className="rounded-xl border border-theme-secondary bg-theme-card p-5 sm:p-6 mb-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-4 border-b border-theme-secondary">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-semibold text-theme-primary">Account</span>
+              <span className="text-xs font-mono text-theme-muted">{accountId?.slice(0, 12)}…</span>
             </div>
+            <span
+              className={`text-xs font-semibold px-3 py-1 rounded-md ${
+                accountStatusLabel === 'Target Met'
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+              }`}
+            >
+              {accountStatusLabel}
+            </span>
           </div>
-        )}
-
-        <div className="bg-theme-card border border-theme-secondary rounded-2xl p-5 mb-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <div className="text-xs text-theme-tertiary">Account Capital</div>
-              <div className="text-2xl font-bold text-blue-400">
-                {currencySymbol}{capitalAmount.toFixed(2)}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-theme-tertiary">Balance (Capital + P&amp;L - Withdrawals)</div>
-              <div className={`text-2xl font-bold ${balanceAmount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {currencySymbol}{balanceAmount.toFixed(2)}
-              </div>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <DetailField label="Type" value={accountTypeLabel} />
+            <DetailField label="Initial balance" value={`${currencySymbol}${capitalAmount.toFixed(2)}`} />
+            <DetailField
+              label="Profit target"
+              value={targetAmount > 0 ? `${currencySymbol}${targetAmount.toFixed(2)}` : '—'}
+            />
+            <DetailField
+              label="Daily max loss"
+              value={maxLossAmount > 0 ? `${currencySymbol}${maxLossAmount.toFixed(2)}` : '—'}
+            />
           </div>
         </div>
 
-        {account?.target && account.target > 0 && (
-          <div className="bg-theme-card border border-yellow-500/30 rounded-2xl p-5 mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🎯</span>
-                <h3 className="text-sm font-bold text-yellow-400">Target Progress</h3>
-              </div>
-              <div className="text-sm text-theme-secondary">
-                <span className={`font-bold ${cumulativeData.allTimePnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {currencySymbol}{cumulativeData.allTimePnL.toFixed(2)}
-                </span>
-                <span className="text-theme-tertiary"> / </span>
-                <span className="font-bold text-yellow-400">{currencySymbol}{account.target.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="relative h-4 bg-theme-secondary rounded-full overflow-hidden">
-              <div
-                className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ${
-                  cumulativeData.allTimePnL >= account.target
-                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                    : cumulativeData.allTimePnL >= 0
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
-                      : 'bg-gradient-to-r from-red-600 to-red-500'
-                }`}
-                style={{
-                  width: `${Math.min(Math.max((cumulativeData.allTimePnL / account.target) * 100, 0), 100)}%`
-                }}
+        <div className="mb-8">
+          <DashboardTabs
+            active={activeTab}
+            onChange={(id) => setActiveTab(id as 'overview' | 'calendar' | 'stats' | 'charts')}
+            tabs={[
+              { id: 'overview', label: 'Overview' },
+              { id: 'charts', label: 'Charts' },
+              { id: 'calendar', label: 'Calendar' },
+              { id: 'stats', label: 'Stats & history' },
+            ]}
+          />
+        </div>
+
+        {activeTab === 'charts' && <TradingViewChartsPanel />}
+
+        {activeTab === 'overview' && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <SummaryMetricCard
+                label="Balance"
+                value={`${currencySymbol}${balanceAmount.toFixed(2)}`}
+                active
+                valueClassName={balanceAmount >= 0 ? 'text-theme-primary' : 'text-red-400'}
+              />
+              <SummaryMetricCard
+                label="Month P&L"
+                value={`${currencySymbol}${state.monthStats.totalPnL.toFixed(2)}`}
+                valueClassName={state.monthStats.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}
+              />
+              <SummaryMetricCard
+                label="Cumulative P&L"
+                value={`${currencySymbol}${cumulativeData.allTimePnL.toFixed(2)}`}
+                valueClassName={cumulativeData.allTimePnL >= 0 ? 'text-emerald-400' : 'text-red-400'}
               />
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-theme-tertiary">
-                {cumulativeData.allTimePnL >= account.target
-                  ? '🎉 Target Achieved!'
-                  : cumulativeData.allTimePnL >= 0
-                    ? `${((cumulativeData.allTimePnL / account.target) * 100).toFixed(1)}% complete`
-                    : 'Below target'}
-              </span>
-              <span className="text-xs text-theme-tertiary">
-                {cumulativeData.allTimePnL >= account.target
-                  ? `+${currencySymbol}${(cumulativeData.allTimePnL - account.target).toFixed(2)} over target`
-                  : `${currencySymbol}${(account.target - cumulativeData.allTimePnL).toFixed(2)} to go`}
-              </span>
+
+            <h2 className="text-lg font-semibold text-theme-primary mb-4">Trading objectives</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {targetAmount > 0 && (
+                <ObjectiveCard
+                  title="Profit target"
+                  hint="Progress toward your account profit goal"
+                  footer={
+                    <>
+                      Current {currencySymbol}{cumulativeData.allTimePnL.toFixed(2)} · Target {currencySymbol}
+                      {targetAmount.toFixed(2)}
+                    </>
+                  }
+                >
+                  <SemiCircleGauge
+                    percent={profitTargetPct}
+                    strokeClass={
+                      profitTargetPct >= 100
+                        ? 'stroke-emerald-500'
+                        : profitTargetPct > 0
+                          ? 'stroke-sky-500'
+                          : 'stroke-slate-500'
+                    }
+                  />
+                  <div className="flex justify-between text-xs text-theme-muted mt-1 px-2">
+                    <span>0%</span>
+                    <span>100%</span>
+                  </div>
+                </ObjectiveCard>
+              )}
+
+              {maxLossAmount > 0 && (
+                <ObjectiveCard
+                  title="Daily max loss"
+                  hint={`Today's loss on ${activeLossDate} vs your daily limit`}
+                  footer={
+                    <>
+                      <div>
+                        Current {currencySymbol}{activeDayLoss.toFixed(2)} · Limit {currencySymbol}
+                        {maxLossAmount.toFixed(2)}
+                      </div>
+                      {activeMaxLossReached && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const base = new Date(`${activeLossDate}T00:00:00`)
+                            const today = activeLossDate
+                            const tomorrow = formatLocalDate(new Date(base.getTime() + 24 * 60 * 60 * 1000))
+                            const ruleBroken = `Daily max loss reached on ${today} (${accountLabel}): ${currencySymbol}${activeDayLoss.toFixed(2)} / ${currencySymbol}${maxLossAmount.toFixed(2)}`
+                            const punishment = 'No trading tomorrow'
+                            router.push(`/self_punishment?${encodeQuery({ ruleBroken, punishment, date: today, expiresAt: tomorrow })}`)
+                          }}
+                          className="mt-3 w-full px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
+                        >
+                          Log punishment
+                        </button>
+                      )}
+                    </>
+                  }
+                >
+                  <SemiCircleGauge
+                    percent={dailyLossPct}
+                    strokeClass={
+                      dailyLossPct >= 100
+                        ? 'stroke-red-500'
+                        : dailyLossPct >= 70
+                          ? 'stroke-amber-500'
+                          : dailyLossPct > 0
+                            ? 'stroke-sky-500'
+                            : 'stroke-slate-500'
+                    }
+                  />
+                  <div className="flex justify-between text-xs text-theme-muted mt-1 px-2">
+                    <span>0%</span>
+                    <span>100%</span>
+                  </div>
+                </ObjectiveCard>
+              )}
+
+              <ObjectiveCard title="Trading days (this month)" hint="Days with at least one P&L entry">
+                <div className="text-center py-6">
+                  <div className="text-4xl font-bold text-sky-400 tabular-nums">{monthTradingDays}</div>
+                  <p className="text-sm text-theme-tertiary mt-2">days logged in {monthName}</p>
+                </div>
+              </ObjectiveCard>
+
+              <ObjectiveCard title="Win rate (all time)" hint="Winning days ÷ total trading days">
+                <SemiCircleGauge
+                  percent={cumulativeData.winRate}
+                  strokeClass={cumulativeData.winRate >= 50 ? 'stroke-emerald-500' : 'stroke-amber-500'}
+                />
+                <p className="text-center text-xs text-theme-tertiary mt-2">
+                  {cumulativeData.winDays} win · {cumulativeData.lossDays} loss days
+                </p>
+              </ObjectiveCard>
             </div>
-          </div>
+          </>
         )}
 
         {(account?.strategy || account?.rules) && (
@@ -961,7 +1002,7 @@ export default function TradingPnLAccountPageClient({
             {/* Floating Strategy Button */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-l from-yellow-500 to-yellow-600 text-black px-3 py-4 rounded-l-xl shadow-lg hover:from-yellow-400 hover:to-yellow-500 transition-all transform hover:scale-105 flex flex-col items-center gap-1"
+              className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-sky-600 text-white px-3 py-4 rounded-l-xl shadow-lg hover:bg-sky-500 transition-all flex flex-col items-center gap-1"
             >
               <span className="text-lg">📊</span>
               <span className="text-xs font-bold writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>Strategy</span>
@@ -977,7 +1018,7 @@ export default function TradingPnLAccountPageClient({
 
             {/* Sliding Sidebar */}
             <div
-              className={`fixed top-0 right-0 h-full w-full max-w-md bg-theme-primary border-l border-yellow-500/30 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+              className={`fixed top-0 right-0 h-full w-full max-w-md bg-theme-primary border-l border-theme-secondary shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
                 isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
               }`}
             >
@@ -1037,7 +1078,8 @@ export default function TradingPnLAccountPageClient({
           </>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+        {activeTab === 'stats' && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {[
             {
               label: 'Total P&L',
@@ -1140,64 +1182,53 @@ export default function TradingPnLAccountPageClient({
               ),
               gradient: 'from-orange-500 to-orange-600'
             }
-          ].filter(stat => !isBotPnL || !['Total Trades', 'Winning Trades', 'Losing Trades'].includes(stat.label)).map((stat, index) => (
-            <div
+          ].filter(stat => {
+            if (!allowsWithdrawals && stat.label === 'Withdraw') return false
+            if (isBotPnL && ['Total Trades', 'Winning Trades', 'Losing Trades'].includes(stat.label)) return false
+            return true
+          }).map((stat) => (
+            <StatTile
               key={stat.label}
-              className="group relative animate-slide-in-up"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-xl transform group-hover:scale-105 transition-all duration-300" />
-
-              <div className="relative p-4 z-10">
-                <div className="text-center">
-                  <div className={`mb-2 p-2 bg-gradient-to-br ${stat.gradient} rounded-lg inline-block`}>
-                    {stat.icon}
-                  </div>
-                  <div className={`font-bold ${stat.isMain ? 'text-xl' : 'text-lg'} ${
-                    stat.isMain && state.monthStats.totalPnL >= 0 ?
-                      'text-emerald-400' :
-                      stat.isMain && state.monthStats.totalPnL < 0 ?
-                        'text-red-400' :
-                        'text-yellow-400'
-                  } mb-1`}>
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-theme-tertiary font-medium">{stat.label}</div>
-                </div>
-              </div>
-            </div>
+              label={stat.label}
+              value={stat.value}
+              sub={stat.isMain ? 'All time' : undefined}
+            />
           ))}
         </div>
+        )}
 
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
-          <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
+        {activeTab === 'calendar' && (
+        <div className="rounded-xl border border-theme-secondary bg-theme-card overflow-hidden shadow-sm">
+          <div className="border-b border-theme-secondary px-5 py-4">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => changeMonth(-1)}
-                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                className="p-2 rounded-lg border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-slate-500 transition-colors"
+                aria-label="Previous month"
               >
-                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
-              <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
+              <h2 className="text-lg font-semibold text-theme-primary">{monthName}</h2>
 
               <button
                 onClick={() => changeMonth(1)}
-                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                className="p-2 rounded-lg border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-slate-500 transition-colors"
+                aria-label="Next month"
               >
-                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-5 sm:p-6">
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-yellow-400 font-bold text-sm py-2">
+                <div key={day} className="text-center text-theme-muted font-medium text-xs py-2 uppercase tracking-wide">
                   {day}
                 </div>
               ))}
@@ -1215,25 +1246,25 @@ export default function TradingPnLAccountPageClient({
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
                     const dateStr = formatLocalDate(dateObj)
                     const dayData = state.dailyData[dateStr]
-                    const dayWithdrawals = state.withdrawalData[dateStr] || 0
+                    const dayWithdrawals = allowsWithdrawals ? (state.withdrawalData[dateStr] || 0) : 0
                     const isToday = dateStr === formatLocalDate(new Date())
 
                     return (
                       <button
                         key={day}
                         onClick={() => handleDateClick(day)}
-                        className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 ${
+                        className={`aspect-square p-2 rounded-lg border transition-all duration-200 ${
                           isWeekend
-                            ? 'border-gray-600/30 bg-theme-card/30 hover:bg-gray-700/50 hover:scale-105'
+                            ? 'border-theme-secondary/50 bg-theme-secondary/30 opacity-60'
                             : isToday
-                              ? 'border-yellow-400 bg-yellow-400/10 hover:scale-105'
+                              ? 'border-sky-500/60 bg-sky-500/10 ring-1 ring-sky-500/30'
                               : dayData
                                 ? dayData.amount >= 0
-                                  ? 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 hover:scale-105'
-                                  : 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:scale-105'
+                                  ? 'border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10'
+                                  : 'border-red-500/40 bg-red-500/5 hover:bg-red-500/10'
                                 : dayWithdrawals > 0
-                                  ? 'border-orange-500/50 bg-orange-500/10 hover:bg-orange-500/20 hover:scale-105'
-                                  : 'border-theme-secondary bg-theme-secondary hover:bg-gray-700/50 hover:scale-105'
+                                  ? 'border-orange-500/40 bg-orange-500/5 hover:bg-orange-500/10'
+                                  : 'border-theme-secondary bg-theme-card hover:border-slate-500/50'
                         }`}
                       >
                         <div className="flex flex-col items-center justify-center h-full">
@@ -1241,7 +1272,7 @@ export default function TradingPnLAccountPageClient({
                             isWeekend
                               ? 'text-theme-muted'
                               : isToday
-                                ? 'text-yellow-400'
+                                ? 'text-sky-400'
                                 : 'text-theme-secondary'
                           }`}>
                             {day}
@@ -1250,7 +1281,7 @@ export default function TradingPnLAccountPageClient({
                             <div className="text-[10px] text-theme-muted font-semibold mt-1 text-center leading-tight">
                               Market<br />Closed
                             </div>
-                          ) : dayData || (state.withdrawalData[dateStr] || 0) > 0 ? (
+                          ) : dayData || (allowsWithdrawals && (state.withdrawalData[dateStr] || 0) > 0) ? (
                             <>
                               {dayData && (
                                 <>
@@ -1273,7 +1304,7 @@ export default function TradingPnLAccountPageClient({
                                   )}
                                 </>
                               )}
-                              {(state.withdrawalData[dateStr] || 0) > 0 && (
+                              {allowsWithdrawals && (state.withdrawalData[dateStr] || 0) > 0 && (
                                 <div className="text-[10px] text-orange-400 font-semibold mt-0.5">
                                   -{currencySymbol}{(state.withdrawalData[dateStr] || 0).toFixed(0)}
                                 </div>
@@ -1322,12 +1353,13 @@ export default function TradingPnLAccountPageClient({
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {selectedDate && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-yellow-500/30 rounded-2xl max-w-md w-full shadow-2xl shadow-yellow-500/20 animate-slide-up">
-            <div className={`bg-gradient-to-r ${account?.type === 'real' ? 'from-blue-500/20 to-blue-600/20 border-b border-blue-500/30' : 'from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30'} p-6`}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-theme-card border border-theme-secondary rounded-2xl max-w-md w-full shadow-2xl animate-slide-up">
+            <div className="border-b border-theme-secondary p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -1348,14 +1380,24 @@ export default function TradingPnLAccountPageClient({
                     })}
                   </h2>
                   <p className="text-sm text-theme-tertiary mt-1">
-                    {modalMode === 'choice' ? 'Add entry or record a withdrawal' : modalMode === 'withdraw' ? 'Record withdrawal' : !isEditing && formData.amount ? 'Trading Summary' : isEditing && formData.amount ? 'Edit Entry' : 'New Entry'}
+                    {modalMode === 'choice'
+                      ? 'Add entry or record a withdrawal'
+                      : modalMode === 'withdraw'
+                        ? 'Record withdrawal'
+                        : !isEditing && formData.amount
+                          ? 'Trading Summary'
+                          : isEditing && formData.amount
+                            ? 'Edit Entry'
+                            : allowsWithdrawals
+                              ? 'New Entry'
+                              : 'Add P&L Entry'}
                   </p>
                 </div>
                 <button
                   onClick={() => {
                     setSelectedDate(null)
                     setIsEditing(false)
-                    setModalMode('choice')
+                    setModalMode(allowsWithdrawals ? 'choice' : 'entry')
                     setWithdrawAmount('')
                   }}
                   className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
@@ -1367,7 +1409,7 @@ export default function TradingPnLAccountPageClient({
               </div>
             </div>
 
-            {modalMode === 'choice' ? (
+            {modalMode === 'choice' && allowsWithdrawals ? (
               <div className="p-6 space-y-4">
                 <p className="text-theme-secondary text-center mb-6">What would you like to do for this day?</p>
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -1404,7 +1446,7 @@ export default function TradingPnLAccountPageClient({
                   </div>
                 )}
               </div>
-            ) : modalMode === 'withdraw' ? (
+            ) : modalMode === 'withdraw' && allowsWithdrawals ? (
               <form onSubmit={handleWithdrawSubmit} className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-yellow-400 mb-3">Withdrawal amount ({currencySymbol})</label>
@@ -1483,19 +1525,21 @@ export default function TradingPnLAccountPageClient({
                   >
                     Edit Entry
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setModalMode('choice')}
-                    className="px-4 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
-                  >
-                    Back
-                  </button>
+                  {allowsWithdrawals && (
+                    <button
+                      type="button"
+                      onClick={() => setModalMode('choice')}
+                      className="px-4 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
+                    >
+                      Back
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedDate(null)
                       setIsEditing(false)
-                      setModalMode('choice')
+                      setModalMode(allowsWithdrawals ? 'choice' : 'entry')
                     }}
                     className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl transition-colors"
                   >
@@ -1590,13 +1634,15 @@ export default function TradingPnLAccountPageClient({
                 </div>
 
                 <div className="flex space-x-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalMode('choice')}
-                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
-                  >
-                    Back
-                  </button>
+                  {allowsWithdrawals && (
+                    <button
+                      type="button"
+                      onClick={() => setModalMode('choice')}
+                      className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
+                    >
+                      Back
+                    </button>
+                  )}
                   <button
                     type="submit"
                     className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl"
