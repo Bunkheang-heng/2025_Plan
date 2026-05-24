@@ -2,11 +2,28 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Loading } from '@/components'
-import Icon from '@/components/ui/Icon'
 import { auth } from '../../../../firebase'
 import type { User } from 'firebase/auth'
 import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore'
+import { FaArrowLeft, FaSave } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import {
+  Badge,
+  BtnGhost,
+  BtnPrimary,
+  Card,
+  EmptyState,
+  InfoBanner,
+  inputClassName,
+  labelClassName,
+  ModalHeader,
+  ModalShell,
+  PageHeader,
+  PageShell,
+  SectionTitle,
+  SegmentedControl,
+  SelectField,
+} from './PnLDashboardUI'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -20,7 +37,6 @@ type TradingAccount = {
   capital?: number
   target?: number
   maxLoss?: number
-  /** MT5: optional daily profit goal (same currency as capital). */
   dailyProfitTarget?: number | null
   strategy?: string
   rules?: string
@@ -34,18 +50,28 @@ type TradingAccountBasic = {
   pnlCategory?: 'manual' | 'bot' | 'mt5'
 }
 
+function currencySymbol(currency: CurrencyType) {
+  return currency === 'cent' ? '¢' : '$'
+}
+
+function pageMeta(routeBase: '/trading/trading_pnl' | '/trading/bot_trading_pnl' | '/trading/mt5_tracker') {
+  if (routeBase === '/trading/bot_trading_pnl') {
+    return { listTitle: 'Bot Trading P&L', section: 'bot account' }
+  }
+  if (routeBase === '/trading/mt5_tracker') {
+    return { listTitle: 'MT5 Tracker', section: 'MT5 log' }
+  }
+  return { listTitle: 'Trading P&L', section: 'account' }
+}
+
 export default function EditTradingAccountPageClient({
-  routeBase
+  routeBase,
 }: {
   routeBase: '/trading/trading_pnl' | '/trading/bot_trading_pnl' | '/trading/mt5_tracker'
 }) {
   const pnlKind: 'manual' | 'bot' | 'mt5' =
-    routeBase === '/trading/bot_trading_pnl'
-      ? 'bot'
-      : routeBase === '/trading/mt5_tracker'
-        ? 'mt5'
-        : 'manual'
-  const isBotPnL = pnlKind === 'bot'
+    routeBase === '/trading/bot_trading_pnl' ? 'bot' : routeBase === '/trading/mt5_tracker' ? 'mt5' : 'manual'
+  const meta = pageMeta(routeBase)
   const router = useRouter()
   const params = useParams<{ accountId: string }>()
   const accountId = params?.accountId
@@ -109,17 +135,14 @@ export default function EditTradingAccountPageClient({
     if (!user) return
     const db = getFirestore()
     try {
-      const q = query(
-        collection(db, 'tradingAccounts'),
-        where('userId', '==', user.uid)
-      )
+      const q = query(collection(db, 'tradingAccounts'), where('userId', '==', user.uid))
       const snap = await getDocs(q)
       const list = snap.docs
-        .map(d => ({
+        .map((d) => ({
           id: d.id,
           name: (d.data() as TradingAccount).name,
           type: (d.data() as TradingAccount).type,
-          pnlCategory: (d.data() as TradingAccount).pnlCategory
+          pnlCategory: (d.data() as TradingAccount).pnlCategory,
         }))
         .filter((a) => {
           if (pnlKind === 'bot') return a.pnlCategory === 'bot'
@@ -195,9 +218,7 @@ export default function EditTradingAccountPageClient({
         target: Number.isFinite(target) && target > 0 ? target : null,
         maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
         dailyProfitTarget:
-          pnlKind === 'mt5' &&
-          Number.isFinite(dailyProfitTarget) &&
-          dailyProfitTarget > 0
+          pnlKind === 'mt5' && Number.isFinite(dailyProfitTarget) && dailyProfitTarget > 0
             ? dailyProfitTarget
             : null,
         strategy: formData.strategy.trim() || null,
@@ -233,25 +254,35 @@ export default function EditTradingAccountPageClient({
 
       const [pnlQuery, withdrawQuery, lessonsQuery] = [
         query(collection(db, 'trading_pnl'), where('userId', '==', user.uid), where('accountId', '==', accountId)),
-        query(collection(db, 'trading_withdrawals'), where('userId', '==', user.uid), where('accountId', '==', accountId)),
-        query(collection(db, 'trading_weekly_lessons'), where('userId', '==', user.uid), where('accountId', '==', accountId))
+        query(
+          collection(db, 'trading_withdrawals'),
+          where('userId', '==', user.uid),
+          where('accountId', '==', accountId)
+        ),
+        query(
+          collection(db, 'trading_weekly_lessons'),
+          where('userId', '==', user.uid),
+          where('accountId', '==', accountId)
+        ),
       ]
 
       const [pnlSnapshot, withdrawSnapshot, lessonsSnapshot] = await Promise.all([
         getDocs(pnlQuery),
         getDocs(withdrawQuery),
-        getDocs(lessonsQuery)
+        getDocs(lessonsQuery),
       ])
 
       const allDeletes = [
-        ...pnlSnapshot.docs.map(d => deleteDoc(d.ref)),
-        ...withdrawSnapshot.docs.map(d => deleteDoc(d.ref)),
-        ...lessonsSnapshot.docs.map(d => deleteDoc(d.ref))
+        ...pnlSnapshot.docs.map((d) => deleteDoc(d.ref)),
+        ...withdrawSnapshot.docs.map((d) => deleteDoc(d.ref)),
+        ...lessonsSnapshot.docs.map((d) => deleteDoc(d.ref)),
       ]
       await Promise.all(allDeletes)
 
       setShowResetModal(false)
-      toast.success(`Successfully reset: ${pnlSnapshot.docs.length} P&L, ${withdrawSnapshot.docs.length} withdrawals, ${lessonsSnapshot.docs.length} weekly lessons`)
+      toast.success(
+        `Successfully reset: ${pnlSnapshot.docs.length} P&L, ${withdrawSnapshot.docs.length} withdrawals, ${lessonsSnapshot.docs.length} weekly lessons`
+      )
       router.push(`${routeBase}/${accountId}`)
     } catch (e) {
       console.error('Error resetting P&L:', e)
@@ -261,158 +292,164 @@ export default function EditTradingAccountPageClient({
     }
   }
 
+  const formCurrency = currencySymbol(formData.currency)
+  const canSave = !isSaving && Boolean(formData.name.trim())
+
   if (isLoading) return <Loading />
 
   if (!account) {
     return (
-      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
-        <div className="text-theme-tertiary">Account not found</div>
-      </div>
+      <PageShell>
+        <EmptyState
+          title="Account not found"
+          description="This account may have been removed or you do not have access."
+          action={<BtnGhost onClick={() => router.push(routeBase)}>Back to {meta.listTitle}</BtnGhost>}
+        />
+      </PageShell>
     )
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push(`${routeBase}/${accountId}`)}
-              className="px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
+    <>
+      <PageShell>
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <BtnGhost onClick={() => router.push(`${routeBase}/${accountId}`)} ariaLabel="Back to dashboard">
+            <FaArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </BtnGhost>
+          {allAccounts.length > 1 && accountId ? (
+            <SelectField
+              value={accountId}
+              onChange={(e) => router.push(`${routeBase}/${e.target.value}/edit`)}
             >
-              <Icon name="arrow-left" size="sm" /> Back
-            </button>
-            {allAccounts.length > 1 && (
-              <select
-                value={accountId}
-                onChange={(e) => router.push(`${routeBase}/${e.target.value}/edit`)}
-                className="px-4 py-2 bg-gray-900/60 border border-yellow-500/30 rounded-lg text-yellow-400 font-medium focus:outline-none focus:border-yellow-500 text-sm cursor-pointer"
-              >
-                {allAccounts.map(acc => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={isSaving || !formData.name.trim()}
-            className="px-5 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center gap-2 text-sm"
-          >
-            <Icon name="save" size="sm" />
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+              {allAccounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
+                </option>
+              ))}
+            </SelectField>
+          ) : null}
         </div>
 
-        <div className="mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-4">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-            Edit Account
-          </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-2">
-            {account.name}
-          </h1>
-          <p className="text-theme-secondary font-medium">
-            Update your account details, strategy, and rules
-          </p>
-        </div>
+        <PageHeader
+          title="Edit account"
+          subtitle={
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="text-slate-400">{account.name}</span>
+              <Badge variant={formData.type === 'real' ? 'real' : 'funded'}>
+                {formData.type === 'real' ? 'Real' : 'Funded'}
+              </Badge>
+              <Badge variant="default">{formData.currency === 'cent' ? 'Cent' : 'USD'}</Badge>
+              {pnlKind === 'bot' ? <Badge variant="info">Bot</Badge> : null}
+              {pnlKind === 'mt5' ? <Badge variant="info">MT5</Badge> : null}
+            </span>
+          }
+          actions={
+            <BtnPrimary onClick={handleSave} disabled={!canSave}>
+              <FaSave className="w-3.5 h-3.5" />
+              {isSaving ? 'Saving…' : 'Save changes'}
+            </BtnPrimary>
+          }
+        />
+
+        <p className="text-sm text-slate-500 -mt-4 mb-8">
+          Update details, objectives, and rules for this {meta.section}. Changes apply immediately after save.
+        </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Basic Info */}
           <div className="space-y-6">
-            <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
-                <Icon name="wallet" size="md" className="text-blue-400" /> Account Details
-              </h2>
-              <div className="space-y-5">
+            <SectionTitle description="Name, currency, capital, and risk limits">Account details</SectionTitle>
+            <Card>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">Account Name</label>
+                  <label className={labelClassName} htmlFor="edit-account-name">
+                    Account name
+                  </label>
                   <input
+                    id="edit-account-name"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Example: Apex 50K, Personal MT5"
-                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Apex 50K, Personal MT5…"
+                    className={inputClassName}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">Currency</label>
-                  <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, currency: 'usd' }))}
-                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                        formData.currency === 'usd'
-                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-theme-primary'
-                          : 'text-theme-tertiary hover:text-theme-secondary'
-                      }`}
-                    >
-                      $ USD
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, currency: 'cent' }))}
-                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                        formData.currency === 'cent'
-                          ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-theme-primary'
-                          : 'text-theme-tertiary hover:text-theme-secondary'
-                      }`}
-                    >
-                      ¢ Cent
-                    </button>
+                  <label className={labelClassName}>Currency</label>
+                  <SegmentedControl
+                    value={formData.currency}
+                    onChange={(currency) => setFormData((prev) => ({ ...prev, currency }))}
+                    options={[
+                      { value: 'usd', label: '$ USD' },
+                      { value: 'cent', label: '¢ Cent' },
+                    ]}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClassName}>Account type</label>
+                  <SegmentedControl
+                    value={formData.type}
+                    onChange={(type) => setFormData((prev) => ({ ...prev, type }))}
+                    options={[
+                      { value: 'real', label: 'Real' },
+                      { value: 'funded', label: 'Funded' },
+                    ]}
+                  />
+                  {formData.type === 'funded' && pnlKind !== 'mt5' ? (
+                    <p className="text-xs text-slate-500 mt-2">Funded accounts do not support withdrawals in P&L.</p>
+                  ) : null}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClassName}>Capital ({formCurrency})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.capital}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, capital: e.target.value }))}
+                      placeholder="0.00"
+                      className={`${inputClassName} tabular-nums`}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClassName}>
+                      {pnlKind === 'mt5' ? 'Profit target' : 'Monthly target'} ({formCurrency})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.target}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, target: e.target.value }))}
+                      placeholder="Optional"
+                      className={`${inputClassName} tabular-nums`}
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">
-                    Capital ({formData.currency === 'cent' ? '¢' : '$'})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.capital}
-                    onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
-                    placeholder="0.00"
-                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">
-                    Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.target}
-                    onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
-                    placeholder="Your profit goal for the month"
-                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">
-                    Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})
-                  </label>
+                  <label className={labelClassName}>Daily max loss ({formCurrency})</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.maxLoss}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
-                    placeholder="Maximum allowed loss per day before locking"
-                    className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                    onChange={(e) => setFormData((prev) => ({ ...prev, maxLoss: e.target.value }))}
+                    placeholder="Optional"
+                    className={`${inputClassName} tabular-nums`}
                   />
-                  <p className="text-xs text-theme-muted mt-2">We’ll warn you when your daily P&amp;L loss reaches this amount.</p>
+                  {pnlKind !== 'mt5' ? (
+                    <p className="text-xs text-slate-500 mt-2">
+                      When daily loss hits this limit, P&L entry is locked and you can log a self punishment.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-500 mt-2">Optional daily drawdown guard for your MT5 log.</p>
+                  )}
                 </div>
 
                 {pnlKind === 'mt5' ? (
                   <div>
-                    <label className="block text-sm text-theme-tertiary mb-2 font-medium">
-                      Daily profit target ({formData.currency === 'cent' ? '¢' : '$'})
-                    </label>
+                    <label className={labelClassName}>Daily profit target ({formCurrency})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -420,172 +457,120 @@ export default function EditTradingAccountPageClient({
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, dailyProfitTarget: e.target.value }))
                       }
-                      placeholder="Optional — net profit goal for the trading day"
-                      className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                      placeholder="Optional"
+                      className={`${inputClassName} tabular-nums`}
                     />
-                    <p className="text-xs text-theme-muted mt-2">
-                      Shown on the MT5 trade log and sent to the AI coach with your other plan fields.
+                    <p className="text-xs text-slate-500 mt-2">
+                      Shown on the MT5 trade log and included in AI coach context.
                     </p>
                   </div>
                 ) : null}
+              </div>
+            </Card>
+          </div>
 
+          <div className="space-y-6">
+            <SectionTitle description="How you trade this account">Strategy & rules</SectionTitle>
+            <Card>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-theme-tertiary mb-2 font-medium">Account Type</label>
-                  <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, type: 'real' }))}
-                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                        formData.type === 'real'
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary'
-                          : 'text-theme-tertiary hover:text-theme-secondary'
-                      }`}
-                    >
-                      <Icon name="wallet" size="sm" />
-                      Real
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, type: 'funded' }))}
-                      className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                        formData.type === 'funded'
-                          ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary'
-                          : 'text-theme-tertiary hover:text-theme-secondary'
-                      }`}
-                    >
-                      <Icon name="chart-line" size="sm" />
-                      Funded
-                    </button>
-                  </div>
+                  <label className={labelClassName}>Strategy</label>
+                  <input
+                    value={formData.strategy}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, strategy: e.target.value }))}
+                    placeholder="ICT, SMC, price action…"
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label className={labelClassName}>Trading rules</label>
+                  <textarea
+                    value={formData.rules}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, rules: e.target.value }))}
+                    placeholder="Max 2 trades per day, 1% risk per trade, no Friday trading…"
+                    rows={10}
+                    className={`${inputClassName} resize-none`}
+                  />
                 </div>
               </div>
-            </div>
-          </div>
+            </Card>
 
-          {/* Right Column - Strategy & Rules */}
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/30 rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-cyan-400 mb-4 flex items-center gap-2">
-                <Icon name="strategy" size="md" /> Strategy
-              </h2>
-              <input
-                value={formData.strategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
-                placeholder="Example: ICT, SMC, Price Action, Scalping"
-                className="w-full px-4 py-3 bg-gray-900/60 border border-cyan-500/30 rounded-xl text-theme-primary focus:outline-none focus:border-cyan-500"
-              />
-              <p className="text-xs text-theme-muted mt-3">Define the trading strategy you use for this account</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-orange-400 mb-4 flex items-center gap-2">
-                <Icon name="rules" size="md" /> Trading Rules
-              </h2>
-              <textarea
-                value={formData.rules}
-                onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
-                placeholder="Define your trading rules for this account...&#10;&#10;Example:&#10;• Max 2 trades per day&#10;• Risk 1% per trade&#10;• No trading on Fridays&#10;• Only trade during London/NY session&#10;• Wait for confirmation before entry"
-                rows={10}
-                className="w-full px-4 py-3 bg-gray-900/60 border border-orange-500/30 rounded-xl text-theme-primary focus:outline-none focus:border-orange-500 resize-none"
-              />
-              <p className="text-xs text-theme-muted mt-3">Set specific rules to follow when trading this account</p>
-            </div>
-
-            {/* Danger Zone - Reset P&L / MT5 trades */}
-            <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/30 rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
-                ⚠️ Danger Zone
-              </h2>
-              <p className="text-sm text-theme-secondary mb-4">
+            <SectionTitle description="Permanent data removal">Danger zone</SectionTitle>
+            <Card className="border-red-500/20 bg-red-500/[0.03]">
+              <InfoBanner variant="danger">
                 {pnlKind === 'mt5'
-                  ? 'Delete every closed trade stored for this MT5 log (Firebase only). Your MetaTrader history is unchanged.'
-                  : 'Reset all P&L data for this account. This will permanently delete all daily entries, trades, and lessons recorded for this account.'}
-              </p>
+                  ? 'Clears every closed trade stored in Firebase for this log. Your MetaTrader history is unchanged.'
+                  : 'Deletes all daily P&L entries, withdrawals, and weekly lessons for this account. This cannot be undone.'}
+              </InfoBanner>
               <button
+                type="button"
                 onClick={() => setShowResetModal(true)}
-                className="px-4 py-2 bg-red-500/20 text-red-300 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-medium"
+                className="mt-4 inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-red-300 border border-red-500/40 hover:bg-red-500/10 transition-colors cursor-pointer"
               >
-                {pnlKind === 'mt5' ? '🗑️ Clear all MT5 trades' : '🗑️ Reset All P&L Data'}
+                {pnlKind === 'mt5' ? 'Clear all MT5 trades' : 'Reset all P&L data'}
               </button>
-            </div>
+            </Card>
           </div>
         </div>
 
-        {/* Bottom Action Buttons */}
-        <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-theme-secondary">
-          <button
-            onClick={() => router.push(`${routeBase}/${accountId}`)}
-            disabled={isSaving}
-            className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-xl hover:bg-theme-card transition-colors disabled:opacity-50 font-medium"
-          >
+        <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-800">
+          <BtnGhost onClick={() => router.push(`${routeBase}/${accountId}`)} disabled={isSaving}>
             Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving || !formData.name.trim()}
-            className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            <Icon name="save" size="sm" />
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+          </BtnGhost>
+          <BtnPrimary onClick={handleSave} disabled={!canSave}>
+            <FaSave className="w-3.5 h-3.5" />
+            {isSaving ? 'Saving…' : 'Save changes'}
+          </BtnPrimary>
         </div>
-      </div>
+      </PageShell>
 
-      {/* Reset P&L Confirmation Modal */}
       {showResetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-theme-secondary/60">
-              <h3 className="text-xl font-bold text-red-400 flex items-center gap-2">
-                {pnlKind === 'mt5' ? '⚠️ Clear MT5 trades' : '⚠️ Reset P&L Data'}
-              </h3>
-              <p className="text-sm text-theme-tertiary mt-1">
-                This action cannot be undone!
-              </p>
-            </div>
-            <div className="p-6 space-y-3">
-              <p className="text-theme-secondary">
-                {pnlKind === 'mt5' ? (
-                  <>
-                    Delete <span className="font-bold text-red-400">all ingested MT5 trades</span> for{' '}
-                    <span className="font-semibold text-theme-primary">{account?.name}</span>?
-                  </>
-                ) : (
-                  <>
-                    Are you sure you want to delete <span className="font-bold text-red-400">all P&L entries</span> for this account?
-                  </>
-                )}
-              </p>
-              <p className="text-sm text-theme-tertiary">
-                {pnlKind === 'mt5' ? (
-                  <>This only removes rows in your web log (Firestore). It does not change MT5.</>
-                ) : (
-                  <>
-                    This will permanently remove all daily profit/loss records, trade counts, and lessons for{' '}
-                    <span className="font-semibold text-theme-primary">{account?.name}</span>.
-                  </>
-                )}
-              </p>
-            </div>
-            <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
-              <button
+        <ModalShell onClose={() => !isResetting && setShowResetModal(false)}>
+          <ModalHeader
+            title={pnlKind === 'mt5' ? 'Clear MT5 trades' : 'Reset P&L data'}
+            subtitle="This action cannot be undone."
+            badges={<Badge variant="warning">{account.name}</Badge>}
+            onClose={() => !isResetting && setShowResetModal(false)}
+          />
+          <div className="px-6 pb-6 space-y-4">
+            <p className="text-sm text-slate-400">
+              {pnlKind === 'mt5' ? (
+                <>
+                  Delete all ingested MT5 trades for <span className="text-slate-200 font-medium">{account.name}</span>?
+                </>
+              ) : (
+                <>
+                  Delete all P&L entries, withdrawals, and weekly lessons for{' '}
+                  <span className="text-slate-200 font-medium">{account.name}</span>?
+                </>
+              )}
+            </p>
+            {pnlKind === 'mt5' ? (
+              <p className="text-xs text-slate-500">Only Firestore rows are removed; MT5 terminal data is not affected.</p>
+            ) : null}
+            <div className="flex gap-3 pt-2">
+              <BtnGhost
+                className="flex-1 justify-center"
                 onClick={() => setShowResetModal(false)}
-                disabled={isResetting}
-                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
               >
                 Cancel
-              </button>
+              </BtnGhost>
               <button
+                type="button"
                 onClick={handleResetPnL}
                 disabled={isResetting}
-                className="px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors cursor-pointer"
               >
-                {isResetting ? 'Resetting...' : pnlKind === 'mt5' ? '🗑️ Yes, clear trades' : '🗑️ Yes, Reset All P&L'}
+                {isResetting
+                  ? 'Working…'
+                  : pnlKind === 'mt5'
+                    ? 'Clear trades'
+                    : 'Reset all data'}
               </button>
             </div>
           </div>
-        </div>
+        </ModalShell>
       )}
-    </div>
+    </>
   )
 }

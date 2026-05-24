@@ -4,8 +4,23 @@ import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../../firebase'
 import { addDoc, collection, deleteDoc, doc, getDocs, getFirestore, orderBy, query, where } from 'firebase/firestore'
-import { FaChartLine, FaPlus, FaWallet } from 'react-icons/fa'
+import { FaArrowRight, FaEdit, FaPlus, FaTrash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import {
+  Badge,
+  BtnGhost,
+  BtnPrimary,
+  Card,
+  EmptyState,
+  inputClassName,
+  labelClassName,
+  ModalHeader,
+  ModalShell,
+  PageHeader,
+  PageShell,
+  SectionTitle,
+  SegmentedControl,
+} from '../_pnl/PnLDashboardUI'
 
 type AccountType = 'real' | 'funded'
 type CurrencyType = 'usd' | 'cent'
@@ -25,11 +40,24 @@ type TradingAccount = {
   pnlCategory?: 'manual' | 'bot'
 }
 
+function currencySymbol(currency: CurrencyType) {
+  return currency === 'cent' ? '¢' : '$'
+}
+
 export default function TradingPnLAccountsPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [accounts, setAccounts] = useState<TradingAccount[]>([])
-  const [formData, setFormData] = useState({ name: '', type: 'real' as AccountType, currency: 'usd' as CurrencyType, capital: '', target: '', maxLoss: '', strategy: '', rules: '' })
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'real' as AccountType,
+    currency: 'usd' as CurrencyType,
+    capital: '',
+    target: '',
+    maxLoss: '',
+    strategy: '',
+    rules: '',
+  })
   const [isCreating, setIsCreating] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState<TradingAccount | null>(null)
@@ -47,25 +75,23 @@ export default function TradingPnLAccountsPage() {
       )
       const snap = await getDocs(q)
       const list = snap.docs
-        .map(d => {
+        .map((d) => {
           const data = d.data() as Omit<TradingAccount, 'id'>
           return { id: d.id, ...data }
         })
-        .filter(a => a.pnlCategory !== 'bot')
+        .filter((a) => a.pnlCategory !== 'bot')
       setAccounts(list)
-    } catch (e: any) {
-      if (e?.code === 'failed-precondition' || e?.message?.includes('index')) {
-        const fallbackQuery = query(
-          collection(db, 'tradingAccounts'),
-          where('userId', '==', user.uid)
-        )
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string }
+      if (err?.code === 'failed-precondition' || err?.message?.includes('index')) {
+        const fallbackQuery = query(collection(db, 'tradingAccounts'), where('userId', '==', user.uid))
         const snap = await getDocs(fallbackQuery)
         const list = snap.docs
-          .map(d => {
+          .map((d) => {
             const data = d.data() as Omit<TradingAccount, 'id'>
             return { id: d.id, ...data }
           })
-          .filter(a => a.pnlCategory !== 'bot')
+          .filter((a) => a.pnlCategory !== 'bot')
         setAccounts(list)
       } else {
         throw e
@@ -117,7 +143,16 @@ export default function TradingPnLAccountsPage() {
         rules: formData.rules.trim() || null,
         createdAt: new Date().toISOString(),
       })
-      setFormData({ name: '', type: formData.type, currency: formData.currency, capital: '', target: '', maxLoss: '', strategy: '', rules: '' })
+      setFormData({
+        name: '',
+        type: formData.type,
+        currency: formData.currency,
+        capital: '',
+        target: '',
+        maxLoss: '',
+        strategy: '',
+        rules: '',
+      })
       toast.success('Account created successfully!')
       await fetchAccounts()
       router.push(`/trading/trading_pnl/${ref.id}`)
@@ -157,264 +192,272 @@ export default function TradingPnLAccountsPage() {
     return [...accounts].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '')).reverse()
   }, [accounts])
 
+  const formCurrency = currencySymbol(formData.currency)
+
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-            Trading Accounts
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
-            <span>Your Accounts</span>
-            <FaChartLine className="w-10 h-10 text-yellow-400" />
-          </h1>
-          <p className="text-xl text-theme-secondary font-medium">
-            Choose an account to view the P&amp;L calendar
-          </p>
-        </div>
+    <>
+      <PageShell>
+        <PageHeader
+          title="Trading P&L"
+          subtitle="Manage manual trading accounts and open daily performance dashboards."
+          actions={
+            <Badge variant="info">{sortedAccounts.length} account{sortedAccounts.length === 1 ? '' : 's'}</Badge>
+          }
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden">
-            <div className="p-4 border-b border-theme-secondary flex items-center justify-between">
-              <div>
-                <h2 className="text-theme-primary font-semibold">Accounts</h2>
-                <p className="text-xs text-theme-tertiary">Click to open P&amp;L</p>
-              </div>
-              <span className="text-xs text-theme-muted">{sortedAccounts.length}</span>
-            </div>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <div className="xl:col-span-7 space-y-4">
+            <SectionTitle description="Select an account to view overview, charts, and calendar">
+              Your accounts
+            </SectionTitle>
 
-            <div className="p-4 space-y-3">
+            <Card padding={false} className="overflow-hidden">
               {sortedAccounts.length === 0 ? (
-                <div className="text-sm text-theme-tertiary">No accounts yet. Create one to start.</div>
+                <div className="p-6">
+                  <EmptyState
+                    title="No accounts yet"
+                    description="Create your first trading account to start tracking daily P&L, objectives, and statistics."
+                  />
+                </div>
               ) : (
-                sortedAccounts.map(acc => (
-                  <div
-                    key={acc.id}
-                    className="w-full text-left px-4 py-4 rounded-xl border bg-black/20 border-theme-secondary text-gray-200 hover:bg-black/30 hover:border-gray-600 transition-colors"
-                  >
-                    <button
-                      onClick={() => router.push(`/trading/trading_pnl/${acc.id}`)}
-                      className="w-full text-left"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="font-semibold text-theme-primary">{acc.name}</div>
-                          {acc.strategy && (
-                            <div className="text-xs text-cyan-400 mt-0.5">📊 {acc.strategy}</div>
-                          )}
-                          <div className="text-[11px] text-theme-muted font-mono break-all">{acc.id}</div>
-                          <div className="text-xs text-theme-tertiary mt-1">
-                            Capital: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.capital || 0).toFixed(2)}
-                            {acc.target && acc.target > 0 && (
-                              <span className="ml-2 text-indigo-400">| 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.target).toFixed(2)}</span>
-                            )}
+                <ul className="divide-y divide-slate-800">
+                  {sortedAccounts.map((acc) => {
+                    const sym = currencySymbol(acc.currency)
+                    return (
+                      <li key={acc.id} className="p-4 hover:bg-slate-800/30 transition-colors">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/trading/trading_pnl/${acc.id}`)}
+                          className="w-full text-left cursor-pointer group"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-base font-semibold text-slate-50 group-hover:text-emerald-400 transition-colors">
+                                  {acc.name}
+                                </span>
+                                <FaArrowRight className="w-3 h-3 text-slate-600 group-hover:text-emerald-400 shrink-0" />
+                              </div>
+                              {acc.strategy ? (
+                                <p className="text-xs text-slate-400 mt-1 truncate">Strategy: {acc.strategy}</p>
+                              ) : null}
+                              <p className="text-xs text-slate-500 mt-2 tabular-nums">
+                                Capital {sym}
+                                {Number(acc.capital || 0).toFixed(2)}
+                                {acc.target && acc.target > 0 ? (
+                                  <span className="text-slate-400">
+                                    {' '}
+                                    · Target {sym}
+                                    {Number(acc.target).toFixed(2)}
+                                  </span>
+                                ) : null}
+                                {acc.maxLoss && acc.maxLoss > 0 ? (
+                                  <span className="text-slate-400">
+                                    {' '}
+                                    · Max loss/day {sym}
+                                    {Number(acc.maxLoss).toFixed(2)}
+                                  </span>
+                                ) : null}
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                              <Badge variant={acc.type === 'real' ? 'real' : 'funded'}>
+                                {acc.type === 'real' ? 'Real' : 'Funded'}
+                              </Badge>
+                              <Badge variant="default">{acc.currency === 'cent' ? 'Cent' : 'USD'}</Badge>
+                            </div>
                           </div>
+                        </button>
+                        <div className="mt-3 flex items-center gap-2">
+                          <BtnGhost
+                            className="!px-3 !py-1.5 !text-xs"
+                            onClick={() => router.push(`/trading/trading_pnl/${acc.id}/edit`)}
+                          >
+                            <FaEdit className="w-3 h-3" /> Edit
+                          </BtnGhost>
+                          <button
+                            type="button"
+                            onClick={() => openDeleteModal(acc)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer"
+                          >
+                            <FaTrash className="w-3 h-3" /> Delete
+                          </button>
                         </div>
-                        <div className="flex flex-col gap-1 items-end">
-                          <div className={`text-xs px-3 py-1 rounded-full border ${
-                            acc.type === 'real'
-                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-                          }`}>
-                            {acc.type === 'real' ? 'Real' : 'Funded'}
-                          </div>
-                          <div className={`text-xs px-3 py-1 rounded-full border ${
-                            acc.currency === 'cent'
-                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                              : 'bg-green-500/20 text-green-300 border-green-500/30'
-                          }`}>
-                            {acc.currency === 'cent' ? '¢ Cent' : '$ USD'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-xs text-yellow-300">Open P&amp;L →</div>
-                    </button>
-                    <div className="mt-3 flex items-center gap-2">
-                      <button
-                        onClick={() => router.push(`/trading/trading_pnl/${acc.id}/edit`)}
-                        className="px-3 py-1.5 rounded-lg bg-theme-card/60 border border-theme-secondary text-gray-200 hover:bg-theme-card transition-colors text-xs"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(acc)}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-200 border border-red-500/40 hover:bg-red-500/30 transition-colors text-xs"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
+                      </li>
+                    )
+                  })}
+                </ul>
               )}
-            </div>
+            </Card>
           </div>
 
-          <div className="lg:col-span-5 bg-theme-card border border-yellow-500/20 rounded-2xl p-5">
-            <h2 className="text-lg font-semibold text-theme-primary mb-2">Create Account</h2>
-            <p className="text-xs text-theme-tertiary mb-4">
-              Add each trading account you want to track.
-            </p>
+          <div className="xl:col-span-5">
+            <SectionTitle description="Set rules and limits before you start logging trades">
+              New account
+            </SectionTitle>
+            <Card>
+              <div className="space-y-4">
+                <div>
+                  <label className={labelClassName} htmlFor="account-name">
+                    Account name
+                  </label>
+                  <input
+                    id="account-name"
+                    value={formData.name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Apex 50K, Personal MT5…"
+                    className={inputClassName}
+                  />
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mb-2">Account name</label>
-            <input
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Example: Apex 50K, Personal MT5"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-            />
+                <div>
+                  <label className={labelClassName}>Currency</label>
+                  <SegmentedControl
+                    value={formData.currency}
+                    onChange={(currency) => setFormData((prev) => ({ ...prev, currency }))}
+                    options={[
+                      { value: 'usd', label: '$ USD' },
+                      { value: 'cent', label: '¢ Cent' },
+                    ]}
+                  />
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Currency</label>
-            <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, currency: 'usd' }))}
-                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                  formData.currency === 'usd'
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
-                }`}
-              >
-                $ USD
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, currency: 'cent' }))}
-                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                  formData.currency === 'cent'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
-                }`}
-              >
-                ¢ Cent
-              </button>
-            </div>
+                <div>
+                  <label className={labelClassName}>Account type</label>
+                  <SegmentedControl
+                    value={formData.type}
+                    onChange={(type) => setFormData((prev) => ({ ...prev, type }))}
+                    options={[
+                      { value: 'real', label: 'Real' },
+                      { value: 'funded', label: 'Funded' },
+                    ]}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Funded accounts do not support withdrawals in P&L.</p>
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Capital ({formData.currency === 'cent' ? '¢' : '$'})</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.capital}
-              onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
-              placeholder="0.00"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-            />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClassName}>Capital ({formCurrency})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.capital}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, capital: e.target.value }))}
+                      placeholder="0.00"
+                      className={`${inputClassName} tabular-nums`}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClassName}>Profit target ({formCurrency})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.target}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, target: e.target.value }))}
+                      placeholder="Optional"
+                      className={`${inputClassName} tabular-nums`}
+                    />
+                  </div>
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.target}
-              onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
-              placeholder="Your profit goal for the month"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-            />
+                <div>
+                  <label className={labelClassName}>Daily max loss ({formCurrency})</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.maxLoss}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, maxLoss: e.target.value }))}
+                    placeholder="Optional"
+                    className={`${inputClassName} tabular-nums`}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    When daily loss hits this limit, P&L entry is locked and you can log a self punishment.
+                  </p>
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.maxLoss}
-              onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
-              placeholder="Maximum allowed loss per day before locking"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-            />
-            <p className="text-xs text-theme-muted mt-2">If your daily P&amp;L loss reaches this amount, we’ll warn you, lock that day, and prompt a self punishment.</p>
+                <div>
+                  <label className={labelClassName}>Strategy</label>
+                  <input
+                    value={formData.strategy}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, strategy: e.target.value }))}
+                    placeholder="ICT, SMC, price action…"
+                    className={inputClassName}
+                  />
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Account type</label>
-            <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, type: 'real' }))}
-                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                  formData.type === 'real'
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
-                }`}
-              >
-                <FaWallet className="w-4 h-4" />
-                Real
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, type: 'funded' }))}
-                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                  formData.type === 'funded'
-                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
-                }`}
-              >
-                <FaChartLine className="w-4 h-4" />
-                Funded
-              </button>
-            </div>
+                <div>
+                  <label className={labelClassName}>Trading rules</label>
+                  <textarea
+                    value={formData.rules}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, rules: e.target.value }))}
+                    placeholder="Max 2 trades per day, 1% risk per trade…"
+                    rows={4}
+                    className={`${inputClassName} resize-none`}
+                  />
+                </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Strategy</label>
-            <input
-              value={formData.strategy}
-              onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
-              placeholder="Example: ICT, SMC, Price Action, Scalping"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
-            />
-
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Trading Rules</label>
-            <textarea
-              value={formData.rules}
-              onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
-              placeholder="Define your trading rules for this account...&#10;Example:&#10;• Max 2 trades per day&#10;• Risk 1% per trade&#10;• No trading on Fridays"
-              rows={4}
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 resize-none"
-            />
-
-            <button
-              onClick={handleCreate}
-              disabled={isCreating || !formData.name.trim()}
-              className="mt-4 w-full px-5 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <FaPlus />
-              {isCreating ? 'Creating...' : 'Create Account'}
-            </button>
+                <BtnPrimary
+                  className="w-full"
+                  onClick={handleCreate}
+                  disabled={isCreating || !formData.name.trim()}
+                >
+                  <FaPlus className="w-4 h-4" />
+                  {isCreating ? 'Creating…' : 'Create account'}
+                </BtnPrimary>
+              </div>
+            </Card>
           </div>
         </div>
-      </div>
+      </PageShell>
 
       {isDeleteModalOpen && deletingAccount && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-theme-secondary/60">
-              <h3 className="text-xl font-bold text-theme-primary">Delete account</h3>
-              <p className="text-sm text-theme-tertiary mt-1">
-                This deletes the account. P&amp;L entries under it will remain.
-              </p>
-            </div>
-            <div className="p-6 space-y-3">
-              <div className="text-sm text-theme-secondary">
-                <span className="text-theme-tertiary">Account:</span>{' '}
-                <span className="font-semibold text-theme-primary">{deletingAccount.name}</span>
-              </div>
-              <div className="text-xs text-theme-muted font-mono break-all">{deletingAccount.id}</div>
-            </div>
-            <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
+        <ModalShell
+          onClose={() => {
+            if (!isDeleting) {
+              setIsDeleteModalOpen(false)
+              setDeletingAccount(null)
+            }
+          }}
+        >
+          <ModalHeader
+            title="Delete account"
+            subtitle="The account record will be removed. Existing P&L entries may remain in your history."
+            badges={<Badge variant="warning">{deletingAccount.name}</Badge>}
+            onClose={() => {
+              if (!isDeleting) {
+                setIsDeleteModalOpen(false)
+                setDeletingAccount(null)
+              }
+            }}
+          />
+          <div className="px-6 pb-6 space-y-4">
+            <p className="text-sm text-slate-400">
+              This action cannot be undone. Consider exporting data before deleting if you need a backup.
+            </p>
+            <div className="flex gap-3">
+              <BtnGhost
+                className="flex-1 justify-center"
+                onClick={() => {
+                  setIsDeleteModalOpen(false)
+                  setDeletingAccount(null)
+                }}
               >
                 Cancel
-              </button>
+              </BtnGhost>
               <button
+                type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors cursor-pointer"
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'Deleting…' : 'Delete account'}
               </button>
             </div>
           </div>
-        </div>
+        </ModalShell>
       )}
-    </div>
+    </>
   )
 }

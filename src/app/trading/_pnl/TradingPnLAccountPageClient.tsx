@@ -7,9 +7,22 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, quer
 import { FaArrowLeft, FaEdit } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import {
+  Badge,
+  BtnGhost,
+  BtnPrimary,
+  Card,
   DashboardTabs,
   DetailField,
+  InfoBanner,
+  inputClassName,
+  labelClassName,
+  ModalHeader,
+  ModalShell,
   ObjectiveCard,
+  PageHeader,
+  PageShell,
+  SectionTitle,
+  SelectField,
   SemiCircleGauge,
   StatTile,
   SummaryMetricCard,
@@ -790,66 +803,46 @@ export default function TradingPnLAccountPageClient({
     targetAmount > 0 && cumulativeData.allTimePnL >= targetAmount ? 'Target Met' : 'Active'
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28 lg:pt-32">
-        {/* Top bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => router.push(routeBase)}
-              className="p-2 rounded-lg border border-theme-secondary bg-theme-card text-theme-secondary hover:text-theme-primary hover:border-slate-500 transition-colors"
-              aria-label="Back to accounts"
-            >
-              <FaArrowLeft className="w-4 h-4" />
-            </button>
-            {allAccounts.length > 1 && (
-              <select
-                value={accountId}
-                onChange={(e) => router.push(`${routeBase}/${e.target.value}`)}
-                className="px-3 py-2 min-w-[200px] bg-theme-card border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-sky-500/50 cursor-pointer"
-              >
-                {allAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          <button
-            onClick={() => router.push(`${routeBase}/${accountId}/edit`)}
-            className="px-4 py-2 rounded-lg border border-theme-secondary bg-theme-card text-sm font-medium text-theme-primary hover:border-sky-500/40 transition-colors flex items-center gap-2"
-          >
-            <FaEdit className="w-3.5 h-3.5" /> Edit account
-          </button>
+    <>
+      <PageShell>
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <BtnGhost onClick={() => router.push(routeBase)} ariaLabel="Back to accounts">
+            <FaArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Accounts</span>
+          </BtnGhost>
+          {allAccounts.length > 1 && (
+            <SelectField value={accountId || ''} onChange={(e) => router.push(`${routeBase}/${e.target.value}`)}>
+              {allAccounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.name} ({acc.type === 'real' ? 'Real' : 'Funded'})
+                </option>
+              ))}
+            </SelectField>
+          )}
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary tracking-tight">{accountLabel}</h1>
-          <p className="text-sm text-theme-tertiary mt-1">
-            {accountTypeLabel} · {account?.currency === 'cent' ? 'Cent account' : 'USD account'}
-            {isBotPnL ? ' · Bot P&L' : ''}
-          </p>
-        </div>
-
-        {/* Account details card */}
-        <div className="rounded-xl border border-theme-secondary bg-theme-card p-5 sm:p-6 mb-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-4 border-b border-theme-secondary">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-theme-primary">Account</span>
-              <span className="text-xs font-mono text-theme-muted">{accountId?.slice(0, 12)}…</span>
-            </div>
-            <span
-              className={`text-xs font-semibold px-3 py-1 rounded-md ${
-                accountStatusLabel === 'Target Met'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-              }`}
-            >
-              {accountStatusLabel}
+        <PageHeader
+          title={accountLabel}
+          subtitle={
+            <span className="flex flex-wrap items-center gap-2">
+              <Badge variant={account?.type === 'real' ? 'real' : 'funded'}>{accountTypeLabel}</Badge>
+              <Badge variant="default">{account?.currency === 'cent' ? 'Cent' : 'USD'}</Badge>
+              {isBotPnL ? <Badge variant="info">Bot P&L</Badge> : null}
             </span>
+          }
+          actions={
+            <BtnGhost onClick={() => router.push(`${routeBase}/${accountId}/edit`)}>
+              <FaEdit className="w-3.5 h-3.5" /> Edit
+            </BtnGhost>
+          }
+        />
+
+        <Card className="mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-5 border-b border-slate-800">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">Account details</span>
+            <Badge variant={accountStatusLabel === 'Target Met' ? 'success' : 'warning'}>{accountStatusLabel}</Badge>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
             <DetailField label="Type" value={accountTypeLabel} />
             <DetailField label="Initial balance" value={`${currencySymbol}${capitalAmount.toFixed(2)}`} />
             <DetailField
@@ -861,9 +854,9 @@ export default function TradingPnLAccountPageClient({
               value={maxLossAmount > 0 ? `${currencySymbol}${maxLossAmount.toFixed(2)}` : '—'}
             />
           </div>
-        </div>
+        </Card>
 
-        <div className="mb-8">
+        <div className="mb-8 overflow-x-auto">
           <DashboardTabs
             active={activeTab}
             onChange={(id) => setActiveTab(id as 'overview' | 'calendar' | 'stats' | 'charts')}
@@ -871,7 +864,7 @@ export default function TradingPnLAccountPageClient({
               { id: 'overview', label: 'Overview' },
               { id: 'charts', label: 'Charts' },
               { id: 'calendar', label: 'Calendar' },
-              { id: 'stats', label: 'Stats & history' },
+              { id: 'stats', label: 'Statistics' },
             ]}
           />
         </div>
@@ -884,22 +877,25 @@ export default function TradingPnLAccountPageClient({
               <SummaryMetricCard
                 label="Balance"
                 value={`${currencySymbol}${balanceAmount.toFixed(2)}`}
-                active
-                valueClassName={balanceAmount >= 0 ? 'text-theme-primary' : 'text-red-400'}
+                highlight
+                valueClassName={balanceAmount >= 0 ? 'text-slate-50' : 'text-red-400'}
+                change={allowsWithdrawals ? 'Capital + P&L − withdrawals' : 'Capital + P&L'}
               />
               <SummaryMetricCard
                 label="Month P&L"
                 value={`${currencySymbol}${state.monthStats.totalPnL.toFixed(2)}`}
                 valueClassName={state.monthStats.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}
+                change={monthName}
               />
               <SummaryMetricCard
                 label="Cumulative P&L"
                 value={`${currencySymbol}${cumulativeData.allTimePnL.toFixed(2)}`}
                 valueClassName={cumulativeData.allTimePnL >= 0 ? 'text-emerald-400' : 'text-red-400'}
+                change="All time"
               />
             </div>
 
-            <h2 className="text-lg font-semibold text-theme-primary mb-4">Trading objectives</h2>
+            <SectionTitle description="Track progress against your account rules">Trading objectives</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {targetAmount > 0 && (
                 <ObjectiveCard
@@ -950,7 +946,7 @@ export default function TradingPnLAccountPageClient({
                             const punishment = 'No trading tomorrow'
                             router.push(`/self_punishment?${encodeQuery({ ruleBroken, punishment, date: today, expiresAt: tomorrow })}`)
                           }}
-                          className="mt-3 w-full px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
+                          className="mt-3 w-full px-4 py-2 rounded-lg bg-red-600/90 hover:bg-red-500 text-white text-xs font-semibold transition-colors cursor-pointer"
                         >
                           Log punishment
                         </button>
@@ -978,9 +974,9 @@ export default function TradingPnLAccountPageClient({
               )}
 
               <ObjectiveCard title="Trading days (this month)" hint="Days with at least one P&L entry">
-                <div className="text-center py-6">
-                  <div className="text-4xl font-bold text-sky-400 tabular-nums">{monthTradingDays}</div>
-                  <p className="text-sm text-theme-tertiary mt-2">days logged in {monthName}</p>
+                <div className="text-center py-4">
+                  <div className="text-4xl font-semibold text-emerald-400 tabular-nums">{monthTradingDays}</div>
+                  <p className="text-sm text-slate-500 mt-2">days logged · {monthName}</p>
                 </div>
               </ObjectiveCard>
 
@@ -999,79 +995,60 @@ export default function TradingPnLAccountPageClient({
 
         {(account?.strategy || account?.rules) && (
           <>
-            {/* Floating Strategy Button */}
             <button
+              type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-sky-600 text-white px-3 py-4 rounded-l-xl shadow-lg hover:bg-sky-500 transition-all flex flex-col items-center gap-1"
+              className="fixed right-4 bottom-6 z-40 px-4 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-sm font-semibold shadow-lg shadow-emerald-900/30 transition-colors cursor-pointer"
             >
-              <span className="text-lg">📊</span>
-              <span className="text-xs font-bold writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>Strategy</span>
+              Strategy
             </button>
 
-            {/* Sidebar Overlay */}
             {isSidebarOpen && (
-              <div
-                className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
-                onClick={() => setIsSidebarOpen(false)}
-              />
+              <div className="fixed inset-0 bg-slate-950/70 z-40" onClick={() => setIsSidebarOpen(false)} />
             )}
 
-            {/* Sliding Sidebar */}
             <div
-              className={`fixed top-0 right-0 h-full w-full max-w-md bg-theme-primary border-l border-theme-secondary shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+              className={`fixed top-0 right-0 h-full w-full max-w-md bg-slate-900 border-l border-slate-800 shadow-2xl z-50 transform transition-transform duration-300 ease-out ${
                 isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
               }`}
             >
               <div className="h-full overflow-y-auto">
-                {/* Sidebar Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-4 flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-yellow-400 flex items-center gap-2">
-                    📊 Strategy & Rules
-                  </h2>
+                <div className="sticky top-0 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-5 py-4 flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-slate-100">Strategy & rules</h2>
                   <button
+                    type="button"
                     onClick={() => setIsSidebarOpen(false)}
-                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-theme-tertiary hover:text-theme-primary"
+                    className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 cursor-pointer"
+                    aria-label="Close"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
 
-                {/* Sidebar Content */}
-                <div className="p-5 space-y-6">
+                <div className="p-5 space-y-4">
                   {account?.strategy && (
-                    <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/30 rounded-2xl p-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-lg">📊</span>
-                        <h3 className="text-sm font-bold text-cyan-400">Strategy</h3>
-                      </div>
-                      <p className="text-theme-primary font-medium">{account.strategy}</p>
-                    </div>
+                    <Card>
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">Strategy</div>
+                      <p className="text-sm text-slate-200 leading-relaxed">{account.strategy}</p>
+                    </Card>
                   )}
-
                   {account?.rules && (
-                    <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-lg">📋</span>
-                        <h3 className="text-sm font-bold text-orange-400">Trading Rules</h3>
-                      </div>
-                      <p className="text-theme-secondary text-sm whitespace-pre-wrap leading-relaxed">{account.rules}</p>
-                    </div>
+                    <Card>
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">Trading rules</div>
+                      <p className="text-sm text-slate-400 whitespace-pre-wrap leading-relaxed">{account.rules}</p>
+                    </Card>
                   )}
-
-                  {/* Quick Actions */}
-                  <div className="pt-4 border-t border-theme-secondary">
-                    <button
-                      onClick={() => {
-                        setIsSidebarOpen(false)
-                        router.push(`${routeBase}/${accountId}/edit`)
-                      }}
-                      className="w-full px-4 py-3 bg-theme-card border border-theme-secondary text-theme-primary rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
-                    >
-                      <FaEdit className="w-4 h-4" /> Edit Strategy & Rules
-                    </button>
-                  </div>
+                  <BtnGhost
+                    className="w-full justify-center"
+                    onClick={() => {
+                      setIsSidebarOpen(false)
+                      router.push(`${routeBase}/${accountId}/edit`)
+                    }}
+                  >
+                    <FaEdit className="w-4 h-4" /> Edit strategy & rules
+                  </BtnGhost>
                 </div>
               </div>
             </div>
@@ -1079,131 +1056,65 @@ export default function TradingPnLAccountPageClient({
         )}
 
         {activeTab === 'stats' && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            {
-              label: 'Total P&L',
-              value: `${currencySymbol}${cumulativeData.allTimePnL.toFixed(2)}`,
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ),
-              gradient: cumulativeData.allTimePnL >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600',
-              isMain: true
-            },
-            {
-              label: 'Withdraw',
-              value: `${currencySymbol}${cumulativeData.allTimeWithdrawals.toFixed(2)}`,
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm-7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              ),
-              gradient: 'from-orange-500 to-orange-600'
-            },
-            {
-              label: 'Win Days',
-              value: cumulativeData.winDays.toString(),
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ),
-              gradient: 'from-green-500 to-green-600'
-            },
-            {
-              label: 'Loss Days',
-              value: cumulativeData.lossDays.toString(),
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ),
-              gradient: 'from-red-500 to-red-600'
-            },
-            {
-              label: 'Total Trades',
-              value: cumulativeData.totalTrades.toString(),
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              ),
-              gradient: 'from-blue-500 to-blue-600'
-            },
-            {
-              label: 'Winning Trades',
-              value: cumulativeData.winTrades.toString(),
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ),
-              gradient: 'from-emerald-500 to-emerald-600'
-            },
-            {
-              label: 'Losing Trades',
-              value: cumulativeData.lossTrades.toString(),
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ),
-              gradient: 'from-red-500 to-red-600'
-            },
-            {
-              label: 'Win Rate',
-              value: `${cumulativeData.winRate.toFixed(1)}%`,
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-              ),
-              gradient: cumulativeData.winRate >= 50 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'
-            },
-            {
-              label: 'Best Day',
-              value: `${currencySymbol}${cumulativeData.bestDay.toFixed(0)}`,
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              ),
-              gradient: 'from-purple-500 to-purple-600'
-            },
-            {
-              label: 'Worst Day',
-              value: `${currencySymbol}${cumulativeData.worstDay.toFixed(0)}`,
-              icon: (
-                <svg className="w-6 h-6 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                </svg>
-              ),
-              gradient: 'from-orange-500 to-orange-600'
-            }
-          ].filter(stat => {
-            if (!allowsWithdrawals && stat.label === 'Withdraw') return false
-            if (isBotPnL && ['Total Trades', 'Winning Trades', 'Losing Trades'].includes(stat.label)) return false
-            return true
-          }).map((stat) => (
-            <StatTile
-              key={stat.label}
-              label={stat.label}
-              value={stat.value}
-              sub={stat.isMain ? 'All time' : undefined}
-            />
-          ))}
-        </div>
+          <>
+            <SectionTitle description="Performance metrics across all recorded sessions">Statistics</SectionTitle>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+              {[
+                {
+                  label: 'Total P&L',
+                  value: `${currencySymbol}${cumulativeData.allTimePnL.toFixed(2)}`,
+                  sub: 'All time',
+                  trend: cumulativeData.allTimePnL >= 0 ? ('up' as const) : ('down' as const),
+                },
+                ...(allowsWithdrawals
+                  ? [{
+                      label: 'Withdrawals',
+                      value: `${currencySymbol}${cumulativeData.allTimeWithdrawals.toFixed(2)}`,
+                      sub: 'All time',
+                      trend: 'neutral' as const,
+                    }]
+                  : []),
+                { label: 'Win days', value: String(cumulativeData.winDays), sub: 'All time', trend: 'up' as const },
+                { label: 'Loss days', value: String(cumulativeData.lossDays), sub: 'All time', trend: 'down' as const },
+                ...(!isBotPnL
+                  ? [
+                      { label: 'Total trades', value: String(cumulativeData.totalTrades), sub: 'All time', trend: 'neutral' as const },
+                      { label: 'Winning trades', value: String(cumulativeData.winTrades), sub: 'All time', trend: 'up' as const },
+                      { label: 'Losing trades', value: String(cumulativeData.lossTrades), sub: 'All time', trend: 'down' as const },
+                    ]
+                  : []),
+                {
+                  label: 'Win rate',
+                  value: `${cumulativeData.winRate.toFixed(1)}%`,
+                  sub: 'By day',
+                  trend: cumulativeData.winRate >= 50 ? ('up' as const) : ('down' as const),
+                },
+                {
+                  label: 'Best day',
+                  value: `${currencySymbol}${cumulativeData.bestDay.toFixed(0)}`,
+                  sub: 'Single session',
+                  trend: 'up' as const,
+                },
+                {
+                  label: 'Worst day',
+                  value: `${currencySymbol}${cumulativeData.worstDay.toFixed(0)}`,
+                  sub: 'Single session',
+                  trend: 'down' as const,
+                },
+              ].map((stat) => (
+                <StatTile key={stat.label} label={stat.label} value={stat.value} sub={stat.sub} trend={stat.trend} />
+              ))}
+            </div>
+          </>
         )}
 
         {activeTab === 'calendar' && (
-        <div className="rounded-xl border border-theme-secondary bg-theme-card overflow-hidden shadow-sm">
-          <div className="border-b border-theme-secondary px-5 py-4">
+        <Card padding={false} className="overflow-hidden">
+          <div className="border-b border-slate-800 px-5 py-4">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => changeMonth(-1)}
-                className="p-2 rounded-lg border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-slate-500 transition-colors"
+                className="p-2 rounded-lg border border-slate-800 text-slate-400 hover:text-slate-100 hover:border-slate-600 transition-colors cursor-pointer"
                 aria-label="Previous month"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1211,7 +1122,7 @@ export default function TradingPnLAccountPageClient({
                 </svg>
               </button>
 
-              <h2 className="text-lg font-semibold text-theme-primary">{monthName}</h2>
+              <h2 className="text-base font-semibold text-slate-100">{monthName}</h2>
 
               <button
                 onClick={() => changeMonth(1)}
@@ -1228,7 +1139,7 @@ export default function TradingPnLAccountPageClient({
           <div className="p-5 sm:p-6">
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-theme-muted font-medium text-xs py-2 uppercase tracking-wide">
+                <div key={day} className="text-center text-slate-500 font-medium text-[11px] py-2 uppercase tracking-wider">
                   {day}
                 </div>
               ))}
@@ -1253,18 +1164,18 @@ export default function TradingPnLAccountPageClient({
                       <button
                         key={day}
                         onClick={() => handleDateClick(day)}
-                        className={`aspect-square p-2 rounded-lg border transition-all duration-200 ${
+                        className={`aspect-square p-2 rounded-xl border transition-all duration-200 cursor-pointer ${
                           isWeekend
-                            ? 'border-theme-secondary/50 bg-theme-secondary/30 opacity-60'
+                            ? 'border-slate-800/50 bg-slate-900/30 opacity-50'
                             : isToday
-                              ? 'border-sky-500/60 bg-sky-500/10 ring-1 ring-sky-500/30'
+                              ? 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/25'
                               : dayData
                                 ? dayData.amount >= 0
-                                  ? 'border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10'
-                                  : 'border-red-500/40 bg-red-500/5 hover:bg-red-500/10'
+                                  ? 'border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/10'
+                                  : 'border-red-500/30 bg-red-500/[0.06] hover:bg-red-500/10'
                                 : dayWithdrawals > 0
-                                  ? 'border-orange-500/40 bg-orange-500/5 hover:bg-orange-500/10'
-                                  : 'border-theme-secondary bg-theme-card hover:border-slate-500/50'
+                                  ? 'border-amber-500/30 bg-amber-500/[0.06] hover:bg-amber-500/10'
+                                  : 'border-slate-800 bg-slate-900/50 hover:border-slate-600'
                         }`}
                       >
                         <div className="flex flex-col items-center justify-center h-full">
@@ -1272,8 +1183,8 @@ export default function TradingPnLAccountPageClient({
                             isWeekend
                               ? 'text-theme-muted'
                               : isToday
-                                ? 'text-sky-400'
-                                : 'text-theme-secondary'
+                                ? 'text-emerald-400'
+                                : 'text-slate-400'
                           }`}>
                             {day}
                           </div>
@@ -1321,11 +1232,11 @@ export default function TradingPnLAccountPageClient({
                     const lessonText = state.weeklyLessons[wkKey] || ''
                     return (
                       <>
-                        <div className="col-span-7 py-2 px-3 rounded-lg bg-theme-card/50 border border-theme-secondary text-right flex items-center justify-between gap-2">
+                        <div className="col-span-7 py-2.5 px-3 rounded-xl bg-slate-900/80 border border-slate-800 text-right flex items-center justify-between gap-2">
                           <button
                             type="button"
                             onClick={() => openWeekLessonModal(rowIndex)}
-                            className="flex items-center gap-2 py-1.5 px-3 rounded-lg border border-yellow-500/30 hover:bg-yellow-500/10 text-yellow-400 text-xs font-medium transition-colors"
+                            className="flex items-center gap-2 py-1.5 px-3 rounded-lg border border-slate-700 hover:border-emerald-500/40 hover:bg-emerald-500/5 text-slate-300 text-xs font-medium transition-colors cursor-pointer"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -1340,9 +1251,9 @@ export default function TradingPnLAccountPageClient({
                           </div>
                         </div>
                         {lessonText && (
-                          <div className="col-span-7 py-2 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-left">
-                            <div className="text-xs text-theme-tertiary font-medium mb-1">Lessons learned</div>
-                            <p className="text-sm text-theme-secondary whitespace-pre-wrap line-clamp-2">{lessonText}</p>
+                          <div className="col-span-7 py-2.5 px-3 rounded-xl bg-slate-900/50 border border-slate-800 text-left">
+                            <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-1">Lessons learned</div>
+                            <p className="text-sm text-slate-400 whitespace-pre-wrap line-clamp-2">{lessonText}</p>
                           </div>
                         )}
                       </>
@@ -1352,67 +1263,54 @@ export default function TradingPnLAccountPageClient({
               ))}
             </div>
           </div>
-        </div>
+        </Card>
         )}
-      </div>
+      </PageShell>
 
       {selectedDate && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-theme-card border border-theme-secondary rounded-2xl max-w-md w-full shadow-2xl animate-slide-up">
-            <div className="border-b border-theme-secondary p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      account?.type === 'real'
-                        ? 'bg-blue-500/30 text-blue-300 border border-blue-400/50'
-                        : 'bg-yellow-500/30 text-yellow-300 border border-yellow-400/50'
-                    }`}>
-                      {account?.type === 'real' ? 'Real Account' : 'Funded Account'}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-theme-primary">
-                    {new Date(selectedDate).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </h2>
-                  <p className="text-sm text-theme-tertiary mt-1">
-                    {modalMode === 'choice'
-                      ? 'Add entry or record a withdrawal'
-                      : modalMode === 'withdraw'
-                        ? 'Record withdrawal'
-                        : !isEditing && formData.amount
-                          ? 'Trading Summary'
-                          : isEditing && formData.amount
-                            ? 'Edit Entry'
-                            : allowsWithdrawals
-                              ? 'New Entry'
-                              : 'Add P&L Entry'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedDate(null)
-                    setIsEditing(false)
-                    setModalMode(allowsWithdrawals ? 'choice' : 'entry')
-                    setWithdrawAmount('')
-                  }}
-                  className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
-                >
-                  <svg className="w-6 h-6 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+        <ModalShell
+          onClose={() => {
+            setSelectedDate(null)
+            setIsEditing(false)
+            setModalMode(allowsWithdrawals ? 'choice' : 'entry')
+            setWithdrawAmount('')
+          }}
+        >
+            <ModalHeader
+              title={new Date(selectedDate!).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+              subtitle={
+                modalMode === 'choice'
+                  ? 'Add entry or record a withdrawal'
+                  : modalMode === 'withdraw'
+                    ? 'Record withdrawal'
+                    : !isEditing && formData.amount
+                      ? 'Trading summary'
+                      : isEditing && formData.amount
+                        ? 'Edit entry'
+                        : 'New P&L entry'
+              }
+              badges={
+                <Badge variant={account?.type === 'real' ? 'real' : 'funded'}>
+                  {account?.type === 'real' ? 'Real' : 'Funded'}
+                </Badge>
+              }
+              onClose={() => {
+                setSelectedDate(null)
+                setIsEditing(false)
+                setModalMode(allowsWithdrawals ? 'choice' : 'entry')
+                setWithdrawAmount('')
+              }}
+            />
 
             {modalMode === 'choice' && allowsWithdrawals ? (
               <div className="p-6 space-y-4">
-                <p className="text-theme-secondary text-center mb-6">What would you like to do for this day?</p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <p className="text-slate-400 text-center text-sm">What would you like to do for this day?</p>
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -1424,34 +1322,33 @@ export default function TradingPnLAccountPageClient({
                       }
                       setModalMode('entry')
                     }}
-                    className={`flex-1 px-6 py-4 font-bold rounded-xl transition-all shadow-lg ${
+                    disabled={activeMaxLossReached}
+                    className={`flex-1 px-5 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
                       activeMaxLossReached
-                        ? 'bg-gray-700 text-theme-tertiary cursor-not-allowed'
-                        : 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900'
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
                     }`}
                   >
-                    {activeMaxLossReached ? 'P&L Locked' : 'Add P&L Entry'}
+                    {activeMaxLossReached ? 'P&L locked' : 'Add P&L entry'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setModalMode('withdraw')}
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold rounded-xl transition-all shadow-lg"
+                    className="flex-1 px-5 py-3 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-750 text-slate-200 text-sm font-semibold transition-colors cursor-pointer"
                   >
                     Withdraw
                   </button>
                 </div>
                 {activeMaxLossReached && (
-                  <div className="mt-2 text-center text-sm text-red-300">
-                    You hit your daily max loss. P&amp;L entries are locked for this day.
-                  </div>
+                  <InfoBanner variant="danger">Daily max loss reached. P&amp;L entries are locked for this day.</InfoBanner>
                 )}
               </div>
             ) : modalMode === 'withdraw' && allowsWithdrawals ? (
               <form onSubmit={handleWithdrawSubmit} className="p-6 space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-yellow-400 mb-3">Withdrawal amount ({currencySymbol})</label>
+                  <label className={labelClassName}>Withdrawal amount ({currencySymbol})</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-tertiary text-lg font-bold">{currencySymbol}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium">{currencySymbol}</span>
                     <input
                       type="number"
                       step="0.01"
@@ -1459,26 +1356,15 @@ export default function TradingPnLAccountPageClient({
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full pl-8 pr-4 py-4 bg-theme-secondary border-2 border-yellow-500/30 rounded-xl text-theme-primary text-lg font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                      className={`${inputClassName} pl-8 tabular-nums`}
                     />
                   </div>
-                  <p className="text-xs text-theme-tertiary mt-2">
-                    Enter 0 to remove the withdrawal for this day
-                  </p>
+                  <p className="text-xs text-slate-500 mt-2">Enter 0 to remove the withdrawal for this day</p>
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalMode('choice')}
-                    className="flex-1 px-6 py-4 bg-gray-700 hover:bg-gray-600 text-theme-primary font-bold rounded-xl"
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 text-white font-bold rounded-xl"
-                  >
-                    {state.withdrawalData[selectedDate] ? 'Update' : 'Save'} Withdrawal
+                <div className="flex gap-3 pt-2">
+                  <BtnGhost className="flex-1 justify-center" onClick={() => setModalMode('choice')}>Back</BtnGhost>
+                  <button type="submit" className="flex-1 px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold cursor-pointer">
+                    {state.withdrawalData[selectedDate!] ? 'Update' : 'Save'} withdrawal
                   </button>
                 </div>
               </form>
@@ -1652,8 +1538,7 @@ export default function TradingPnLAccountPageClient({
                 </div>
               </form>
             )}
-          </div>
-        </div>
+        </ModalShell>
       )}
 
       {maxLossPopupOpen && maxLossAmount > 0 && (
@@ -1832,6 +1717,6 @@ export default function TradingPnLAccountPageClient({
           animation: fade-in 0.2s ease-out forwards;
         }
       `}</style>
-    </div>
+    </>
   )
 }

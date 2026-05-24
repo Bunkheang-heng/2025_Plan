@@ -2,43 +2,185 @@
 
 import React from 'react'
 
-export function SemiCircleGauge({
-  percent,
-  strokeClass = 'stroke-emerald-500',
-  trackClass = 'stroke-slate-700',
-}: {
-  percent: number
-  strokeClass?: string
-  trackClass?: string
-}) {
-  const clamped = Math.min(100, Math.max(0, percent))
-  const r = 44
-  const halfCirc = Math.PI * r
-  const offset = halfCirc - (clamped / 100) * halfCirc
+/* ——— Layout ——— */
 
+export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative w-[140px] h-[78px] mx-auto">
-      <svg viewBox="0 0 120 70" className="w-full h-full" aria-hidden>
-        <path
-          d="M 16 58 A 44 44 0 0 1 104 58"
-          fill="none"
-          strokeWidth="9"
-          className={trackClass}
-          strokeLinecap="round"
-        />
-        <path
-          d="M 16 58 A 44 44 0 0 1 104 58"
-          fill="none"
-          strokeWidth="9"
-          className={`${strokeClass} transition-all duration-500`}
-          strokeLinecap="round"
-          strokeDasharray={`${halfCirc} ${halfCirc * 2}`}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className="absolute inset-x-0 top-[22px] text-center">
-        <span className="text-2xl font-bold text-theme-primary tabular-nums">{clamped.toFixed(0)}%</span>
+    <div className="min-h-screen bg-[#020617]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-28 lg:pt-32 pb-16">{children}</div>
+    </div>
+  )
+}
+
+export function PageHeader({
+  title,
+  subtitle,
+  actions,
+}: {
+  title: string
+  subtitle?: React.ReactNode
+  actions?: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 className="text-2xl sm:text-[1.75rem] font-semibold text-slate-50 tracking-tight">{title}</h1>
+        {subtitle ? <p className="text-sm text-slate-400 mt-1.5">{subtitle}</p> : null}
       </div>
+      {actions ? <div className="flex items-center gap-2 flex-shrink-0">{actions}</div> : null}
+    </div>
+  )
+}
+
+export function SectionTitle({ children, description }: { children: React.ReactNode; description?: string }) {
+  return (
+    <div className="mb-4">
+      <h2 className="text-base font-semibold text-slate-100">{children}</h2>
+      {description ? <p className="text-sm text-slate-500 mt-0.5">{description}</p> : null}
+    </div>
+  )
+}
+
+/* ——— Primitives ——— */
+
+export function Card({
+  children,
+  className = '',
+  padding = true,
+}: {
+  children: React.ReactNode
+  className?: string
+  padding?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-sm ${padding ? 'p-5 sm:p-6' : ''} ${className}`}
+    >
+      {children}
+    </div>
+  )
+}
+
+export function Badge({
+  children,
+  variant = 'default',
+}: {
+  children: React.ReactNode
+  variant?: 'default' | 'success' | 'warning' | 'info' | 'real' | 'funded'
+}) {
+  const styles = {
+    default: 'bg-slate-800 text-slate-300 border-slate-700',
+    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+    info: 'bg-sky-500/10 text-sky-400 border-sky-500/25',
+    real: 'bg-blue-500/10 text-blue-400 border-blue-500/25',
+    funded: 'bg-violet-500/10 text-violet-400 border-violet-500/25',
+  }
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${styles[variant]}`}>
+      {children}
+    </span>
+  )
+}
+
+export function BtnGhost({
+  children,
+  onClick,
+  className = '',
+  ariaLabel,
+  disabled = false,
+}: {
+  children: React.ReactNode
+  onClick?: () => void
+  className?: string
+  ariaLabel?: string
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-700 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:text-slate-300 ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function BtnPrimary({
+  children,
+  onClick,
+  className = '',
+  disabled = false,
+}: {
+  children: React.ReactNode
+  onClick?: () => void
+  className?: string
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-950 bg-emerald-500 hover:bg-emerald-400 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-500 ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function SelectField({
+  value,
+  onChange,
+  children,
+  className = '',
+}: {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <select
+      value={value}
+      onChange={onChange}
+      className={`px-3 py-2 min-w-[12rem] rounded-lg text-sm text-slate-100 bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 cursor-pointer transition-shadow ${className}`}
+    >
+      {children}
+    </select>
+  )
+}
+
+/* ——— Dashboard components ——— */
+
+export function DashboardTabs({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: { id: string; label: string }[]
+  active: string
+  onChange: (id: string) => void
+}) {
+  return (
+    <div className="inline-flex p-1 rounded-xl bg-slate-900/80 border border-slate-800 gap-1 flex-wrap">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => onChange(tab.id)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+            active === tab.id
+              ? 'bg-slate-800 text-slate-50 shadow-sm border border-slate-700'
+              : 'text-slate-500 hover:text-slate-300 border border-transparent'
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
     </div>
   )
 }
@@ -46,8 +188,8 @@ export function SemiCircleGauge({
 export function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs text-theme-muted mb-1">{label}</div>
-      <div className="text-sm font-semibold text-theme-primary">{value}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-1.5">{label}</div>
+      <div className="text-sm font-semibold text-slate-100 tabular-nums">{value}</div>
     </div>
   )
 }
@@ -55,22 +197,71 @@ export function DetailField({ label, value }: { label: string; value: React.Reac
 export function SummaryMetricCard({
   label,
   value,
-  active = false,
-  valueClassName = 'text-theme-primary',
+  highlight = false,
+  valueClassName = 'text-slate-50',
+  change,
 }: {
   label: string
   value: string
-  active?: boolean
+  highlight?: boolean
   valueClassName?: string
+  change?: string
 }) {
   return (
     <div
-      className={`rounded-xl border bg-theme-card p-5 transition-colors ${
-        active ? 'border-sky-500/60 ring-1 ring-sky-500/30' : 'border-theme-secondary hover:border-slate-500/50'
+      className={`rounded-2xl border p-5 transition-colors duration-200 ${
+        highlight
+          ? 'border-emerald-500/30 bg-emerald-500/[0.04] ring-1 ring-emerald-500/20'
+          : 'border-slate-800/80 bg-slate-900/50 hover:border-slate-700'
       }`}
     >
-      <div className="text-sm text-theme-tertiary mb-2">{label}</div>
-      <div className={`text-2xl font-bold tabular-nums ${valueClassName}`}>{value}</div>
+      <div className="text-xs font-medium text-slate-500 mb-2">{label}</div>
+      <div className={`text-2xl font-semibold tabular-nums tracking-tight ${valueClassName}`}>{value}</div>
+      {change ? <div className="text-xs text-slate-500 mt-1.5">{change}</div> : null}
+    </div>
+  )
+}
+
+export function SemiCircleGauge({
+  percent,
+  strokeClass = 'stroke-emerald-500',
+  trackClass = 'stroke-slate-800',
+  label,
+}: {
+  percent: number
+  strokeClass?: string
+  trackClass?: string
+  label?: string
+}) {
+  const clamped = Math.min(100, Math.max(0, percent))
+  const r = 44
+  const halfCirc = Math.PI * r
+  const offset = halfCirc - (clamped / 100) * halfCirc
+
+  return (
+    <div className="relative w-[148px] h-[84px] mx-auto">
+      <svg viewBox="0 0 120 70" className="w-full h-full" aria-hidden>
+        <path
+          d="M 16 58 A 44 44 0 0 1 104 58"
+          fill="none"
+          strokeWidth="8"
+          className={trackClass}
+          strokeLinecap="round"
+        />
+        <path
+          d="M 16 58 A 44 44 0 0 1 104 58"
+          fill="none"
+          strokeWidth="8"
+          className={`${strokeClass} transition-all duration-500 ease-out`}
+          strokeLinecap="round"
+          strokeDasharray={`${halfCirc} ${halfCirc * 2}`}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="absolute inset-x-0 top-[20px] text-center">
+        <span className="text-2xl font-semibold text-slate-50 tabular-nums">{clamped.toFixed(0)}%</span>
+        {label ? <div className="text-[10px] text-slate-500 mt-0.5">{label}</div> : null}
+      </div>
     </div>
   )
 }
@@ -87,47 +278,22 @@ export function ObjectiveCard({
   footer?: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-theme-secondary bg-theme-card p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-5 h-full flex flex-col">
       <div className="flex items-start justify-between gap-2 mb-4">
-        <h3 className="text-sm font-semibold text-theme-primary">{title}</h3>
+        <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
         {hint ? (
-          <span className="text-theme-muted text-xs shrink-0" title={hint}>
-            ⓘ
+          <span
+            className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-slate-500 cursor-help"
+            title={hint}
+          >
+            ?
           </span>
         ) : null}
       </div>
-      {children}
-      {footer ? <div className="mt-4 pt-3 border-t border-theme-secondary text-xs text-theme-tertiary">{footer}</div> : null}
-    </div>
-  )
-}
-
-export function DashboardTabs({
-  tabs,
-  active,
-  onChange,
-}: {
-  tabs: { id: string; label: string }[]
-  active: string
-  onChange: (id: string) => void
-}) {
-  return (
-    <div className="flex gap-6 border-b border-theme-secondary">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onChange(tab.id)}
-          className={`pb-3 text-sm font-medium transition-colors relative ${
-            active === tab.id ? 'text-sky-400' : 'text-theme-tertiary hover:text-theme-secondary'
-          }`}
-        >
-          {tab.label}
-          {active === tab.id ? (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 rounded-full" />
-          ) : null}
-        </button>
-      ))}
+      <div className="flex-1 flex flex-col justify-center">{children}</div>
+      {footer ? (
+        <div className="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 leading-relaxed">{footer}</div>
+      ) : null}
     </div>
   )
 }
@@ -136,16 +302,142 @@ export function StatTile({
   label,
   value,
   sub,
+  trend,
 }: {
   label: string
   value: string
   sub?: string
+  trend?: 'up' | 'down' | 'neutral'
+}) {
+  const trendColor =
+    trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-slate-50'
+  return (
+    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 hover:border-slate-700 transition-colors duration-200">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">{label}</div>
+      <div className={`text-xl font-semibold tabular-nums tracking-tight ${trendColor}`}>{value}</div>
+      {sub ? <div className="text-xs text-slate-500 mt-1">{sub}</div> : null}
+    </div>
+  )
+}
+
+export function InfoBanner({
+  children,
+  variant = 'info',
+}: {
+  children: React.ReactNode
+  variant?: 'info' | 'warning' | 'danger'
+}) {
+  const styles = {
+    info: 'border-sky-500/25 bg-sky-500/5 text-sky-300',
+    warning: 'border-amber-500/25 bg-amber-500/5 text-amber-200',
+    danger: 'border-red-500/25 bg-red-500/5 text-red-200',
+  }
+  return (
+    <div className={`rounded-xl border px-4 py-3 text-sm ${styles[variant]}`}>{children}</div>
+  )
+}
+
+export function ModalShell({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode
+  onClose: () => void
 }) {
   return (
-    <div className="rounded-xl border border-theme-secondary bg-theme-card p-4">
-      <div className="text-xs text-theme-muted mb-1">{label}</div>
-      <div className="text-lg font-bold text-theme-primary tabular-nums">{value}</div>
-      {sub ? <div className="text-[11px] text-theme-tertiary mt-1">{sub}</div> : null}
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+      <div
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div className="relative bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl shadow-black/40 max-h-[90vh] overflow-y-auto">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export function ModalHeader({
+  title,
+  subtitle,
+  badges,
+  onClose,
+}: {
+  title: string
+  subtitle?: string
+  badges?: React.ReactNode
+  onClose: () => void
+}) {
+  return (
+    <div className="border-b border-slate-800 px-6 py-5 flex items-start justify-between gap-4">
+      <div>
+        {badges ? <div className="flex flex-wrap gap-2 mb-2">{badges}</div> : null}
+        <h2 className="text-lg font-semibold text-slate-50">{title}</h2>
+        {subtitle ? <p className="text-sm text-slate-500 mt-1">{subtitle}</p> : null}
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+        aria-label="Close"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+export const inputClassName =
+  'w-full px-4 py-3 rounded-xl text-slate-100 bg-slate-950 border border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500/40 transition-shadow'
+
+export const labelClassName = 'block text-xs font-medium uppercase tracking-wider text-slate-500 mb-2'
+
+export function SegmentedControl<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T
+  onChange: (v: T) => void
+  options: { value: T; label: React.ReactNode }[]
+}) {
+  return (
+    <div className="inline-flex w-full p-1 rounded-xl bg-slate-950 border border-slate-800 gap-1">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer ${
+            value === opt.value
+              ? 'bg-slate-800 text-slate-50 border border-slate-700 shadow-sm'
+              : 'text-slate-500 hover:text-slate-300 border border-transparent'
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export function EmptyState({
+  title,
+  description,
+  action,
+}: {
+  title: string
+  description: string
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 px-6 py-10 text-center">
+      <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
+      <p className="text-sm text-slate-500 mt-2 max-w-sm mx-auto">{description}</p>
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   )
 }

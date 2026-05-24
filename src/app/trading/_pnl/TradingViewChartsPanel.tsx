@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { FaCompress, FaExpand } from 'react-icons/fa'
+import { BtnGhost, Card, SectionTitle, SelectField } from './PnLDashboardUI'
 
 const SYMBOLS = [
   { label: 'XAU/USD (Gold Spot)', value: 'OANDA:XAUUSD' },
@@ -25,22 +26,22 @@ const chartEmbedUrl = (symbol: string, interval: string) =>
 function ChartCard({
   symbol,
   timeframe,
-  height = 320,
+  height = 300,
 }: {
   symbol: string
   timeframe: { label: string; value: string }
   height?: number | string
 }) {
   return (
-    <div className="rounded-xl border border-theme-secondary bg-theme-card overflow-hidden shadow-sm">
-      <div className="border-b border-theme-secondary px-4 py-2.5 flex items-center justify-between">
-        <span className="text-sm font-semibold text-theme-primary">{timeframe.label}</span>
+    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 overflow-hidden">
+      <div className="border-b border-slate-800 px-4 py-2.5 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">{timeframe.label}</span>
         <a
           href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(symbol)}&interval=${timeframe.value}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-theme-muted hover:text-sky-400 transition-colors"
-          aria-label={`Open ${timeframe.label} chart in TradingView`}
+          className="text-slate-500 hover:text-emerald-400 transition-colors"
+          aria-label={`Open ${timeframe.label} in TradingView`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -50,7 +51,7 @@ function ChartCard({
       <div style={{ height }} className="w-full">
         <iframe
           src={chartEmbedUrl(symbol, timeframe.value)}
-          title={`${symbol} ${timeframe.label} chart`}
+          title={`${symbol} ${timeframe.label}`}
           style={{ width: '100%', height: '100%', border: 'none' }}
           allowFullScreen
         />
@@ -73,48 +74,38 @@ export default function TradingViewChartsPanel() {
 
   return (
     <>
-      <div className="rounded-xl border border-theme-secondary bg-theme-card p-4 sm:p-5 mb-6">
+      <SectionTitle description="Multi-timeframe TradingView embeds for your selected symbol">Live charts</SectionTitle>
+
+      <Card className="mb-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex-1 min-w-[200px] max-w-xs">
-            <label className="block text-xs text-theme-muted mb-2">Symbol</label>
-            <select
-              value={selectedSymbol}
-              onChange={(e) => setSelectedSymbol(e.target.value)}
-              className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-sky-500/50"
-            >
+          <div>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">Symbol</label>
+            <SelectField value={selectedSymbol} onChange={(e) => setSelectedSymbol(e.target.value)} className="min-w-[220px]">
               {SYMBOLS.map((symbol) => (
                 <option key={symbol.value} value={symbol.value}>
                   {symbol.label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setIsFullscreen(true)}
-              className="px-4 py-2 rounded-lg border border-theme-secondary bg-theme-secondary text-sm font-medium text-theme-primary hover:border-sky-500/40 transition-colors flex items-center gap-2"
-            >
-              <FaExpand className="w-4 h-4" />
-              Fullscreen
-            </button>
+            <BtnGhost onClick={() => setIsFullscreen(true)}>
+              <FaExpand className="w-4 h-4" /> Fullscreen
+            </BtnGhost>
             <a
               href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(selectedSymbol)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium flex items-center gap-2 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-sm font-semibold transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
               Open TradingView
             </a>
           </div>
         </div>
-        <p className="text-xs text-theme-muted mt-3">
-          Open TradingView in a new tab to save drawings. Log in to keep them on your account.
+        <p className="text-xs text-slate-500 mt-4">
+          Open TradingView in a new tab to save drawings permanently when logged in.
         </p>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {CHART_TIMEFRAMES.map((tf) => (
@@ -123,55 +114,27 @@ export default function TradingViewChartsPanel() {
       </div>
 
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-theme-primary overflow-auto">
-          <div className="sticky top-0 z-10 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-secondary px-4 py-3">
+        <div className="fixed inset-0 z-50 bg-[#020617] overflow-auto">
+          <div className="sticky top-0 z-10 bg-[#020617]/95 backdrop-blur-md border-b border-slate-800 px-4 py-3">
             <div className="flex flex-wrap items-center justify-between gap-3 max-w-[1600px] mx-auto">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsFullscreen(false)}
-                  className="px-4 py-2 rounded-lg border border-theme-secondary bg-theme-card text-sm font-medium text-theme-primary hover:border-sky-500/40 flex items-center gap-2"
-                >
-                  <FaCompress className="w-4 h-4" /> Exit fullscreen
-                </button>
-                <h2 className="text-sm font-semibold text-theme-primary hidden sm:block">
-                  {selectedSymbol.split(':')[1] || selectedSymbol}
-                </h2>
-              </div>
+              <BtnGhost onClick={() => setIsFullscreen(false)}>
+                <FaCompress className="w-4 h-4" /> Exit
+              </BtnGhost>
               <div className="flex items-center gap-2">
-                <select
-                  value={selectedSymbol}
-                  onChange={(e) => setSelectedSymbol(e.target.value)}
-                  className="px-3 py-2 bg-theme-card border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-sky-500/50"
-                >
+                <SelectField value={selectedSymbol} onChange={(e) => setSelectedSymbol(e.target.value)}>
                   {SYMBOLS.map((symbol) => (
                     <option key={symbol.value} value={symbol.value}>
                       {symbol.label}
                     </option>
                   ))}
-                </select>
-                <a
-                  href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(selectedSymbol)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium"
-                >
-                  TradingView
-                </a>
+                </SelectField>
               </div>
             </div>
           </div>
-          <div className="p-4 max-w-[1600px] mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {CHART_TIMEFRAMES.map((tf) => (
-                <ChartCard
-                  key={tf.value}
-                  symbol={selectedSymbol}
-                  timeframe={tf}
-                  height="calc((100vh - 100px) / 2)"
-                />
-              ))}
-            </div>
+          <div className="p-4 max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {CHART_TIMEFRAMES.map((tf) => (
+              <ChartCard key={tf.value} symbol={selectedSymbol} timeframe={tf} height="calc((100vh - 88px) / 2)" />
+            ))}
           </div>
         </div>
       )}
