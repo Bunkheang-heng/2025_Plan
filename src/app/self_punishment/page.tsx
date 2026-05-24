@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loading } from '@/components'
 import { auth } from '../../../firebase'
@@ -18,6 +18,14 @@ type PunishmentEntry = {
 }
 
 export default function SelfPunishmentPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <SelfPunishmentPageContent />
+    </Suspense>
+  )
+}
+
+function SelfPunishmentPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [state, setState] = useState({
