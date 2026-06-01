@@ -6,7 +6,7 @@ import React from 'react'
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#020617]">
+    <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-28 lg:pt-32 pb-16">{children}</div>
     </div>
   )
@@ -24,8 +24,8 @@ export function PageHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
       <div>
-        <h1 className="text-2xl sm:text-[1.75rem] font-semibold text-slate-50 tracking-tight">{title}</h1>
-        {subtitle ? <p className="text-sm text-slate-400 mt-1.5">{subtitle}</p> : null}
+        <h1 className="text-2xl sm:text-[1.75rem] font-semibold text-stone-900 tracking-tight">{title}</h1>
+        {subtitle ? <p className="text-sm text-stone-500 mt-1.5">{subtitle}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2 flex-shrink-0">{actions}</div> : null}
     </div>
@@ -35,8 +35,8 @@ export function PageHeader({
 export function SectionTitle({ children, description }: { children: React.ReactNode; description?: string }) {
   return (
     <div className="mb-4">
-      <h2 className="text-base font-semibold text-slate-100">{children}</h2>
-      {description ? <p className="text-sm text-slate-500 mt-0.5">{description}</p> : null}
+      <h2 className="text-base font-semibold text-stone-900">{children}</h2>
+      {description ? <p className="text-sm text-stone-500 mt-0.5">{description}</p> : null}
     </div>
   )
 }
@@ -54,7 +54,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-sm ${padding ? 'p-5 sm:p-6' : ''} ${className}`}
+      className={`rounded-2xl border border-stone-200 bg-white shadow-sm ${padding ? 'p-5 sm:p-6' : ''} ${className}`}
     >
       {children}
     </div>
@@ -69,12 +69,12 @@ export function Badge({
   variant?: 'default' | 'success' | 'warning' | 'info' | 'real' | 'funded'
 }) {
   const styles = {
-    default: 'bg-slate-800 text-slate-300 border-slate-700',
-    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
-    info: 'bg-sky-500/10 text-sky-400 border-sky-500/25',
-    real: 'bg-blue-500/10 text-blue-400 border-blue-500/25',
-    funded: 'bg-violet-500/10 text-violet-400 border-violet-500/25',
+    default: 'bg-stone-100 text-stone-600 border-stone-200',
+    success: 'bg-green-50 text-green-700 border-green-200',
+    warning: 'bg-blue-50 text-blue-700 border-blue-200',
+    info: 'bg-blue-50 text-blue-700 border-blue-200',
+    real: 'bg-blue-50 text-blue-700 border-blue-200',
+    funded: 'bg-blue-50 text-blue-700 border-blue-200',
   }
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${styles[variant]}`}>
@@ -102,7 +102,7 @@ export function BtnGhost({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-700 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:text-slate-300 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-stone-700 bg-white border border-stone-200 hover:bg-stone-50 hover:text-stone-900 hover:border-stone-300 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-stone-700 ${className}`}
     >
       {children}
     </button>
@@ -125,7 +125,7 @@ export function BtnPrimary({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-950 bg-emerald-500 hover:bg-emerald-400 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-500 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-500 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 ${className}`}
     >
       {children}
     </button>
@@ -147,7 +147,7 @@ export function SelectField({
     <select
       value={value}
       onChange={onChange}
-      className={`px-3 py-2 min-w-[12rem] rounded-lg text-sm text-slate-100 bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 cursor-pointer transition-shadow ${className}`}
+      className={`px-3 py-2 min-w-[12rem] rounded-lg text-sm text-stone-900 bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500/50 cursor-pointer transition-shadow ${className}`}
     >
       {children}
     </select>
@@ -166,7 +166,7 @@ export function DashboardTabs({
   onChange: (id: string) => void
 }) {
   return (
-    <div className="inline-flex p-1 rounded-xl bg-slate-900/80 border border-slate-800 gap-1 flex-wrap">
+    <div className="inline-flex p-1 rounded-xl bg-stone-100 border border-stone-200 gap-1 flex-wrap">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -174,8 +174,8 @@ export function DashboardTabs({
           onClick={() => onChange(tab.id)}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
             active === tab.id
-              ? 'bg-slate-800 text-slate-50 shadow-sm border border-slate-700'
-              : 'text-slate-500 hover:text-slate-300 border border-transparent'
+              ? 'bg-white text-stone-900 shadow-sm border border-stone-200'
+              : 'text-stone-500 hover:text-stone-800 border border-transparent'
           }`}
         >
           {tab.label}
@@ -188,8 +188,8 @@ export function DashboardTabs({
 export function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-1.5">{label}</div>
-      <div className="text-sm font-semibold text-slate-100 tabular-nums">{value}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-stone-500 mb-1.5">{label}</div>
+      <div className="text-sm font-semibold text-stone-900 tabular-nums">{value}</div>
     </div>
   )
 }
@@ -198,7 +198,7 @@ export function SummaryMetricCard({
   label,
   value,
   highlight = false,
-  valueClassName = 'text-slate-50',
+  valueClassName = 'text-stone-900',
   change,
 }: {
   label: string
@@ -211,21 +211,21 @@ export function SummaryMetricCard({
     <div
       className={`rounded-2xl border p-5 transition-colors duration-200 ${
         highlight
-          ? 'border-emerald-500/30 bg-emerald-500/[0.04] ring-1 ring-emerald-500/20'
-          : 'border-slate-800/80 bg-slate-900/50 hover:border-slate-700'
+          ? 'border-green-300 bg-green-50 ring-1 ring-green-200'
+          : 'border-stone-200 bg-white shadow-sm hover:border-stone-300'
       }`}
     >
-      <div className="text-xs font-medium text-slate-500 mb-2">{label}</div>
+      <div className="text-xs font-medium text-stone-500 mb-2">{label}</div>
       <div className={`text-2xl font-semibold tabular-nums tracking-tight ${valueClassName}`}>{value}</div>
-      {change ? <div className="text-xs text-slate-500 mt-1.5">{change}</div> : null}
+      {change ? <div className="text-xs text-stone-500 mt-1.5">{change}</div> : null}
     </div>
   )
 }
 
 export function SemiCircleGauge({
   percent,
-  strokeClass = 'stroke-emerald-500',
-  trackClass = 'stroke-slate-800',
+  strokeClass = 'stroke-green-500',
+  trackClass = 'stroke-stone-200',
   label,
 }: {
   percent: number
@@ -259,8 +259,8 @@ export function SemiCircleGauge({
         />
       </svg>
       <div className="absolute inset-x-0 top-[20px] text-center">
-        <span className="text-2xl font-semibold text-slate-50 tabular-nums">{clamped.toFixed(0)}%</span>
-        {label ? <div className="text-[10px] text-slate-500 mt-0.5">{label}</div> : null}
+        <span className="text-2xl font-semibold text-stone-900 tabular-nums">{clamped.toFixed(0)}%</span>
+        {label ? <div className="text-[10px] text-stone-500 mt-0.5">{label}</div> : null}
       </div>
     </div>
   )
@@ -278,12 +278,12 @@ export function ObjectiveCard({
   footer?: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-5 h-full flex flex-col">
+    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-5 h-full flex flex-col">
       <div className="flex items-start justify-between gap-2 mb-4">
-        <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
+        <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         {hint ? (
           <span
-            className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-slate-500 cursor-help"
+            className="flex h-5 w-5 items-center justify-center rounded-full bg-stone-100 text-[10px] font-bold text-stone-500 cursor-help"
             title={hint}
           >
             ?
@@ -292,7 +292,7 @@ export function ObjectiveCard({
       </div>
       <div className="flex-1 flex flex-col justify-center">{children}</div>
       {footer ? (
-        <div className="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 leading-relaxed">{footer}</div>
+        <div className="mt-4 pt-4 border-t border-stone-200 text-xs text-stone-500 leading-relaxed">{footer}</div>
       ) : null}
     </div>
   )
@@ -310,12 +310,12 @@ export function StatTile({
   trend?: 'up' | 'down' | 'neutral'
 }) {
   const trendColor =
-    trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-slate-50'
+    trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-stone-900'
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 hover:border-slate-700 transition-colors duration-200">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">{label}</div>
+    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-4 hover:border-stone-300 transition-colors duration-200">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-stone-500 mb-2">{label}</div>
       <div className={`text-xl font-semibold tabular-nums tracking-tight ${trendColor}`}>{value}</div>
-      {sub ? <div className="text-xs text-slate-500 mt-1">{sub}</div> : null}
+      {sub ? <div className="text-xs text-stone-500 mt-1">{sub}</div> : null}
     </div>
   )
 }
@@ -328,9 +328,9 @@ export function InfoBanner({
   variant?: 'info' | 'warning' | 'danger'
 }) {
   const styles = {
-    info: 'border-sky-500/25 bg-sky-500/5 text-sky-300',
-    warning: 'border-amber-500/25 bg-amber-500/5 text-amber-200',
-    danger: 'border-red-500/25 bg-red-500/5 text-red-200',
+    info: 'border-blue-200 bg-blue-50 text-blue-700',
+    warning: 'border-blue-200 bg-blue-50 text-blue-700',
+    danger: 'border-red-200 bg-red-50 text-red-700',
   }
   return (
     <div className={`rounded-xl border px-4 py-3 text-sm ${styles[variant]}`}>{children}</div>
@@ -345,13 +345,13 @@ export function ModalShell({
   onClose: () => void
 }) {
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div
         className="absolute inset-0"
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl shadow-black/40 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white border border-stone-200 rounded-2xl max-w-md w-full shadow-2xl shadow-stone-900/15 max-h-[90vh] overflow-y-auto">
         {children}
       </div>
     </div>
@@ -370,16 +370,16 @@ export function ModalHeader({
   onClose: () => void
 }) {
   return (
-    <div className="border-b border-slate-800 px-6 py-5 flex items-start justify-between gap-4">
+    <div className="border-b border-stone-200 px-6 py-5 flex items-start justify-between gap-4">
       <div>
         {badges ? <div className="flex flex-wrap gap-2 mb-2">{badges}</div> : null}
-        <h2 className="text-lg font-semibold text-slate-50">{title}</h2>
-        {subtitle ? <p className="text-sm text-slate-500 mt-1">{subtitle}</p> : null}
+        <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
+        {subtitle ? <p className="text-sm text-stone-500 mt-1">{subtitle}</p> : null}
       </div>
       <button
         type="button"
         onClick={onClose}
-        className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+        className="p-2 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
         aria-label="Close"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,9 +391,9 @@ export function ModalHeader({
 }
 
 export const inputClassName =
-  'w-full px-4 py-3 rounded-xl text-slate-100 bg-slate-950 border border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500/40 transition-shadow'
+  'w-full px-4 py-3 rounded-xl text-stone-900 bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/25 focus:border-green-500/40 transition-shadow'
 
-export const labelClassName = 'block text-xs font-medium uppercase tracking-wider text-slate-500 mb-2'
+export const labelClassName = 'block text-xs font-medium uppercase tracking-wider text-stone-500 mb-2'
 
 export function SegmentedControl<T extends string>({
   value,
@@ -405,7 +405,7 @@ export function SegmentedControl<T extends string>({
   options: { value: T; label: React.ReactNode }[]
 }) {
   return (
-    <div className="inline-flex w-full p-1 rounded-xl bg-slate-950 border border-slate-800 gap-1">
+    <div className="inline-flex w-full p-1 rounded-xl bg-stone-100 border border-stone-200 gap-1">
       {options.map((opt) => (
         <button
           key={opt.value}
@@ -413,8 +413,8 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(opt.value)}
           className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer ${
             value === opt.value
-              ? 'bg-slate-800 text-slate-50 border border-slate-700 shadow-sm'
-              : 'text-slate-500 hover:text-slate-300 border border-transparent'
+              ? 'bg-white text-stone-900 border border-stone-200 shadow-sm'
+              : 'text-stone-500 hover:text-stone-800 border border-transparent'
           }`}
         >
           {opt.label}
@@ -434,9 +434,9 @@ export function EmptyState({
   action?: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 px-6 py-10 text-center">
-      <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
-      <p className="text-sm text-slate-500 mt-2 max-w-sm mx-auto">{description}</p>
+    <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center">
+      <h3 className="text-sm font-semibold text-stone-800">{title}</h3>
+      <p className="text-sm text-stone-500 mt-2 max-w-sm mx-auto">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   )

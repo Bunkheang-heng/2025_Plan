@@ -231,13 +231,13 @@ export default function EntryChecklistPage() {
       <div className="max-w-3xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse" />
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
             Trading Entry Checklist
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
+          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4 flex items-center justify-center gap-3">
             <span>Before You Click Buy/Sell</span>
-            <svg className="w-9 h-9 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-9 h-9 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m4.243-4.242A9 9 0 1112 3a9 9 0 017.243 3.758z" />
             </svg>
           </h1>
@@ -249,17 +249,17 @@ export default function EntryChecklistPage() {
         {/* Progress + Actions */}
         <div className="bg-theme-card border border-theme-secondary rounded-2xl p-5 mb-8">
           <div className="flex items-center gap-3 mb-3 flex-wrap">
-            <span className="text-sm font-bold text-yellow-400">Progress</span>
+            <span className="text-sm font-bold text-blue-600">Progress</span>
             <span className="text-xs text-theme-tertiary">
               {completedCount}/{items.length} items done
             </span>
           </div>
-          <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden mb-4">
+          <div className="h-2 w-full bg-stone-800 rounded-full overflow-hidden mb-4">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 completionPercent === 100
-                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                  : 'bg-gradient-to-r from-yellow-500 to-yellow-400'
+                  ? 'bg-green-500'
+                  : 'bg-blue-500'
               }`}
               style={{ width: `${completionPercent}%` }}
             />
@@ -268,14 +268,14 @@ export default function EntryChecklistPage() {
             <button
               type="button"
               onClick={markAll}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-gray-900 font-semibold rounded-xl text-sm shadow-lg shadow-emerald-500/20"
+              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-stone-900 font-semibold rounded-xl text-sm shadow-lg shadow-green-500/20"
             >
               Mark all done
             </button>
             <button
               type="button"
               onClick={clearAll}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-theme-secondary text-theme-primary font-semibold rounded-xl text-sm"
+              className="px-4 py-2 bg-stone-800 hover:bg-stone-700 border border-theme-secondary text-theme-primary font-semibold rounded-xl text-sm"
             >
               Clear all
             </button>
@@ -289,26 +289,26 @@ export default function EntryChecklistPage() {
             value={newItemTitle}
             onChange={(e) => setNewItemTitle(e.target.value)}
             placeholder="Add a new checklist item..."
-            className="flex-1 px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+            className="flex-1 px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             disabled={isSaving}
           />
           <button
             type="submit"
             disabled={isSaving || !newItemTitle.trim()}
-            className="px-5 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 disabled:opacity-50 text-gray-900 font-semibold rounded-xl text-sm shadow-lg shadow-yellow-500/20 transition-all"
+            className="px-5 py-3 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 font-semibold rounded-xl text-sm shadow-lg shadow-blue-500/20 transition-all"
           >
             {isSaving ? 'Adding...' : 'Add'}
           </button>
         </form>
 
         {/* Checklist */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-theme-secondary rounded-2xl overflow-hidden shadow-lg shadow-black/20">
+        <div className="bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden shadow-lg shadow-black/20">
           {items.length === 0 ? (
             <div className="px-5 py-12 text-center">
               <p className="text-theme-tertiary text-sm">No items yet. Add your first checklist item above.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-stone-800">
               {items.map(item => {
                 const isChecked = !!checked[item.id]
                 const isEditing = editingId === item.id
@@ -317,7 +317,7 @@ export default function EntryChecklistPage() {
                   return (
                     <div
                       key={item.id}
-                      className="flex items-center gap-3 px-5 py-3 bg-gray-800/80"
+                      className="flex items-center gap-3 px-5 py-3 bg-stone-800/80"
                     >
                       <input
                         type="text"
@@ -328,14 +328,14 @@ export default function EntryChecklistPage() {
                           if (e.key === 'Escape') cancelEditing()
                         }}
                         autoFocus
-                        className="flex-1 px-3 py-2 bg-gray-900 border border-yellow-500/40 rounded-lg text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                        className="flex-1 px-3 py-2 bg-stone-900 border border-blue-500/40 rounded-lg text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         disabled={isSaving}
                       />
                       <button
                         type="button"
                         onClick={() => handleEditSave(item.id)}
                         disabled={isSaving || !editingTitle.trim()}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-gray-900 transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 transition-colors"
                       >
                         {isSaving ? 'Saving...' : 'Save'}
                       </button>
@@ -343,7 +343,7 @@ export default function EntryChecklistPage() {
                         type="button"
                         onClick={cancelEditing}
                         disabled={isSaving}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-700 hover:bg-gray-600 text-theme-primary transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-700 hover:bg-stone-600 text-theme-primary transition-colors"
                       >
                         Cancel
                       </button>
@@ -355,14 +355,14 @@ export default function EntryChecklistPage() {
                   <label
                     key={item.id}
                     className={`flex items-center gap-4 px-5 py-4 cursor-pointer transition-colors ${
-                      isChecked ? 'bg-gray-800/60' : 'hover:bg-gray-800/40'
+                      isChecked ? 'bg-stone-800/60' : 'hover:bg-stone-800/40'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => toggleItem(item.id)}
-                      className="h-5 w-5 rounded border-yellow-500/60 text-yellow-500 focus:ring-yellow-500/60 bg-gray-900 flex-shrink-0"
+                      className="h-5 w-5 rounded border-blue-500/60 text-blue-500 focus:ring-blue-500/60 bg-stone-900 flex-shrink-0"
                     />
                     <span
                       className={`flex-1 text-sm font-medium transition-colors ${
@@ -381,7 +381,7 @@ export default function EntryChecklistPage() {
                           e.stopPropagation()
                           startEditing(item)
                         }}
-                        className="px-3 py-1 text-[11px] rounded-full border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/10 transition-colors"
+                        className="px-3 py-1 text-[11px] rounded-full border border-blue-500/40 text-blue-600 hover:bg-blue-500/10 transition-colors"
                       >
                         Edit
                       </button>
@@ -393,7 +393,7 @@ export default function EntryChecklistPage() {
                           handleDelete(item.id)
                         }}
                         disabled={deletingId === item.id}
-                        className="px-3 py-1 text-[11px] rounded-full border border-red-500/40 text-red-300 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
+                        className="px-3 py-1 text-[11px] rounded-full border border-red-500/40 text-red-600 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
                       >
                         {deletingId === item.id ? 'Removing...' : 'Remove'}
                       </button>

@@ -11,7 +11,7 @@ export default function FloatingTechIcons({ count = 6 }: FloatingTechIconsProps)
       {[...Array(count)].map((_, i) => (
         <div
           key={i}
-          className="absolute opacity-5 text-yellow-400 animate-bounce"
+          className="absolute opacity-5 text-blue-600 animate-bounce"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,

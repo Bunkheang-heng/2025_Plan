@@ -21,7 +21,7 @@ const CHART_TIMEFRAMES = [
 ]
 
 const chartEmbedUrl = (symbol: string, interval: string) =>
-  `https://s.tradingview.com/embed-widget/advanced-chart/?symbol=${encodeURIComponent(symbol)}&interval=${interval}&theme=dark&style=1&timezone=Etc%2FUTC&allow_symbol_change=false&save_image=true&hide_top_toolbar=true&hide_legend=false&hide_side_toolbar=true&withdateranges=false&details=false&calendar=false&studies=%5B%5D&show_popup_button=true&popup_width=1000&popup_height=650&locale=en`
+  `https://s.tradingview.com/embed-widget/advanced-chart/?symbol=${encodeURIComponent(symbol)}&interval=${interval}&theme=light&style=1&timezone=Etc%2FUTC&allow_symbol_change=false&save_image=true&hide_top_toolbar=true&hide_legend=false&hide_side_toolbar=true&withdateranges=false&details=false&calendar=false&studies=%5B%5D&show_popup_button=true&popup_width=1000&popup_height=650&locale=en`
 
 function ChartCard({
   symbol,
@@ -33,14 +33,14 @@ function ChartCard({
   height?: number | string
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 overflow-hidden">
-      <div className="border-b border-slate-800 px-4 py-2.5 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">{timeframe.label}</span>
+    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
+      <div className="border-b border-stone-200 px-4 py-2.5 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">{timeframe.label}</span>
         <a
           href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(symbol)}&interval=${timeframe.value}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-slate-500 hover:text-emerald-400 transition-colors"
+          className="text-stone-500 hover:text-green-600 transition-colors"
           aria-label={`Open ${timeframe.label} in TradingView`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ export default function TradingViewChartsPanel() {
       <Card className="mb-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">Symbol</label>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-stone-500 mb-2">Symbol</label>
             <SelectField value={selectedSymbol} onChange={(e) => setSelectedSymbol(e.target.value)} className="min-w-[220px]">
               {SYMBOLS.map((symbol) => (
                 <option key={symbol.value} value={symbol.value}>
@@ -96,13 +96,13 @@ export default function TradingViewChartsPanel() {
               href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(selectedSymbol)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-sm font-semibold transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition-colors"
             >
               Open TradingView
             </a>
           </div>
         </div>
-        <p className="text-xs text-slate-500 mt-4">
+        <p className="text-xs text-stone-500 mt-4">
           Open TradingView in a new tab to save drawings permanently when logged in.
         </p>
       </Card>
@@ -114,8 +114,8 @@ export default function TradingViewChartsPanel() {
       </div>
 
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-[#020617] overflow-auto">
-          <div className="sticky top-0 z-10 bg-[#020617]/95 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+        <div className="fixed inset-0 z-50 bg-stone-50 overflow-auto">
+          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-stone-200 px-4 py-3">
             <div className="flex flex-wrap items-center justify-between gap-3 max-w-[1600px] mx-auto">
               <BtnGhost onClick={() => setIsFullscreen(false)}>
                 <FaCompress className="w-4 h-4" /> Exit

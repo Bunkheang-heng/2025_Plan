@@ -45,19 +45,19 @@ type SetupEntry = {
 }
 
 const SETUP_TYPES: { value: SetupType; label: string; icon: React.ReactNode; color: string }[] = [
-  { value: 'long', label: 'Long', icon: <FaArrowUp />, color: 'from-green-500 to-emerald-600' },
-  { value: 'short', label: 'Short', icon: <FaArrowDown />, color: 'from-red-500 to-rose-600' },
-  { value: 'breakout', label: 'Breakout', icon: <FaRocket />, color: 'from-blue-500 to-cyan-600' },
-  { value: 'reversal', label: 'Reversal', icon: <FaSyncAlt />, color: 'from-purple-500 to-violet-600' },
-  { value: 'scalp', label: 'Scalp', icon: <FaBolt />, color: 'from-orange-500 to-amber-600' },
-  { value: 'swing', label: 'Swing', icon: <FaWater />, color: 'from-teal-500 to-cyan-600' },
-  { value: 'other', label: 'Other', icon: <FaChartBar />, color: 'from-gray-500 to-slate-600' },
+  { value: 'long', label: 'Long', icon: <FaArrowUp />, color: 'from-green-500 to-green-600' },
+  { value: 'short', label: 'Short', icon: <FaArrowDown />, color: 'from-red-500 to-red-600' },
+  { value: 'breakout', label: 'Breakout', icon: <FaRocket />, color: 'from-blue-500 to-blue-600' },
+  { value: 'reversal', label: 'Reversal', icon: <FaSyncAlt />, color: 'from-blue-500 to-blue-600' },
+  { value: 'scalp', label: 'Scalp', icon: <FaBolt />, color: 'from-blue-500 to-blue-600' },
+  { value: 'swing', label: 'Swing', icon: <FaWater />, color: 'from-blue-500 to-blue-600' },
+  { value: 'other', label: 'Other', icon: <FaChartBar />, color: 'from-stone-500 to-stone-600' },
 ]
 
 const OUTCOMES: { value: 'win' | 'loss' | 'pending'; label: string; icon: React.ReactNode; color: string }[] = [
-  { value: 'win', label: 'Win', icon: <FaCheck />, color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  { value: 'loss', label: 'Loss', icon: <FaTimes />, color: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  { value: 'pending', label: 'Pending', icon: <FaClock />, color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  { value: 'win', label: 'Win', icon: <FaCheck />, color: 'bg-green-500/20 text-green-600 border-green-500/30' },
+  { value: 'loss', label: 'Loss', icon: <FaTimes />, color: 'bg-red-500/20 text-red-600 border-red-500/30' },
+  { value: 'pending', label: 'Pending', icon: <FaClock />, color: 'bg-blue-500/20 text-blue-600 border-blue-500/30' },
 ]
 
 export default function SetupPage() {
@@ -240,16 +240,16 @@ export default function SetupPage() {
     <div className="min-h-screen bg-theme-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 lg:pt-28">
         {/* Hero Header */}
-        <Card className="relative overflow-hidden !rounded-3xl !bg-theme-card !border-yellow-500/20 !p-8 mb-8">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-yellow-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-amber-500/10 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <Card className="relative overflow-hidden !rounded-3xl !bg-theme-card !border-blue-500/20 !p-8 mb-8">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
           
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-yellow-500/30">
-                    <FaChartLine className="w-6 h-6 text-gray-900" />
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <FaChartLine className="w-6 h-6 text-stone-900" />
                   </div>
                   <div>
                     <h1 className="text-3xl lg:text-4xl font-bold text-theme-primary tracking-tight">Trading Setups</h1>
@@ -260,7 +260,7 @@ export default function SetupPage() {
               
               <Button
                 onClick={openAddModal}
-                className="!bg-gradient-to-r !from-yellow-500 !to-amber-600 !text-gray-900 !font-bold !rounded-2xl hover:!from-yellow-400 hover:!to-amber-500 !shadow-xl !shadow-yellow-500/25 hover:!shadow-yellow-500/40 hover:!scale-[1.02] active:!scale-[0.98] !px-6 !py-4"
+                className="!bg-blue-500 !text-stone-900 !font-bold !rounded-2xl hover:!bg-blue-400 !shadow-xl !shadow-blue-500/25 hover:!shadow-blue-500/40 hover:!scale-[1.02] active:!scale-[0.98] !px-6 !py-4"
                 icon={<FaPlus className="w-4 h-4" />}
               >
                 New Setup
@@ -272,7 +272,7 @@ export default function SetupPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
                 <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-600">
                       <FaChartBar className="w-5 h-5" />
                     </div>
                     <div>
@@ -283,33 +283,33 @@ export default function SetupPage() {
                 </div>
                 <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400">
+                    <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-600">
                       <FaTrophy className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-green-400">{stats.wins}</p>
+                      <p className="text-2xl font-bold text-green-600">{stats.wins}</p>
                       <p className="text-xs text-theme-muted">Wins</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-600">
                       <FaTimesCircle className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-red-400">{stats.losses}</p>
+                      <p className="text-2xl font-bold text-red-600">{stats.losses}</p>
                       <p className="text-xs text-theme-muted">Losses</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center text-yellow-400">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-600">
                       <FaChartLine className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-yellow-400">{stats.winRate}%</p>
+                      <p className="text-2xl font-bold text-blue-600">{stats.winRate}%</p>
                       <p className="text-xs text-theme-muted">Win Rate</p>
                     </div>
                   </div>
@@ -324,7 +324,7 @@ export default function SetupPage() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as SetupType | 'all')}
-                  className="px-4 py-3 bg-theme-secondary/50 border border-theme-tertiary/50 rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 cursor-pointer"
+                  className="px-4 py-3 bg-theme-secondary/50 border border-theme-tertiary/50 rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 cursor-pointer"
                 >
                   <option value="all">All Types</option>
                   {SETUP_TYPES.map(type => (
@@ -336,7 +336,7 @@ export default function SetupPage() {
                 <select
                   value={filterOutcome}
                   onChange={(e) => setFilterOutcome(e.target.value as 'win' | 'loss' | 'pending' | 'all')}
-                  className="px-4 py-3 bg-theme-secondary/50 border border-theme-tertiary/50 rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 cursor-pointer"
+                  className="px-4 py-3 bg-theme-secondary/50 border border-theme-tertiary/50 rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 cursor-pointer"
                 >
                   <option value="all">All Outcomes</option>
                   {OUTCOMES.map(o => (
@@ -348,13 +348,13 @@ export default function SetupPage() {
                 <div className="flex bg-theme-secondary/50 rounded-xl p-1 border border-theme-tertiary/50 ml-auto">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-yellow-500 text-gray-900' : 'text-theme-muted hover:text-theme-primary'}`}
+                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-blue-500 text-stone-900' : 'text-theme-muted hover:text-theme-primary'}`}
                   >
                     <FaTh className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-yellow-500 text-gray-900' : 'text-theme-muted hover:text-theme-primary'}`}
+                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-blue-500 text-stone-900' : 'text-theme-muted hover:text-theme-primary'}`}
                   >
                     <FaList className="w-4 h-4" />
                   </button>
@@ -365,7 +365,7 @@ export default function SetupPage() {
         </Card>
 
         {error && !modalOpen && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-600 text-sm flex items-center gap-3">
             <FaExclamationCircle className="w-5 h-5 flex-shrink-0" />
             {error}
           </div>
@@ -384,7 +384,7 @@ export default function SetupPage() {
               return (
                 <Card 
                   key={entry.id}
-                  className={`group !bg-theme-card !border-theme-secondary !rounded-2xl overflow-hidden hover:!border-yellow-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/5 !p-0 ${
+                  className={`group !bg-theme-card !border-theme-secondary !rounded-2xl overflow-hidden hover:!border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 !p-0 ${
                     viewMode === 'list' ? 'flex flex-col sm:flex-row' : ''
                   }`}
                 >
@@ -451,10 +451,10 @@ export default function SetupPage() {
                       <div className="relative">
                         {deleteConfirmId === entry.id ? (
                           <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-2">
-                            <span className="text-xs text-red-400">Delete?</span>
+                            <span className="text-xs text-red-600">Delete?</span>
                             <button
                               onClick={() => handleDelete(entry.id)}
-                              className="text-xs font-bold text-red-400 hover:text-red-300 px-2 py-1 rounded bg-red-500/20"
+                              className="text-xs font-bold text-red-600 hover:text-red-600 px-2 py-1 rounded bg-red-500/20"
                             >
                               Yes
                             </button>
@@ -469,14 +469,14 @@ export default function SetupPage() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => openEditModal(entry)}
-                              className="p-2 rounded-xl hover:bg-theme-secondary text-theme-muted hover:text-yellow-500 transition-all"
+                              className="p-2 rounded-xl hover:bg-theme-secondary text-theme-muted hover:text-blue-500 transition-all"
                               title="Edit"
                             >
                               <FaEdit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setDeleteConfirmId(entry.id)}
-                              className="p-2 rounded-xl hover:bg-red-500/10 text-theme-muted hover:text-red-400 transition-all"
+                              className="p-2 rounded-xl hover:bg-red-500/10 text-theme-muted hover:text-red-600 transition-all"
                               title="Delete"
                             >
                               <FaTrash className="w-4 h-4" />
@@ -535,7 +535,7 @@ export default function SetupPage() {
             <Button
               variant="ghost"
               onClick={() => { setFilterType('all'); setFilterOutcome('all'); }}
-              className="!text-yellow-500 hover:!text-yellow-400"
+              className="!text-blue-500 hover:!text-blue-600"
             >
               Clear all filters
             </Button>
@@ -545,14 +545,14 @@ export default function SetupPage() {
           <Card
             onClick={openAddModal}
             clickable
-            className="group flex flex-col items-center justify-center py-20 px-6 !bg-gradient-to-br from-theme-card to-theme-secondary/30 !border-2 !border-dashed !border-theme-secondary !rounded-3xl cursor-pointer hover:!border-yellow-500/40 transition-all duration-300"
+            className="group flex flex-col items-center justify-center py-20 px-6 !bg-gradient-to-br from-theme-card to-theme-secondary/30 !border-2 !border-dashed !border-theme-secondary !rounded-3xl cursor-pointer hover:!border-blue-500/40 transition-all duration-300"
           >
             <div className="relative mb-6">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-yellow-500">
+              <div className="w-24 h-24 rounded-3xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-blue-500">
                 <FaChartLine className="w-12 h-12" />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-yellow-500/30 group-hover:rotate-90 transition-transform duration-300">
-                <FaPlus className="w-5 h-5 text-gray-900" />
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:rotate-90 transition-transform duration-300">
+                <FaPlus className="w-5 h-5 text-stone-900" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-theme-primary mb-2">Start Building Your Playbook</h2>
@@ -566,7 +566,7 @@ export default function SetupPage() {
                 </Badge>
               ))}
             </div>
-            <span className="inline-flex items-center gap-2 text-sm font-semibold text-yellow-500 group-hover:text-yellow-400">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-blue-500 group-hover:text-blue-600">
               <span>Add your first setup</span>
               <FaArrowUp className="w-3 h-3 rotate-90 group-hover:translate-x-1 transition-transform" />
             </span>
@@ -581,14 +581,14 @@ export default function SetupPage() {
           onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
           <div
-            className="bg-theme-card border border-yellow-500/30 rounded-3xl max-w-2xl w-full shadow-2xl shadow-yellow-500/10 my-8"
+            className="bg-theme-card border border-blue-500/30 rounded-3xl max-w-2xl w-full shadow-2xl shadow-blue-500/10 my-8"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-orange-500/10 border-b border-yellow-500/20 px-6 py-5 rounded-t-3xl">
+            <div className="bg-blue-500/10 border-b border-blue-500/20 px-6 py-5 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center text-gray-900">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-stone-900">
                     {editingId ? <FaEdit className="w-5 h-5" /> : <FaPlus className="w-5 h-5" />}
                   </div>
                   <div>
@@ -620,7 +620,7 @@ export default function SetupPage() {
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://example.com/your-chart-screenshot.jpg"
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                 />
                 {imageUrl && (
                   <div className="mt-3 relative aspect-video rounded-xl overflow-hidden bg-theme-secondary border border-theme-tertiary">
@@ -651,7 +651,7 @@ export default function SetupPage() {
                     value={pair}
                     onChange={(e) => setPair(e.target.value)}
                     placeholder="e.g., XAUUSD, EURUSD, BTC/USDT"
-                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all uppercase"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all uppercase"
                   />
                 </div>
                 <div>
@@ -706,7 +706,7 @@ export default function SetupPage() {
                         outcome === o.value
                           ? o.color + ' ring-2 ring-offset-2 ring-offset-theme-card'
                           : 'bg-theme-secondary text-theme-muted border-theme-tertiary hover:text-theme-primary'
-                      } ${outcome === o.value ? (o.value === 'win' ? 'ring-green-500/50' : o.value === 'loss' ? 'ring-red-500/50' : 'ring-yellow-500/50') : ''}`}
+                      } ${outcome === o.value ? (o.value === 'win' ? 'ring-green-500/50' : o.value === 'loss' ? 'ring-red-500/50' : 'ring-blue-500/50') : ''}`}
                     >
                       {o.icon} {o.label}
                     </button>
@@ -722,7 +722,7 @@ export default function SetupPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your trade setup: entry reason, key levels, confluence factors..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-none transition-all"
                 />
               </div>
 
@@ -736,12 +736,12 @@ export default function SetupPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Lessons learned, what went right/wrong, adjustments for next time..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-none transition-all"
                 />
               </div>
 
               {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-600 text-sm flex items-center gap-2">
                   <FaExclamationCircle className="w-5 h-5 flex-shrink-0" />
                   {error}
                 </div>
@@ -762,7 +762,7 @@ export default function SetupPage() {
                   type="submit"
                   isLoading={isSaving}
                   fullWidth
-                  className="!bg-gradient-to-r !from-yellow-500 !to-amber-600 !text-gray-900 !font-bold hover:!from-yellow-400 hover:!to-amber-500 !shadow-lg !shadow-yellow-500/20 hover:!shadow-yellow-500/30"
+                  className="!bg-blue-500 !text-stone-900 !font-bold hover:!bg-blue-400 !shadow-lg !shadow-blue-500/20 hover:!shadow-blue-500/30"
                 >
                   {editingId ? 'Update Setup' : 'Save Setup'}
                 </Button>

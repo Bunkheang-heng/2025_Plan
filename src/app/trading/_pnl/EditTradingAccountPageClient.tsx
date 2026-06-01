@@ -335,7 +335,7 @@ export default function EditTradingAccountPageClient({
           title="Edit account"
           subtitle={
             <span className="flex flex-wrap items-center gap-2">
-              <span className="text-slate-400">{account.name}</span>
+              <span className="text-stone-500">{account.name}</span>
               <Badge variant={formData.type === 'real' ? 'real' : 'funded'}>
                 {formData.type === 'real' ? 'Real' : 'Funded'}
               </Badge>
@@ -352,7 +352,7 @@ export default function EditTradingAccountPageClient({
           }
         />
 
-        <p className="text-sm text-slate-500 -mt-4 mb-8">
+        <p className="text-sm text-stone-500 -mt-4 mb-8">
           Update details, objectives, and rules for this {meta.section}. Changes apply immediately after save.
         </p>
 
@@ -397,7 +397,7 @@ export default function EditTradingAccountPageClient({
                     ]}
                   />
                   {formData.type === 'funded' && pnlKind !== 'mt5' ? (
-                    <p className="text-xs text-slate-500 mt-2">Funded accounts do not support withdrawals in P&L.</p>
+                    <p className="text-xs text-stone-500 mt-2">Funded accounts do not support withdrawals in P&L.</p>
                   ) : null}
                 </div>
 
@@ -439,11 +439,11 @@ export default function EditTradingAccountPageClient({
                     className={`${inputClassName} tabular-nums`}
                   />
                   {pnlKind !== 'mt5' ? (
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-stone-500 mt-2">
                       When daily loss hits this limit, P&L entry is locked and you can log a self punishment.
                     </p>
                   ) : (
-                    <p className="text-xs text-slate-500 mt-2">Optional daily drawdown guard for your MT5 log.</p>
+                    <p className="text-xs text-stone-500 mt-2">Optional daily drawdown guard for your MT5 log.</p>
                   )}
                 </div>
 
@@ -460,7 +460,7 @@ export default function EditTradingAccountPageClient({
                       placeholder="Optional"
                       className={`${inputClassName} tabular-nums`}
                     />
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-stone-500 mt-2">
                       Shown on the MT5 trade log and included in AI coach context.
                     </p>
                   </div>
@@ -505,7 +505,7 @@ export default function EditTradingAccountPageClient({
               <button
                 type="button"
                 onClick={() => setShowResetModal(true)}
-                className="mt-4 inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-red-300 border border-red-500/40 hover:bg-red-500/10 transition-colors cursor-pointer"
+                className="mt-4 inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-500/40 hover:bg-red-500/10 transition-colors cursor-pointer"
               >
                 {pnlKind === 'mt5' ? 'Clear all MT5 trades' : 'Reset all P&L data'}
               </button>
@@ -513,7 +513,7 @@ export default function EditTradingAccountPageClient({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-800">
+        <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 border-t border-stone-200">
           <BtnGhost onClick={() => router.push(`${routeBase}/${accountId}`)} disabled={isSaving}>
             Cancel
           </BtnGhost>
@@ -533,20 +533,20 @@ export default function EditTradingAccountPageClient({
             onClose={() => !isResetting && setShowResetModal(false)}
           />
           <div className="px-6 pb-6 space-y-4">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-stone-500">
               {pnlKind === 'mt5' ? (
                 <>
-                  Delete all ingested MT5 trades for <span className="text-slate-200 font-medium">{account.name}</span>?
+                  Delete all ingested MT5 trades for <span className="text-stone-700 font-medium">{account.name}</span>?
                 </>
               ) : (
                 <>
                   Delete all P&L entries, withdrawals, and weekly lessons for{' '}
-                  <span className="text-slate-200 font-medium">{account.name}</span>?
+                  <span className="text-stone-700 font-medium">{account.name}</span>?
                 </>
               )}
             </p>
             {pnlKind === 'mt5' ? (
-              <p className="text-xs text-slate-500">Only Firestore rows are removed; MT5 terminal data is not affected.</p>
+              <p className="text-xs text-stone-500">Only Firestore rows are removed; MT5 terminal data is not affected.</p>
             ) : null}
             <div className="flex gap-3 pt-2">
               <BtnGhost

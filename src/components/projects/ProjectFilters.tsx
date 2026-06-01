@@ -18,15 +18,15 @@ export default function ProjectFilters({
   onCreateNew
 }: ProjectFiltersProps) {
   return (
-    <div className="bg-theme-card border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/10 p-6 mb-8">
+    <div className="bg-theme-card border border-blue-500/30 rounded-2xl shadow-lg shadow-blue-500/10 p-6 mb-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-bold text-yellow-400">Type:</label>
+            <label className="text-sm font-bold text-blue-600">Type:</label>
             <select
               value={filterType}
               onChange={(e) => onTypeChange(e.target.value as ProjectType | 'all')}
-              className="px-4 py-2 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-theme-primary font-semibold bg-theme-secondary"
+              className="px-4 py-2 border border-blue-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-theme-primary font-semibold bg-theme-secondary"
             >
               <option value="all" className="bg-theme-secondary text-theme-primary">All Types</option>
               <option value="website" className="bg-theme-secondary text-theme-primary">Website</option>
@@ -36,11 +36,11 @@ export default function ProjectFilters({
           </div>
           
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-bold text-yellow-400">Status:</label>
+            <label className="text-sm font-bold text-blue-600">Status:</label>
             <select
               value={filterStatus}
               onChange={(e) => onStatusChange(e.target.value as ProjectStatus | 'all')}
-              className="px-4 py-2 border border-yellow-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 text-theme-primary font-semibold bg-theme-secondary"
+              className="px-4 py-2 border border-blue-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-theme-primary font-semibold bg-theme-secondary"
             >
               <option value="all" className="bg-theme-secondary text-theme-primary">All Status</option>
               <option value="planning" className="bg-theme-secondary text-theme-primary">Planning</option>
@@ -54,7 +54,7 @@ export default function ProjectFilters({
 
         <button
           onClick={onCreateNew}
-          className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 flex items-center space-x-2"
+          className="px-6 py-3 bg-blue-500 text-stone-900 font-bold rounded-xl hover:bg-blue-400 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center space-x-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

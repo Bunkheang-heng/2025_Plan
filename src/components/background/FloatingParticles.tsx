@@ -11,7 +11,7 @@ export default function FloatingParticles({ count = 25 }: FloatingParticlesProps
       {[...Array(count)].map((_, i) => (
         <div
           key={i}
-          className="absolute w-1 h-1 bg-yellow-400 rounded-full animate-bounce opacity-20"
+          className="absolute w-1 h-1 bg-blue-400 rounded-full animate-bounce opacity-20"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,

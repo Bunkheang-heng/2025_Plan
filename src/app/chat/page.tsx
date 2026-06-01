@@ -538,58 +538,58 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-theme-card relative overflow-hidden">
       {/* Animated Background */}
       <AnimatedBackground />
 
       {/* Header with Arc Reactor Design */}
-      <div className="border-b border-yellow-500/30 bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm px-4 py-6 relative z-10 shadow-xl shadow-yellow-500/10">
+      <div className="border-b border-blue-500/30 bg-theme-card backdrop-blur-sm px-4 py-6 relative z-10 shadow-xl shadow-blue-500/10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             {/* J.A.R.V.I.S Identity */}
             <div className="flex items-center space-x-4">
               {/* Arc Reactor Icon */}
               <div className="relative group">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-2xl animate-arc-reactor border-2 border-yellow-300">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center animate-inner-glow">
+                <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center shadow-2xl animate-arc-reactor border-2 border-blue-300">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center animate-inner-glow">
                     <span className="text-black font-bold text-2xl">⚡</span>
                   </div>
                 </div>
                 {/* Energy Rings */}
-                <div className="absolute inset-0 rounded-full border-2 border-yellow-400/40 animate-energy-ring-1"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-yellow-400/30 animate-energy-ring-2"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-yellow-400/20 animate-energy-ring-3"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-blue-400/40 animate-energy-ring-1"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-blue-400/30 animate-energy-ring-2"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-blue-400/20 animate-energy-ring-3"></div>
               </div>
               
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 animate-text-glow">
+                <h1 className="text-3xl font-bold text-blue-600 animate-text-glow">
                   J.A.R.V.I.S
                 </h1>
                 <p className="text-sm text-theme-tertiary font-medium tracking-wide">Just A Rather Very Intelligent System</p>
                 <div className="flex items-center space-x-2 mt-1">
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                  <span className="text-xs text-green-400 font-semibold tracking-wider">ONLINE • READY</span>
+                  <span className="text-xs text-green-600 font-semibold tracking-wider">ONLINE • READY</span>
                 </div>
               </div>
             </div>
 
             {/* Stats Display */}
             <div className="hidden lg:flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-xl px-4 py-3 shadow-lg">
+              <div className="bg-theme-card backdrop-blur-sm border border-blue-500/20 rounded-xl px-4 py-3 shadow-lg">
                 <div className="flex items-center space-x-6">
                   <div className="text-center">
                     <p className="text-xs text-theme-tertiary mb-1">Daily</p>
-                    <p className="text-lg font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</p>
+                    <p className="text-lg font-bold text-blue-600">{stats.daily.completed}/{stats.daily.total}</p>
                   </div>
-                  <div className="w-px h-8 bg-gray-700"></div>
+                  <div className="w-px h-8 bg-stone-700"></div>
                   <div className="text-center">
                     <p className="text-xs text-theme-tertiary mb-1">Weekly</p>
-                    <p className="text-lg font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</p>
+                    <p className="text-lg font-bold text-blue-600">{stats.weekly.completed}/{stats.weekly.total}</p>
                   </div>
-                  <div className="w-px h-8 bg-gray-700"></div>
+                  <div className="w-px h-8 bg-stone-700"></div>
                   <div className="text-center">
                     <p className="text-xs text-theme-tertiary mb-1">Monthly</p>
-                    <p className="text-lg font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</p>
+                    <p className="text-lg font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</p>
                   </div>
                 </div>
               </div>
@@ -597,21 +597,21 @@ export default function ChatPage() {
           </div>
 
           {/* Mobile Stats */}
-          <div className="lg:hidden mt-4 bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-3 shadow-lg">
+          <div className="lg:hidden mt-4 bg-theme-card backdrop-blur-sm border border-blue-500/20 rounded-xl p-3 shadow-lg">
             <div className="flex items-center justify-around">
               <div className="text-center">
                 <p className="text-xs text-theme-tertiary mb-1">Daily</p>
-                <p className="text-sm font-bold text-yellow-400">{stats.daily.completed}/{stats.daily.total}</p>
+                <p className="text-sm font-bold text-blue-600">{stats.daily.completed}/{stats.daily.total}</p>
               </div>
-              <div className="w-px h-8 bg-gray-700"></div>
+              <div className="w-px h-8 bg-stone-700"></div>
               <div className="text-center">
                 <p className="text-xs text-theme-tertiary mb-1">Weekly</p>
-                <p className="text-sm font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</p>
+                <p className="text-sm font-bold text-blue-600">{stats.weekly.completed}/{stats.weekly.total}</p>
               </div>
-              <div className="w-px h-8 bg-gray-700"></div>
+              <div className="w-px h-8 bg-stone-700"></div>
               <div className="text-center">
                 <p className="text-xs text-theme-tertiary mb-1">Monthly</p>
-                <p className="text-sm font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</p>
+                <p className="text-sm font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</p>
               </div>
             </div>
           </div>
@@ -641,7 +641,7 @@ export default function ChatPage() {
       </div>
 
       {/* Chat Input */}
-      <div className="border-t border-yellow-500/30 bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm shadow-2xl shadow-yellow-500/10 relative z-10">
+      <div className="border-t border-blue-500/30 bg-theme-card backdrop-blur-sm shadow-2xl shadow-blue-500/10 relative z-10">
         <div className="max-w-4xl mx-auto">
           <ChatInput
             onSendMessage={sendMessage}
@@ -739,16 +739,16 @@ export default function ChatPage() {
         }
 
         ::-webkit-scrollbar-track {
-          background: rgba(31, 41, 55, 0.5);
+          background: rgba(28, 25, 23, 0.08);
         }
 
         ::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #fbbf24, #f59e0b);
+          background: #3b82f6;
           border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, #f59e0b, #d97706);
+          background: #2563eb;
         }
       `}</style>
     </div>

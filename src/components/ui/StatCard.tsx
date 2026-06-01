@@ -21,7 +21,7 @@ const StatCard: React.FC<StatCardProps> = ({
   completed,
   onClick,
   icon = 'clipboard',
-  gradient = 'bg-gradient-to-br from-blue-500 to-blue-600',
+  gradient = 'bg-blue-600',
   description = '',
   type = '',
   showProgress = true,

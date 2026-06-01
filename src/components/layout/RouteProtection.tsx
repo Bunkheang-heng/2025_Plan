@@ -33,7 +33,6 @@ export default function RouteProtection({ children }: RouteProtectionProps) {
       if (!canAccessRoute(role, pathname)) {
         // Redirect to the user's allowed home
         if (role === 'restricted') router.push('/couple_saving')
-        else if (role === 'partner') router.push('/trading_partner')
         else router.push('/')
         return
       }
@@ -49,7 +48,6 @@ export default function RouteProtection({ children }: RouteProtectionProps) {
     if (!isLoading && role) {
       if (!canAccessRoute(role, pathname)) {
         if (role === 'restricted') router.push('/couple_saving')
-        else if (role === 'partner') router.push('/trading_partner')
         else router.push('/')
       } else {
         setIsChecking(false)

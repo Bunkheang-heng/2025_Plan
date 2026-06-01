@@ -22,10 +22,10 @@ const Card: React.FC<CardProps> = ({
   const baseClasses = 'bg-white rounded-2xl transition-all duration-300'
   
   const variantClasses = {
-    default: 'border border-slate-200',
-    elevated: 'shadow-lg shadow-slate-200/50 border border-slate-200',
-    bordered: 'border-2 border-slate-300',
-    gradient: 'bg-gradient-to-br from-white to-slate-50 border border-slate-200 shadow-lg'
+    default: 'border border-stone-200',
+    elevated: 'shadow-lg shadow-stone-200/50 border border-stone-200',
+    bordered: 'border-2 border-stone-300',
+    gradient: 'border border-stone-200 shadow-lg'
   }
   
   const paddingClasses = {
@@ -35,7 +35,7 @@ const Card: React.FC<CardProps> = ({
     xl: 'p-10'
   }
   
-  const hoverClasses = hover ? 'hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 hover:-translate-y-1' : ''
+  const hoverClasses = hover ? 'hover:shadow-xl hover:shadow-stone-200/50 hover:border-stone-300 hover:-translate-y-1' : ''
   const clickableClasses = clickable ? 'cursor-pointer' : ''
   
   const classes = `${baseClasses} ${variantClasses[variant]} ${paddingClasses[padding]} ${hoverClasses} ${clickableClasses} ${className}`

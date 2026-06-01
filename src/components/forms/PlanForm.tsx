@@ -129,7 +129,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
   return (
     <Card variant="elevated" padding="lg" className="max-w-2xl mx-auto">
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900 text-center">
+        <h2 className="text-2xl font-bold text-stone-900 text-center">
           {getFormTitle()}
         </h2>
         
@@ -189,7 +189,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
             </div>
           )}
           
-          <div className="flex justify-end space-x-4 pt-6 border-t border-slate-200">
+          <div className="flex justify-end space-x-4 pt-6 border-t border-stone-200">
             <Button
               type="button"
               variant="ghost"

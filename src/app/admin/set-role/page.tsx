@@ -83,7 +83,7 @@ export default function SetRolePage() {
       {currentUserRole !== 'admin' ? (
         <div className="min-h-screen bg-theme-primary flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
             <p className="text-theme-tertiary">Only administrators can access this page.</p>
           </div>
         </div>
@@ -93,14 +93,14 @@ export default function SetRolePage() {
           <div className="mb-6">
             <button
               onClick={() => router.push('/admin/create-account')}
-              className="mb-4 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all"
+              className="mb-4 px-4 py-2 bg-blue-500 text-black font-semibold rounded-lg hover:bg-blue-400 transition-all"
             >
               Create New Account
             </button>
           </div>
           <h1 className="text-3xl font-bold text-theme-primary mb-8">User Role Management</h1>
 
-        <div className="bg-theme-secondary border border-yellow-500/30 rounded-lg p-6 mb-6">
+        <div className="bg-theme-secondary border border-blue-500/30 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold text-theme-primary mb-4">Set Role for User ID</h2>
           
           <div className="space-y-4">
@@ -113,7 +113,7 @@ export default function SetRolePage() {
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="Enter Firebase User UID"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -126,7 +126,7 @@ export default function SetRolePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -139,7 +139,7 @@ export default function SetRolePage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="User's name"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -150,11 +150,10 @@ export default function SetRolePage() {
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
+                className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
               >
                 <option value="admin">Admin (Full Access)</option>
                 <option value="restricted">Restricted (Couple Saving Only)</option>
-                <option value="partner">Partner (Trading Partner Only)</option>
               </select>
             </div>
 
@@ -162,14 +161,14 @@ export default function SetRolePage() {
               <button
                 onClick={handleSetRole}
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-blue-500 text-black font-bold rounded-lg hover:bg-blue-400 transition-all disabled:opacity-50"
               >
                 {loading ? 'Setting...' : 'Set Role'}
               </button>
               <button
                 onClick={handleGetRole}
                 disabled={loading}
-                className="px-6 py-3 bg-gray-700 text-theme-primary font-semibold rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50"
+                className="px-6 py-3 bg-stone-700 text-theme-primary font-semibold rounded-lg hover:bg-stone-600 transition-all disabled:opacity-50"
               >
                 Get Role
               </button>
@@ -194,7 +193,7 @@ export default function SetRolePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="User's name"
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
+                  className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -205,18 +204,17 @@ export default function SetRolePage() {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-theme-primary focus:outline-none focus:border-yellow-500"
+                  className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
                 >
                   <option value="admin">Admin (Full Access)</option>
                   <option value="restricted">Restricted (Couple Saving Only)</option>
-                  <option value="partner">Partner (Trading Partner Only)</option>
                 </select>
               </div>
 
               <button
                 onClick={handleSetCurrentUserRole}
                 disabled={loading}
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary font-bold rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50"
+                className="w-full px-6 py-3 bg-blue-600 text-theme-primary font-bold rounded-lg hover:bg-blue-500 transition-all disabled:opacity-50"
               >
                 {loading ? 'Setting...' : 'Set Current User Role'}
               </button>
@@ -227,8 +225,8 @@ export default function SetRolePage() {
         {message && (
           <div className={`mt-4 p-4 rounded-lg ${
             message.includes('✅') 
-              ? 'bg-green-500/20 border border-green-500/50 text-green-400' 
-              : 'bg-red-500/20 border border-red-500/50 text-red-400'
+              ? 'bg-green-500/20 border border-green-500/50 text-green-600' 
+              : 'bg-red-500/20 border border-red-500/50 text-red-600'
           }`}>
             {message}
           </div>

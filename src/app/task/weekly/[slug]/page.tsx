@@ -174,7 +174,7 @@ export default function WeeklyPlanSlugPage() {
       <div className="min-h-screen bg-theme-primary flex items-center justify-center p-6">
         <div className="text-center">
           <p className="text-theme-tertiary mb-4">Invalid week</p>
-          <Link href="/task/weekly" className="text-yellow-400 hover:underline">Back to weeks</Link>
+          <Link href="/task/weekly" className="text-blue-600 hover:underline">Back to weeks</Link>
         </div>
       </div>
     )
@@ -188,7 +188,7 @@ export default function WeeklyPlanSlugPage() {
         <div className="mb-6">
           <Link
             href="/task/weekly"
-            className="inline-flex items-center gap-2 text-theme-secondary hover:text-yellow-400 transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 text-theme-secondary hover:text-blue-600 transition-colors text-sm font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -200,20 +200,20 @@ export default function WeeklyPlanSlugPage() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-theme-primary">{weekLabel}</h1>
           <div className="flex gap-6 mt-2 text-sm text-theme-tertiary">
-            <span>Total: <strong className="text-yellow-400">{state.totalTasks}</strong></span>
-            <span>Done: <strong className="text-emerald-400">{state.completedTasks}</strong></span>
+            <span>Total: <strong className="text-blue-600">{state.totalTasks}</strong></span>
+            <span>Done: <strong className="text-green-600">{state.completedTasks}</strong></span>
             {state.totalTasks > 0 && (
-              <span>Progress: <strong className="text-yellow-400">{Math.round((state.completedTasks / state.totalTasks) * 100)}%</strong></span>
+              <span>Progress: <strong className="text-blue-600">{Math.round((state.completedTasks / state.totalTasks) * 100)}%</strong></span>
             )}
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
-          <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 px-6 py-4 flex items-center justify-between">
+        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10">
+          <div className="bg-blue-500/10 border-b border-blue-500/30 px-6 py-4 flex items-center justify-between">
             <h3 className="text-lg font-bold text-theme-primary">Objectives</h3>
             <button
               onClick={openAddModal}
-              className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-stone-900 font-semibold rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -227,21 +227,21 @@ export default function WeeklyPlanSlugPage() {
               <p className="text-theme-tertiary mb-4">No objectives for this week.</p>
               <button
                 onClick={openAddModal}
-                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-xl transition-colors"
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-stone-900 font-semibold rounded-xl transition-colors"
               >
                 Add task
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-700/50">
+            <div className="divide-y divide-stone-700/50">
               {state.plans.map((plan) => (
-                <div key={plan.id} className="p-5 hover:bg-gray-700/20 transition-colors">
+                <div key={plan.id} className="p-5 hover:bg-stone-700/20 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <div className="flex-shrink-0">
                       <select
                         value={plan.status}
                         onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                        className="px-3 py-2 border border-yellow-500/30 rounded-lg text-gray-100 text-sm font-medium cursor-pointer bg-theme-secondary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                        className="px-3 py-2 border border-blue-500/30 rounded-lg text-stone-100 text-sm font-medium cursor-pointer bg-theme-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       >
                         <option value="Not Started" className="bg-theme-card">Not Started</option>
                         <option value="Done" className="bg-theme-card">Done</option>
@@ -250,7 +250,7 @@ export default function WeeklyPlanSlugPage() {
                       </select>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className={`font-semibold text-base ${plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-gray-100'}`}>
+                      <h4 className={`font-semibold text-base ${plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-stone-100'}`}>
                         {plan.title}
                       </h4>
                       {plan.description && (
@@ -259,9 +259,9 @@ export default function WeeklyPlanSlugPage() {
                         </p>
                       )}
                       <span className={`inline-flex mt-2 px-2.5 py-0.5 rounded text-xs font-semibold ${
-                        plan.priority === 'high' ? 'bg-red-500/20 text-red-300 border border-red-400/30' :
-                        plan.priority === 'medium' ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' :
-                        'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                        plan.priority === 'high' ? 'bg-red-500/20 text-red-600 border border-red-400/30' :
+                        plan.priority === 'medium' ? 'bg-blue-500/20 text-blue-600 border border-blue-400/30' :
+                        'bg-green-500/20 text-green-600 border border-green-400/30'
                       }`}>
                         {plan.priority?.toUpperCase() || 'MEDIUM'}
                       </span>
@@ -269,18 +269,18 @@ export default function WeeklyPlanSlugPage() {
                     <div className="flex-shrink-0 flex items-center gap-2">
                       <span className={`inline-flex px-2.5 py-1 rounded text-xs font-semibold ${
                         plan.status === 'Done'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                          ? 'bg-green-500/20 text-green-600 border border-green-400/30'
                           : plan.status === 'Missed'
-                            ? 'bg-red-500/20 text-red-300 border border-red-400/30'
+                            ? 'bg-red-500/20 text-red-600 border border-red-400/30'
                             : plan.status === 'Failed'
-                              ? 'bg-orange-500/20 text-orange-300 border border-orange-400/30'
-                            : 'bg-gray-500/20 text-theme-secondary border border-gray-400/30'
+                              ? 'bg-blue-500/20 text-blue-600 border border-blue-400/30'
+                            : 'bg-stone-500/20 text-theme-secondary border border-stone-400/30'
                       }`}>
                         {plan.status}
                       </span>
                       <button
                         onClick={() => deletePlan(plan.id)}
-                        className="p-1.5 text-theme-tertiary hover:text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                        className="p-1.5 text-theme-tertiary hover:text-red-600 hover:bg-red-500/20 rounded-lg transition-colors"
                         title="Delete task"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,14 +303,14 @@ export default function WeeklyPlanSlugPage() {
           onClick={closeAddModal}
         >
           <div
-            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-theme-card border border-blue-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-theme-primary">Add task for {weekLabel}</h2>
               <button
                 onClick={closeAddModal}
-                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-theme-tertiary"
+                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors text-theme-tertiary"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -327,7 +327,7 @@ export default function WeeklyPlanSlugPage() {
                   onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter task title"
                   required
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   disabled={state.isAdding}
                 />
               </div>
@@ -338,7 +338,7 @@ export default function WeeklyPlanSlugPage() {
                   onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Add description"
                   rows={3}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
                   disabled={state.isAdding}
                 />
               </div>
@@ -347,7 +347,7 @@ export default function WeeklyPlanSlugPage() {
                 <select
                   value={newTask.priority}
                   onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -359,14 +359,14 @@ export default function WeeklyPlanSlugPage() {
                 <button
                   type="button"
                   onClick={closeAddModal}
-                  className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-theme-primary font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={state.isAdding}
-                  className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-gray-900 font-semibold rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 font-semibold rounded-xl transition-colors"
                 >
                   {state.isAdding ? 'Adding...' : 'Add'}
                 </button>

@@ -19,7 +19,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   badgeText,
   badgeVariant = 'info',
   icon,
-  gradient = 'bg-gradient-to-br from-blue-500 to-blue-600',
+  gradient = 'bg-blue-600',
   className = '',
   children
 }) => {

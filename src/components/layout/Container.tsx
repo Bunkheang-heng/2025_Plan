@@ -25,7 +25,7 @@ const Container: React.FC<ContainerProps> = ({
   
   const backgroundClasses = {
     default: 'bg-white',
-    gradient: 'bg-gradient-to-br from-slate-50 to-slate-100',
+    gradient: 'bg-theme-primary',
     none: ''
   }
   

@@ -21,7 +21,7 @@ export default function Loading() {
         <div className="text-center space-y-10">
           {/* Logo */}
           <div className="flex justify-center">
-            <div className="p-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl shadow-2xl shadow-yellow-500/25 border border-yellow-300">
+            <div className="p-6 bg-blue-500 rounded-2xl shadow-2xl shadow-blue-500/25 border border-blue-300">
               <svg className="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -30,7 +30,7 @@ export default function Loading() {
 
           {/* Loading Text */}
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">J.A.R.V.I.S</h2>
+            <h2 className="text-3xl font-bold text-blue-600">J.A.R.V.I.S</h2>
             <p className="text-lg text-theme-secondary font-medium">Initializing AI systems...</p>
           </div>
 
@@ -38,7 +38,7 @@ export default function Loading() {
           <div className="flex justify-center">
             <div className="relative">
               <div className="w-12 h-12 border-4 border-theme-tertiary rounded-full"></div>
-              <div className="absolute inset-0 w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           </div>
 
@@ -46,11 +46,11 @@ export default function Loading() {
           <div className="w-full space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm font-semibold text-theme-secondary">System Status</span>
-              <span className="text-sm font-bold text-yellow-400">{Math.round(progress)}%</span>
+              <span className="text-sm font-bold text-blue-600">{Math.round(progress)}%</span>
             </div>
             <div className="w-full bg-theme-tertiary rounded-full h-3 overflow-hidden border border-theme-secondary">
               <div 
-                className="h-full bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full transition-all duration-500 ease-out shadow-lg"
+                className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out shadow-lg"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -62,9 +62,9 @@ export default function Loading() {
               Preparing your mission control center...
             </p>
             <div className="flex items-center justify-center space-x-2">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </div>
         </div>

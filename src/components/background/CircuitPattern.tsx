@@ -12,7 +12,7 @@ export default function CircuitPattern() {
               stroke="currentColor" 
               strokeWidth="1" 
               fill="none"
-              className="text-yellow-400 animate-pulse" 
+              className="text-blue-600 animate-pulse" 
               style={{ animationDelay: '0s', animationDuration: '4s' }} 
             />
             <circle 
@@ -20,7 +20,7 @@ export default function CircuitPattern() {
               cy="30" 
               r="2" 
               fill="currentColor" 
-              className="text-yellow-400 animate-ping" 
+              className="text-blue-600 animate-ping" 
               style={{ animationDelay: '1s' }} 
             />
             <circle 
@@ -28,7 +28,7 @@ export default function CircuitPattern() {
               cy="70" 
               r="2" 
               fill="currentColor" 
-              className="text-yellow-400 animate-ping" 
+              className="text-blue-600 animate-ping" 
               style={{ animationDelay: '2s' }} 
             />
           </pattern>

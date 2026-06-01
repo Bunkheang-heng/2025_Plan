@@ -101,7 +101,7 @@ export default function SelfPunishmentDetailPage() {
           <div className="text-theme-tertiary text-sm mb-4">It may have been deleted or you don’t have access.</div>
           <button
             onClick={() => router.push('/self_punishment')}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-theme-primary font-semibold rounded-xl"
+            className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-theme-primary font-semibold rounded-xl"
           >
             Back
           </button>
@@ -116,7 +116,7 @@ export default function SelfPunishmentDetailPage() {
         <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
           <button
             onClick={() => router.push('/self_punishment')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-gray-900 transition-colors text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900/60 border border-theme-secondary text-stone-200 rounded-lg hover:bg-stone-900 transition-colors text-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -125,16 +125,16 @@ export default function SelfPunishmentDetailPage() {
           </button>
           {entry.expiresAt && (
             <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold border ${
-              expired ? 'bg-gray-600 text-theme-tertiary border-gray-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+              expired ? 'bg-stone-600 text-theme-tertiary border-stone-500/40' : 'bg-blue-500/20 text-blue-600 border-blue-500/40'
             }`}>
               {expired ? 'Expired' : 'Active'}
             </span>
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-amber-500/30 rounded-2xl overflow-hidden shadow-lg">
-          <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-b border-amber-500/30 p-6">
-            <div className="text-xs text-amber-300/90 font-semibold mb-1">{dateLabel(entry.date)}</div>
+        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg">
+          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-blue-500/30 p-6">
+            <div className="text-xs text-blue-600/90 font-semibold mb-1">{dateLabel(entry.date)}</div>
             <h1 className="text-2xl lg:text-3xl font-bold text-theme-primary">Self Punishment</h1>
             <p className="text-sm text-theme-tertiary mt-1">Created: {new Date(entry.createdAt).toLocaleString()}</p>
           </div>
@@ -152,7 +152,7 @@ export default function SelfPunishmentDetailPage() {
 
             {entry.expiresAt && (
               <div className={`border rounded-2xl p-5 ${
-                expired ? 'bg-gray-800/40 border-gray-700' : 'bg-amber-500/10 border-amber-500/30'
+                expired ? 'bg-stone-800/40 border-stone-700' : 'bg-blue-500/10 border-blue-500/30'
               }`}>
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
@@ -161,7 +161,7 @@ export default function SelfPunishmentDetailPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-xs text-theme-tertiary font-semibold">{expired ? 'Status' : 'Time left'}</div>
-                    <div className={`text-2xl font-bold ${expired ? 'text-theme-tertiary' : 'text-amber-300'}`}>
+                    <div className={`text-2xl font-bold ${expired ? 'text-theme-tertiary' : 'text-blue-600'}`}>
                       {diffMs !== null && diffMs > 0 ? formatCountdown(diffMs) : 'Expired'}
                     </div>
                   </div>

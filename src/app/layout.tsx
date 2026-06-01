@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Heng Bunkheang's Planner | Daily, Weekly & Monthly Planning",
-  description: "Personal productivity planner for Heng Bunkheang - Organize daily tasks, weekly goals, and monthly objectives with an elegant dark-themed interface.",
+  description: "Personal productivity planner for Heng Bunkheang - Organize daily tasks, weekly goals, and monthly objectives with a clean light interface.",
   keywords: ["productivity", "planner", "task management", "daily planning", "weekly planning", "monthly planning"],
   authors: [{ name: "Heng Bunkheang" }],
 };
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0f172a",
+  themeColor: "#f7f6f4",
 };
 
 export default function RootLayout({
@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
@@ -60,7 +60,7 @@ export default function RootLayout({
             pauseOnFocusLoss
             draggable
             pauseOnHover
-            theme="dark"
+            theme="light"
           />
         </AuthProvider>
       </body>

@@ -47,7 +47,6 @@ export default function Nav() {
         { path: '/self_punishment', label: 'Self Punishment' }
       ]
     },
-    { path: '/school', label: 'School', icon: SchoolIcon },
     { 
       label: 'Trading', 
       icon: TradingIcon,
@@ -55,17 +54,13 @@ export default function Nav() {
         { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
         { path: '/trading/bot_trading_pnl', label: 'Bot trading P&L', group: 'Trading' },
         { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
-        { path: '/trading/trade_entry', label: 'Trade Entry Log', group: 'Trading' },
-        { path: '/trading/mt5_tracker', label: 'MT5 trade log', group: 'Trading' },
-        { path: '/trading/mt5_tracker/settings', label: 'MT5 Settings', group: 'Trading' },
         { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
         { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
         { path: '/trading/tools', label: 'Tools', group: 'Learning' },
         { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
         { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
         { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
-        { path: '/trading_partner/groups', label: 'Trading Partner', group: 'Social' },
-        { path: '/setup', label: 'My Setup', group: 'Social' }
+        { path: '/setup', label: 'My Setup', group: 'Trading' }
       ]
     },
     { 
@@ -177,23 +172,6 @@ export default function Nav() {
     )
   }
 
-  function TradingPartnerIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H2v-2a4 4 0 013-3.87m12 5v-2a4 4 0 00-4-4H11a4 4 0 00-4 4v2m10-10a4 4 0 10-8 0 4 4 0 008 0zm6 2a3 3 0 10-6 0 3 3 0 006 0zM5 12a3 3 0 10-6 0 3 3 0 006 0z" />
-      </svg>
-    )
-  }
-
-  function SchoolIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.34 5.888L12 20l-6.5-3.534a12.083 12.083 0 01.34-5.888L12 14z" />
-      </svg>
-    )
-  }
-
   // WORKING PROJECT = Briefcase Icon
   function WorkingProjectIcon() {
     return (
@@ -287,7 +265,7 @@ export default function Nav() {
             onClick={() => setOpenDropdown(isOpen ? null : link.label)}
             className={`w-full flex items-center justify-between px-4 py-3 rounded-r-lg transition-colors duration-200 text-sm font-medium ${
               isSubLinkActive
-                ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
+                ? 'bg-blue-500 text-black shadow-lg'
                 : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
             }`}
           >
@@ -320,7 +298,7 @@ export default function Nav() {
                           onClick={() => router.push(subLink.path)}
                           className={`w-full text-left px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
                             pathname === subLink.path
-                              ? 'bg-yellow-500/20 text-yellow-400 border-l-2 border-yellow-400'
+                              ? 'bg-blue-500/20 text-blue-600 border-l-2 border-blue-400'
                               : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
                           }`}
                         >
@@ -350,7 +328,7 @@ export default function Nav() {
                               onClick={() => toggleGroup(groupKey)}
                               className={`w-full flex items-center justify-between px-4 py-2 rounded-r-lg transition-colors duration-200 text-xs font-bold uppercase tracking-wider ${
                                 hasActiveItem
-                                  ? 'text-yellow-400'
+                                  ? 'text-blue-600'
                                   : 'text-theme-muted hover:text-theme-secondary'
                               }`}
                             >
@@ -373,7 +351,7 @@ export default function Nav() {
                                   onClick={() => router.push(subLink.path)}
                                   className={`w-full text-left px-6 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
                                     pathname === subLink.path
-                                      ? 'bg-yellow-500/20 text-yellow-400 border-l-2 border-yellow-400'
+                                      ? 'bg-blue-500/20 text-blue-600 border-l-2 border-blue-400'
                                       : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
                                   }`}
                                 >
@@ -399,7 +377,7 @@ export default function Nav() {
         onClick={() => router.push(link.path!)}
         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-r-lg transition-colors duration-200 text-sm font-medium ${
           active
-            ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
+            ? 'bg-blue-500 text-black shadow-lg'
             : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
         }`}
       >
@@ -421,7 +399,7 @@ export default function Nav() {
           <button
             onClick={() => setOpenDropdown(isOpen ? null : link.label)}
             className={`w-full text-left px-4 py-3 rounded-lg transition-colors duration-150 ${
-              isSubLinkActive ? 'text-yellow-400 bg-theme-tertiary/50' : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
+              isSubLinkActive ? 'text-blue-600 bg-theme-tertiary/50' : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -457,7 +435,7 @@ export default function Nav() {
                           }}
                           className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-150 text-sm ${
                             pathname === subLink.path
-                              ? 'text-yellow-400 bg-theme-tertiary/50'
+                              ? 'text-blue-600 bg-theme-tertiary/50'
                               : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
                           }`}
                         >
@@ -487,7 +465,7 @@ export default function Nav() {
                               onClick={() => toggleGroup(groupKey)}
                               className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors duration-150 text-xs font-bold uppercase tracking-wider ${
                                 hasActiveItem
-                                  ? 'text-yellow-400'
+                                  ? 'text-blue-600'
                                   : 'text-theme-muted hover:text-theme-secondary'
                               }`}
                             >
@@ -514,7 +492,7 @@ export default function Nav() {
                                   }}
                                   className={`w-full text-left px-6 py-2 rounded-lg transition-colors duration-150 text-sm ${
                                     pathname === subLink.path
-                                      ? 'text-yellow-400 bg-theme-tertiary/50'
+                                      ? 'text-blue-600 bg-theme-tertiary/50'
                                       : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
                                   }`}
                                 >
@@ -564,7 +542,7 @@ export default function Nav() {
       className={`w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
         isLoggedIn
           ? 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
-          : 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
+          : 'bg-blue-500 text-black shadow-lg'
       }`}
     >
       {isLoggedIn ? 'Sign Out' : 'Sign In'}
@@ -581,13 +559,13 @@ export default function Nav() {
         }}
       >
         <div className="flex items-center space-x-3 mb-6 cursor-pointer" onClick={() => router.push('/')}>
-          <div className="p-3 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg shadow-lg border border-yellow-300">
+          <div className="p-3 bg-blue-500 rounded-lg shadow-lg border border-blue-300">
             <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">J.A.R.V.I.S</h1>
+            <h1 className="text-lg font-bold text-blue-600">J.A.R.V.I.S</h1>
             <p className="text-xs text-theme-muted">Personal Assistant</p>
           </div>
         </div>
@@ -610,12 +588,12 @@ export default function Nav() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push('/')}>
-            <div className="p-2 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg shadow-sm">
+            <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
               <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h2 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">J.A.R.V.I.S</h2>
+            <h2 className="text-sm font-bold text-blue-600">J.A.R.V.I.S</h2>
           </div>
 
           <div className="flex items-center space-x-2">

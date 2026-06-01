@@ -192,7 +192,7 @@ function HomeContent({
       description: 'Strategic goals',
       route: '/task/weekly',
       icon: 'M8 7V3m8 4V3M3 10h18M3 21h18',
-      gradient: 'from-purple-500 to-purple-600',
+      gradient: 'from-blue-500 to-blue-600',
       stats: stats.weekly,
       color: 'purple'
     },
@@ -201,7 +201,7 @@ function HomeContent({
       description: 'Long-term objectives',
       route: '/task/monthly',
       icon: 'M8 7V3m8 4V3M3 8h18M3 21h18',
-      gradient: 'from-emerald-500 to-emerald-600',
+      gradient: 'from-green-500 to-green-600',
       stats: stats.monthly,
       color: 'emerald'
     },
@@ -210,9 +210,9 @@ function HomeContent({
       description: 'Track your profits',
       route: '/trading_pnl',
       icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      gradient: 'from-yellow-500 to-yellow-600',
+      gradient: 'from-blue-500 to-blue-600',
       stats: null,
-      color: 'yellow',
+      color: 'blue',
       badge: `$${tradingStats.totalPnL.toFixed(0)}`
     },
     {
@@ -220,7 +220,7 @@ function HomeContent({
       description: 'Chat with JARVIS',
       route: '/chat',
       icon: 'M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.97 9.97 0 01-4-.8L3 20l1.2-4.2A7.97 7.97 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
-      gradient: 'from-cyan-500 to-cyan-600',
+      gradient: 'from-blue-500 to-blue-600',
       stats: null,
       color: 'cyan'
     },
@@ -229,9 +229,9 @@ function HomeContent({
       description: 'Gold market updates',
       route: '/trading_news',
       icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z',
-      gradient: 'from-orange-500 to-orange-600',
+      gradient: 'from-blue-500 to-blue-600',
       stats: null,
-      color: 'orange'
+      color: 'blue'
     }
   ]
 
@@ -250,21 +250,21 @@ function HomeContent({
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             {/* Greeting & Time */}
             <div>
-              <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-4">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+              <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-4">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
                 System Online
               </div>
               <h1 className="text-4xl lg:text-5xl font-bold text-theme-primary mb-2">
-                {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Commander</span>
+                {greeting}, <span className="text-blue-600">Commander</span>
               </h1>
               <p className="text-theme-tertiary text-lg">{currentDate}</p>
             </div>
 
             {/* Digital Clock */}
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-6 shadow-lg shadow-yellow-500/10">
+            <div className="bg-theme-card border border-blue-500/30 rounded-2xl p-6 shadow-lg shadow-blue-500/10">
               <div className="text-center">
                 <div className="text-sm text-theme-tertiary mb-2">Current Time</div>
-                <div className="text-4xl font-bold text-yellow-400 font-mono tracking-wider animate-digital-pulse">
+                <div className="text-4xl font-bold text-blue-600 font-mono tracking-wider animate-digital-pulse">
                   {mounted ? currentTime : '00:00:00'}
                 </div>
                 <div className="text-xs text-theme-muted mt-2">Asia/Phnom Penh</div>
@@ -275,34 +275,34 @@ function HomeContent({
 
         {/* Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="md:col-span-4 lg:col-span-1 bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="md:col-span-4 lg:col-span-1 bg-theme-card border border-blue-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="text-sm text-theme-tertiary mb-1">Overall Progress</div>
                 <div className="text-3xl font-bold text-theme-primary">{overallProgress}%</div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl">
+              <div className="p-3 bg-blue-500 rounded-xl">
                 <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
+            <div className="w-full bg-stone-700 rounded-full h-2 mb-2">
               <div 
-                className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2 rounded-full transition-all duration-1000"
+                className="bg-blue-500 h-2 rounded-full transition-all duration-1000"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
             <div className="text-xs text-theme-tertiary">{completedTasks} of {totalTasks} tasks completed</div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-theme-card border border-blue-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-theme-tertiary mb-1">Today&apos;s Tasks</div>
-                <div className="text-3xl font-bold text-blue-400">{stats.daily.completed}/{stats.daily.total}</div>
+                <div className="text-3xl font-bold text-blue-600">{stats.daily.completed}/{stats.daily.total}</div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+              <div className="p-3 bg-blue-600 rounded-xl">
                 <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
                 </svg>
@@ -310,13 +310,13 @@ function HomeContent({
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.3s' }}>
+          <div className="bg-theme-card border border-blue-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-theme-tertiary mb-1">This Week</div>
-                <div className="text-3xl font-bold text-purple-400">{stats.weekly.completed}/{stats.weekly.total}</div>
+                <div className="text-3xl font-bold text-blue-600">{stats.weekly.completed}/{stats.weekly.total}</div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+              <div className="p-3 bg-blue-600 rounded-xl">
                 <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 10h18M3 21h18" />
                 </svg>
@@ -324,13 +324,13 @@ function HomeContent({
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
+          <div className="bg-theme-card border border-green-500/30 rounded-2xl p-6 animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-theme-tertiary mb-1">This Month</div>
-                <div className="text-3xl font-bold text-emerald-400">{stats.monthly.completed}/{stats.monthly.total}</div>
+                <div className="text-3xl font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</div>
               </div>
-              <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl">
+              <div className="p-3 bg-green-600 rounded-xl">
                 <svg className="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 8h18M3 21h18" />
                 </svg>
@@ -342,7 +342,7 @@ function HomeContent({
         {/* Quick Actions Grid */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-theme-primary mb-6 flex items-center">
-            <svg className="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
             Quick Access
@@ -355,7 +355,7 @@ function HomeContent({
                 className="group cursor-pointer relative animate-slide-in-up"
                 style={{ animationDelay: `${0.1 + index * 0.1}s` }}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 border border-${action.color}-500/30 rounded-2xl transform group-hover:scale-105 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-${action.color}-500/20`} />
+                <div className={`absolute inset-0 bg-theme-card border border-${action.color}-500/30 rounded-2xl transform group-hover:scale-105 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-${action.color}-500/20`} />
                 
                 {/* Scanning Line Effect */}
                 <div className="absolute inset-0 rounded-2xl overflow-hidden">
@@ -384,7 +384,7 @@ function HomeContent({
                     )}
                   </div>
                   
-                  <h3 className="text-xl font-bold text-theme-primary mb-2 group-hover:text-yellow-400 transition-colors">
+                  <h3 className="text-xl font-bold text-theme-primary mb-2 group-hover:text-blue-600 transition-colors">
                     {action.title}
                   </h3>
                   <p className="text-theme-tertiary text-sm mb-4">
@@ -394,14 +394,14 @@ function HomeContent({
                   {action.stats && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-theme-tertiary">{action.stats.completed} / {action.stats.total} tasks</span>
-                      <svg className="w-5 h-5 text-yellow-400 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-blue-600 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </div>
                   )}
                   
                   {!action.stats && (
-                    <div className="flex items-center text-yellow-400 font-semibold text-sm group-hover:gap-3 transition-all gap-2">
+                    <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:gap-3 transition-all gap-2">
                       <span>Open</span>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -418,19 +418,19 @@ function HomeContent({
         {recentTasks.length > 0 && (
           <div className="animate-slide-in-up" style={{ animationDelay: '0.8s' }}>
             <h2 className="text-2xl font-bold text-theme-primary mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Upcoming Tasks
             </h2>
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden shadow-lg shadow-yellow-500/10">
-              <div className="divide-y divide-gray-700/50">
+            <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10">
+              <div className="divide-y divide-stone-700/50">
                 {recentTasks.map((task) => (
-                  <div key={task.id} className="p-6 hover:bg-gray-700/30 transition-all duration-200 cursor-pointer" onClick={() => router.push('/task/daily')}>
+                  <div key={task.id} className="p-6 hover:bg-stone-700/30 transition-all duration-200 cursor-pointer" onClick={() => router.push('/task/daily')}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 flex-1">
                         <div className="p-2 bg-blue-500/20 rounded-lg border border-blue-400/50">
-                          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                           </svg>
                         </div>
@@ -440,9 +440,9 @@ function HomeContent({
                             <span className="text-xs text-theme-tertiary capitalize">{task.type}</span>
                             {task.priority && (
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                task.priority === 'high' ? 'bg-red-500/20 text-red-400 border border-red-400/50' :
-                                task.priority === 'medium' ? 'bg-amber-500/20 text-amber-400 border border-amber-400/50' :
-                                'bg-green-500/20 text-green-400 border border-green-400/50'
+                                task.priority === 'high' ? 'bg-red-500/20 text-red-600 border border-red-400/50' :
+                                task.priority === 'medium' ? 'bg-blue-500/20 text-blue-600 border border-blue-400/50' :
+                                'bg-green-500/20 text-green-600 border border-green-400/50'
                               }`}>
                                 {task.priority}
                               </span>
@@ -457,10 +457,10 @@ function HomeContent({
                   </div>
                 ))}
               </div>
-              <div className="p-4 bg-gray-700/30 border-t border-theme-secondary/50">
+              <div className="p-4 bg-stone-700/30 border-t border-theme-secondary/50">
                 <button
                   onClick={() => router.push('/task/daily')}
-                  className="w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50"
+                  className="w-full py-3 bg-blue-500 text-stone-900 font-bold rounded-xl hover:bg-blue-400 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
                 >
                   View All Tasks
                 </button>

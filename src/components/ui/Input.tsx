@@ -30,7 +30,7 @@ const Input: React.FC<InputProps> = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'w-full border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 placeholder-slate-400 bg-slate-50/50 transition-all duration-200'
+  const baseClasses = 'w-full border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-stone-900 placeholder-stone-400 bg-stone-50/50 transition-all duration-200'
   const paddingClasses = icon ? 
     (iconPosition === 'left' ? 'pl-12 pr-4 py-4' : 'pl-4 pr-12 py-4') : 
     'px-4 py-4'
@@ -39,13 +39,13 @@ const Input: React.FC<InputProps> = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-semibold text-stone-700">
           {label}
         </label>
       )}
       <div className="relative">
         {icon && iconPosition === 'left' && (
-          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-stone-400">
             {icon}
           </div>
         )}
@@ -54,7 +54,7 @@ const Input: React.FC<InputProps> = ({
           {...props}
         />
         {icon && iconPosition === 'right' && (
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400">
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400">
             {icon}
           </div>
         )}
@@ -63,7 +63,7 @@ const Input: React.FC<InputProps> = ({
         <p className="text-sm text-red-600 font-medium">{error}</p>
       )}
       {helperText && !error && (
-        <p className="text-sm text-slate-500">{helperText}</p>
+        <p className="text-sm text-stone-500">{helperText}</p>
       )}
     </div>
   )
@@ -77,13 +77,13 @@ const TextArea: React.FC<TextAreaProps> = ({
   rows = 4,
   ...props
 }) => {
-  const baseClasses = 'w-full px-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 placeholder-slate-400 bg-slate-50/50 transition-all duration-200 resize-none'
+  const baseClasses = 'w-full px-4 py-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-stone-900 placeholder-stone-400 bg-stone-50/50 transition-all duration-200 resize-none'
   const errorClasses = error ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''
   
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-semibold text-stone-700">
           {label}
         </label>
       )}
@@ -96,7 +96,7 @@ const TextArea: React.FC<TextAreaProps> = ({
         <p className="text-sm text-red-600 font-medium">{error}</p>
       )}
       {helperText && !error && (
-        <p className="text-sm text-slate-500">{helperText}</p>
+        <p className="text-sm text-stone-500">{helperText}</p>
       )}
     </div>
   )
@@ -110,13 +110,13 @@ const Select: React.FC<SelectProps> = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'w-full px-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 bg-white transition-all duration-200'
+  const baseClasses = 'w-full px-4 py-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-stone-900 bg-white transition-all duration-200'
   const errorClasses = error ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''
   
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-semibold text-stone-700">
           {label}
         </label>
       )}

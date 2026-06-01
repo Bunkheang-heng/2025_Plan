@@ -4,30 +4,30 @@ import { ProjectType, ProjectStatus, FeatureStatus } from './types'
 export const getStatusColor = (status: ProjectStatus): string => {
   switch (status) {
     case 'planning':
-      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
+      return 'bg-stone-500/20 text-theme-secondary border-theme-tertiary/50'
     case 'in-progress':
-      return 'bg-blue-500/20 text-blue-300 border-blue-400/50'
+      return 'bg-blue-500/20 text-blue-600 border-blue-400/50'
     case 'testing':
-      return 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50'
+      return 'bg-blue-500/20 text-blue-600 border-blue-400/50'
     case 'completed':
-      return 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+      return 'bg-green-500/20 text-green-600 border-green-400/50'
     case 'on-hold':
-      return 'bg-red-500/20 text-red-300 border-red-400/50'
+      return 'bg-red-500/20 text-red-600 border-red-400/50'
     default:
-      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
+      return 'bg-stone-500/20 text-theme-secondary border-theme-tertiary/50'
   }
 }
 
 export const getFeatureStatusColor = (status: FeatureStatus): string => {
   switch (status) {
     case 'done':
-      return 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+      return 'bg-green-500/20 text-green-600 border-green-400/50'
     case 'in-progress':
-      return 'bg-blue-500/20 text-blue-300 border-blue-400/50'
+      return 'bg-blue-500/20 text-blue-600 border-blue-400/50'
     case 'next':
-      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
+      return 'bg-stone-500/20 text-theme-secondary border-theme-tertiary/50'
     default:
-      return 'bg-gray-500/20 text-theme-secondary border-theme-tertiary/50'
+      return 'bg-stone-500/20 text-theme-secondary border-theme-tertiary/50'
   }
 }
 

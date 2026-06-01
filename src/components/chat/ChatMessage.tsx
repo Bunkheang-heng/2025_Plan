@@ -21,7 +21,7 @@ const formatMessage = (message: string) => {
     return parts.map((part, idx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.substring(2, part.length - 2)
-        return <strong key={idx} className="font-bold text-yellow-400">{boldText}</strong>
+        return <strong key={idx} className="font-bold text-blue-600">{boldText}</strong>
       }
       return part
     })
@@ -38,7 +38,7 @@ const formatMessage = (message: string) => {
       elements.push(
         <ul key={`list-${elementIndex++}`} className="list-disc list-inside space-y-2 my-4 ml-4 text-theme-secondary">
           {currentList.map((item, i) => (
-            <li key={i} className="text-sm leading-relaxed text-theme-secondary marker:text-yellow-400">{formatBoldText(item.trim())}</li>
+            <li key={i} className="text-sm leading-relaxed text-theme-secondary marker:text-blue-600">{formatBoldText(item.trim())}</li>
           ))}
         </ul>
       )
@@ -91,12 +91,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         {/* Avatar */}
         <div className={`flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl border-2 transition-all duration-300 relative overflow-hidden ${
           isUser 
-            ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 border-blue-300/70 text-white shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 hover:rotate-3' 
-            : 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 border-yellow-300 text-black shadow-yellow-500/30 hover:shadow-yellow-500/50 hover:scale-105 hover:-rotate-3'
+            ? 'bg-blue-600 border-blue-300/70 text-white shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 hover:rotate-3' 
+            : 'bg-blue-500 border-blue-300 text-black shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 hover:-rotate-3'
         }`}>
-          {/* Shine effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-          
           {isUser ? (
             <div className="relative z-10">
               <Icon name="user" size="md" />
@@ -106,7 +103,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             <div className="relative z-10">
               <span className="text-2xl font-black">J</span>
               {/* Arc reactor mini glow */}
-              <div className="absolute inset-0 rounded-full bg-yellow-300 animate-pulse opacity-50 blur-sm"></div>
+              <div className="absolute inset-0 rounded-full bg-blue-300 animate-pulse opacity-50 blur-sm"></div>
             </div>
           )}
         </div>
@@ -115,26 +112,26 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         <div className={`flex-1 ${isUser ? '' : ''}`}>
           <div className={`relative rounded-2xl px-6 py-5 shadow-2xl border-2 backdrop-blur-sm transition-all duration-300 group-hover:scale-[1.01] ${
             isUser 
-              ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 border-blue-400/40 text-white shadow-blue-900/40 hover:shadow-blue-900/60 overflow-hidden' 
-              : 'bg-theme-card border-yellow-500/40 text-theme-primary shadow-yellow-900/30 hover:shadow-yellow-900/40 hover:border-yellow-500/60'
+              ? 'bg-blue-600 border-blue-400/40 text-white shadow-blue-900/40 hover:shadow-blue-900/60 overflow-hidden' 
+              : 'bg-theme-card border-blue-500/40 text-theme-primary shadow-blue-900/30 hover:shadow-blue-900/40 hover:border-blue-500/60'
           }`}>
             {/* Animated gradient overlay for user messages */}
             {isUser && (
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="absolute inset-0 bg-white/10 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             )}
             
             {/* Scan line effect for AI messages */}
             {!isUser && (
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-yellow-400/5 to-transparent h-full transform -translate-y-full group-hover:translate-y-full transition-transform duration-1000 ease-in-out"></div>
+              <div className="absolute inset-0 bg-blue-400/5 h-full transform -translate-y-full group-hover:translate-y-full transition-transform duration-1000 ease-in-out"></div>
             )}
             {isLoading ? (
               <div className="flex items-center space-x-4 relative z-10">
                 <div className="flex space-x-1.5">
-                  <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                  <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                  <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                 </div>
-                <span className="text-sm text-yellow-400 font-semibold animate-pulse flex items-center space-x-2">
+                <span className="text-sm text-blue-600 font-semibold animate-pulse flex items-center space-x-2">
                   <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -167,8 +164,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 
                 {/* Plan References */}
                 {planReferences.length > 0 && (
-                  <div className="space-y-3 pt-3 border-t border-yellow-500/20">
-                    <p className="text-xs text-yellow-400 font-bold flex items-center space-x-1">
+                  <div className="space-y-3 pt-3 border-t border-blue-500/20">
+                    <p className="text-xs text-blue-600 font-bold flex items-center space-x-1">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -183,7 +180,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                           className={`transition-all duration-200 hover:scale-105 cursor-pointer ${
                             isUser 
                               ? 'bg-blue-400/30 text-blue-100 border-blue-400/40 hover:bg-blue-400/40' 
-                              : 'bg-yellow-500/30 text-yellow-100 border-yellow-500/40 hover:bg-yellow-500/40'
+                              : 'bg-blue-500/30 text-blue-100 border-blue-500/40 hover:bg-blue-500/40'
                           }`}
                         >
                           {plan.type === 'daily' && '📅'} 
@@ -200,11 +197,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
           
           {/* Timestamp */}
-          <div className={`mt-3 text-xs font-medium transition-all duration-300 opacity-60 group-hover:opacity-100 ${isUser ? 'text-right text-blue-300' : 'text-left text-yellow-400'}`}>
+          <div className={`mt-3 text-xs font-medium transition-all duration-300 opacity-60 group-hover:opacity-100 ${isUser ? 'text-right text-blue-600' : 'text-left text-blue-600'}`}>
             <span className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-all duration-200 ${
               isUser 
                 ? 'bg-blue-400/15 text-blue-100 border-blue-400/20 group-hover:bg-blue-400/25 group-hover:border-blue-400/30' 
-                : 'bg-yellow-400/15 text-yellow-200 border-yellow-400/20 group-hover:bg-yellow-400/25 group-hover:border-yellow-400/30'
+                : 'bg-blue-400/15 text-blue-200 border-blue-400/20 group-hover:bg-blue-400/25 group-hover:border-blue-400/30'
             }`}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

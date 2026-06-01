@@ -32,26 +32,26 @@ interface BusinessIdea {
 }
 
 const categories = [
-  { value: 'tech', label: 'Technology', icon: FaLaptop, color: 'from-blue-500 to-cyan-500' },
-  { value: 'ecommerce', label: 'E-Commerce', icon: FaShoppingCart, color: 'from-purple-500 to-pink-500' },
-  { value: 'saas', label: 'SaaS', icon: FaCloud, color: 'from-indigo-500 to-blue-500' },
-  { value: 'mobile', label: 'Mobile App', icon: FaMobileAlt, color: 'from-green-500 to-emerald-500' },
-  { value: 'ai', label: 'AI/ML', icon: FaRobot, color: 'from-yellow-500 to-orange-500' },
-  { value: 'fintech', label: 'FinTech', icon: FaDollarSign, color: 'from-amber-500 to-yellow-500' },
-  { value: 'health', label: 'Health', icon: FaHospital, color: 'from-red-500 to-rose-500' },
-  { value: 'education', label: 'Education', icon: FaBook, color: 'from-violet-500 to-purple-500' },
-  { value: 'other', label: 'Other', icon: FaLightbulb, color: 'from-gray-500 to-slate-500' }
+  { value: 'tech', label: 'Technology', icon: FaLaptop, color: 'from-blue-500 to-blue-500' },
+  { value: 'ecommerce', label: 'E-Commerce', icon: FaShoppingCart, color: 'from-blue-500 to-blue-500' },
+  { value: 'saas', label: 'SaaS', icon: FaCloud, color: 'from-blue-500 to-blue-500' },
+  { value: 'mobile', label: 'Mobile App', icon: FaMobileAlt, color: 'from-green-500 to-green-500' },
+  { value: 'ai', label: 'AI/ML', icon: FaRobot, color: 'from-blue-500 to-blue-500' },
+  { value: 'fintech', label: 'FinTech', icon: FaDollarSign, color: 'from-blue-500 to-blue-500' },
+  { value: 'health', label: 'Health', icon: FaHospital, color: 'from-red-500 to-red-500' },
+  { value: 'education', label: 'Education', icon: FaBook, color: 'from-blue-500 to-blue-500' },
+  { value: 'other', label: 'Other', icon: FaLightbulb, color: 'from-stone-500 to-stone-500' }
 ]
 
 const ideaColors = [
-  'from-yellow-400 to-yellow-600',
-  'from-pink-400 to-pink-600',
+  'from-blue-400 to-blue-600',
+  'from-blue-400 to-blue-600',
   'from-blue-400 to-blue-600',
   'from-green-400 to-green-600',
-  'from-purple-400 to-purple-600',
-  'from-orange-400 to-orange-600',
-  'from-cyan-400 to-cyan-600',
-  'from-indigo-400 to-indigo-600'
+  'from-blue-400 to-blue-600',
+  'from-blue-400 to-blue-600',
+  'from-blue-400 to-blue-600',
+  'from-blue-400 to-blue-600'
 ]
 
 // Memoized category lookup map
@@ -88,7 +88,7 @@ const IdeaCard = React.memo(({
           className="absolute top-4 right-4 w-8 h-8 bg-red-500/20 hover:bg-red-500/40 rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
           aria-label="Delete idea"
         >
-          <FaTrash className="w-5 h-5 text-red-400" />
+          <FaTrash className="w-5 h-5 text-red-600" />
         </button>
 
         {/* Category Badge */}
@@ -270,22 +270,22 @@ export default function BusinessIdeaPage() {
     <div className="min-h-screen bg-theme-primary relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float-delayed"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl animate-float-slow"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 relative z-10">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
             Business Brainstorming
           </div>
-          <h1 className="text-4xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 mb-4 flex items-center justify-center gap-3">
-            <FaLightbulb className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-400" />
+          <h1 className="text-4xl lg:text-6xl font-bold text-blue-600 mb-4 flex items-center justify-center gap-3">
+            <FaLightbulb className="w-10 h-10 lg:w-12 lg:h-12 text-blue-600" />
             <span>Idea Board</span>
-            <FaLightbulb className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-400" />
+            <FaLightbulb className="w-10 h-10 lg:w-12 lg:h-12 text-blue-600" />
           </h1>
           <p className="text-xl text-theme-secondary font-medium max-w-2xl mx-auto">
             Capture, organize, and develop your business ideas in one creative space
@@ -299,8 +299,8 @@ export default function BusinessIdeaPage() {
               onClick={() => setSelectedCategory('all')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                 selectedCategory === 'all'
-                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary shadow-lg shadow-yellow-500/50 scale-105'
-                  : 'bg-theme-secondary text-theme-secondary border border-theme-secondary hover:border-yellow-500/50 hover:text-yellow-400'
+                  ? 'bg-blue-500 text-theme-primary shadow-lg shadow-blue-500/50 scale-105'
+                  : 'bg-theme-secondary text-theme-secondary border border-theme-secondary hover:border-blue-500/50 hover:text-blue-600'
               }`}
             >
               All Ideas
@@ -314,7 +314,7 @@ export default function BusinessIdeaPage() {
                   className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
                     selectedCategory === cat.value
                       ? `bg-gradient-to-r ${cat.color} text-theme-primary shadow-lg scale-105`
-                      : 'bg-theme-secondary text-theme-secondary border border-theme-secondary hover:border-gray-600'
+                      : 'bg-theme-secondary text-theme-secondary border border-theme-secondary hover:border-stone-600'
                   }`}
                 >
                   <IconComponent className="w-5 h-5" />
@@ -329,7 +329,7 @@ export default function BusinessIdeaPage() {
         <div className="mb-8 text-center animate-fade-in-delayed">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary font-bold text-lg rounded-xl shadow-lg shadow-yellow-500/50 hover:shadow-xl hover:shadow-yellow-500/60 transform hover:scale-105 transition-all duration-300"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-blue-500 text-theme-primary font-bold text-lg rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transform hover:scale-105 transition-all duration-300"
           >
             <FaPlus className="w-6 h-6" />
             Add New Idea
@@ -341,13 +341,13 @@ export default function BusinessIdeaPage() {
           <div className="text-center py-20 animate-fade-in-delayed">
             <div className="inline-block p-8 bg-theme-card/30 rounded-3xl border border-theme-secondary">
               <div className="flex justify-center mb-4">
-                <FaCommentDots className="w-20 h-20 text-yellow-400" />
+                <FaCommentDots className="w-20 h-20 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-theme-secondary mb-2">No ideas yet</h3>
               <p className="text-theme-tertiary mb-6">Start brainstorming and add your first business idea!</p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary font-semibold rounded-xl hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                className="px-6 py-3 bg-blue-500 text-theme-primary font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300"
               >
                 Create Your First Idea
               </button>
@@ -370,15 +370,15 @@ export default function BusinessIdeaPage() {
       {/* Add Idea Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl border border-theme-secondary max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-up">
+          <div className="bg-theme-card rounded-3xl shadow-2xl border border-theme-secondary max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
+                <h2 className="text-3xl font-bold text-blue-600">
                   Add New Business Idea
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="w-10 h-10 bg-theme-card hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 bg-theme-card hover:bg-stone-700 rounded-full flex items-center justify-center transition-colors"
                 >
                   <FaTimes className="w-6 h-6 text-theme-tertiary" />
                 </button>
@@ -395,7 +395,7 @@ export default function BusinessIdeaPage() {
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
                     placeholder="e.g., AI-Powered Fitness App"
-                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                   />
                 </div>
 
@@ -409,7 +409,7 @@ export default function BusinessIdeaPage() {
                     required
                     rows={5}
                     placeholder="Describe your business idea in detail..."
-                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all resize-none"
                   />
                 </div>
 
@@ -421,7 +421,7 @@ export default function BusinessIdeaPage() {
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     required
-                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                   >
                     {categories.map((cat) => (
                       <option key={cat.value} value={cat.value} className="bg-theme-card">
@@ -440,7 +440,7 @@ export default function BusinessIdeaPage() {
                     value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                     placeholder="e.g., AI, fitness, mobile, subscription"
-                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all"
+                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                   />
                 </div>
 
@@ -448,13 +448,13 @@ export default function BusinessIdeaPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-6 py-3 bg-theme-card hover:bg-gray-700 text-theme-secondary font-semibold rounded-xl transition-colors"
+                    className="flex-1 px-6 py-3 bg-theme-card hover:bg-stone-700 text-theme-secondary font-semibold rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary font-semibold rounded-xl shadow-lg shadow-yellow-500/50 hover:shadow-xl hover:shadow-yellow-500/60 transform hover:scale-105 transition-all duration-300"
+                    className="flex-1 px-6 py-3 bg-blue-500 text-theme-primary font-semibold rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transform hover:scale-105 transition-all duration-300"
                   >
                     Save Idea
                   </button>

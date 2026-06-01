@@ -163,13 +163,13 @@ export default function TradingPnLAccountsPage() {
     <div className="min-h-screen bg-theme-primary">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
             Bot trading accounts
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4 flex items-center justify-center gap-3">
+          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4 flex items-center justify-center gap-3">
             <span>Bot P&amp;L accounts</span>
-            <FaChartLine className="w-10 h-10 text-yellow-400" />
+            <FaChartLine className="w-10 h-10 text-blue-600" />
           </h1>
           <p className="text-xl text-theme-secondary font-medium">
             Daily P&amp;L only — no trade count per day
@@ -193,7 +193,7 @@ export default function TradingPnLAccountsPage() {
                 sortedAccounts.map(acc => (
                   <div
                     key={acc.id}
-                    className="w-full text-left px-4 py-4 rounded-xl border bg-black/20 border-theme-secondary text-gray-200 hover:bg-black/30 hover:border-gray-600 transition-colors"
+                    className="w-full text-left px-4 py-4 rounded-xl border bg-theme-card border-theme-secondary text-theme-primary hover:bg-theme-secondary hover:border-stone-600 transition-colors"
                   >
                     <button
                       onClick={() => router.push(`/trading/bot_trading_pnl/${acc.id}`)}
@@ -203,39 +203,39 @@ export default function TradingPnLAccountsPage() {
                         <div>
                           <div className="font-semibold text-theme-primary">{acc.name}</div>
                           {acc.strategy && (
-                            <div className="text-xs text-cyan-400 mt-0.5">📊 {acc.strategy}</div>
+                            <div className="text-xs text-blue-600 mt-0.5">📊 {acc.strategy}</div>
                           )}
                           <div className="text-[11px] text-theme-muted font-mono break-all">{acc.id}</div>
                           <div className="text-xs text-theme-tertiary mt-1">
                             Capital: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.capital || 0).toFixed(2)}
                             {acc.target && acc.target > 0 && (
-                              <span className="ml-2 text-indigo-400">| 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.target).toFixed(2)}</span>
+                              <span className="ml-2 text-blue-600">| 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.target).toFixed(2)}</span>
                             )}
                           </div>
                         </div>
                         <div className="flex flex-col gap-1 items-end">
                           <div className={`text-xs px-3 py-1 rounded-full border ${
                             acc.type === 'real'
-                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                              ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
+                              : 'bg-blue-500/20 text-blue-600 border-blue-500/30'
                           }`}>
                             {acc.type === 'real' ? 'Real' : 'Funded'}
                           </div>
                           <div className={`text-xs px-3 py-1 rounded-full border ${
                             acc.currency === 'cent'
-                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                              : 'bg-green-500/20 text-green-300 border-green-500/30'
+                              ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
+                              : 'bg-green-500/20 text-green-600 border-green-500/30'
                           }`}>
                             {acc.currency === 'cent' ? '¢ Cent' : '$ USD'}
                           </div>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-yellow-300">Open P&amp;L →</div>
+                      <div className="mt-2 text-xs text-blue-600">Open P&amp;L →</div>
                     </button>
                     <div className="mt-3 flex items-center gap-2">
                       <button
                         onClick={() => router.push(`/trading/bot_trading_pnl/${acc.id}/edit`)}
-                        className="px-3 py-1.5 rounded-lg bg-theme-card/60 border border-theme-secondary text-gray-200 hover:bg-theme-card transition-colors text-xs"
+                        className="px-3 py-1.5 rounded-lg bg-theme-card/60 border border-theme-secondary text-stone-200 hover:bg-theme-card transition-colors text-xs"
                       >
                         Edit
                       </button>
@@ -252,7 +252,7 @@ export default function TradingPnLAccountsPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 bg-theme-card border border-yellow-500/20 rounded-2xl p-5">
+          <div className="lg:col-span-5 bg-theme-card border border-blue-500/20 rounded-2xl p-5">
             <h2 className="text-lg font-semibold text-theme-primary mb-2">Create bot account</h2>
             <p className="text-xs text-theme-tertiary mb-4">
               Same calendar as Trading P&amp;L, without logging number of trades per day.
@@ -263,17 +263,17 @@ export default function TradingPnLAccountsPage() {
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Example: Apex 50K, Personal MT5"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
             />
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Currency</label>
-            <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+            <div className="inline-flex items-center bg-stone-900/60 border border-theme-secondary rounded-xl p-1 w-full">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, currency: 'usd' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.currency === 'usd'
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-theme-primary'
+                    ? 'bg-green-600 text-theme-primary'
                     : 'text-theme-tertiary hover:text-theme-secondary'
                 }`}
               >
@@ -284,7 +284,7 @@ export default function TradingPnLAccountsPage() {
                 onClick={() => setFormData(prev => ({ ...prev, currency: 'cent' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.currency === 'cent'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-theme-primary'
+                    ? 'bg-blue-600 text-theme-primary'
                     : 'text-theme-tertiary hover:text-theme-secondary'
                 }`}
               >
@@ -299,7 +299,7 @@ export default function TradingPnLAccountsPage() {
               value={formData.capital}
               onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
               placeholder="0.00"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
             />
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})</label>
@@ -309,7 +309,7 @@ export default function TradingPnLAccountsPage() {
               value={formData.target}
               onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
               placeholder="Your profit goal for the month"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
             />
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
@@ -319,18 +319,18 @@ export default function TradingPnLAccountsPage() {
               value={formData.maxLoss}
               onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
               placeholder="Maximum allowed loss per day before locking"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
             />
             <p className="text-xs text-theme-muted mt-2">If your daily P&amp;L loss reaches this amount, we’ll warn you, lock that day, and prompt a self punishment.</p>
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Account type</label>
-            <div className="inline-flex items-center bg-gray-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+            <div className="inline-flex items-center bg-stone-900/60 border border-theme-secondary rounded-xl p-1 w-full">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, type: 'real' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.type === 'real'
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary'
+                    ? 'bg-blue-600 text-theme-primary'
                     : 'text-theme-tertiary hover:text-theme-secondary'
                 }`}
               >
@@ -342,7 +342,7 @@ export default function TradingPnLAccountsPage() {
                 onClick={() => setFormData(prev => ({ ...prev, type: 'funded' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.type === 'funded'
-                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-theme-primary'
+                    ? 'bg-blue-500 text-theme-primary'
                     : 'text-theme-tertiary hover:text-theme-secondary'
                 }`}
               >
@@ -356,7 +356,7 @@ export default function TradingPnLAccountsPage() {
               value={formData.strategy}
               onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
               placeholder="Example: ICT, SMC, Price Action, Scalping"
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
             />
 
             <label className="block text-xs text-theme-tertiary mt-4 mb-2">Trading Rules</label>
@@ -365,13 +365,13 @@ export default function TradingPnLAccountsPage() {
               onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
               placeholder="Define your trading rules for this account...&#10;Example:&#10;• Max 2 trades per day&#10;• Risk 1% per trade&#10;• No trading on Fridays"
               rows={4}
-              className="w-full px-4 py-3 bg-gray-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 resize-none"
+              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500 resize-none"
             />
 
             <button
               onClick={handleCreate}
               disabled={isCreating || !formData.name.trim()}
-              className="mt-4 w-full px-5 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 w-full px-5 py-3 bg-blue-500 text-black font-semibold rounded-xl hover:bg-blue-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <FaPlus />
               {isCreating ? 'Creating...' : 'Create Account'}
@@ -382,7 +382,7 @@ export default function TradingPnLAccountsPage() {
 
       {isDeleteModalOpen && deletingAccount && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="w-full max-w-lg bg-theme-card border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-theme-secondary/60">
               <h3 className="text-xl font-bold text-theme-primary">Delete account</h3>
               <p className="text-sm text-theme-tertiary mt-1">
@@ -400,7 +400,7 @@ export default function TradingPnLAccountsPage() {
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-gray-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-stone-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -222,11 +222,11 @@ export default function TradingPnLAccountsPage() {
                   />
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-800">
+                <ul className="divide-y divide-stone-800">
                   {sortedAccounts.map((acc) => {
                     const sym = currencySymbol(acc.currency)
                     return (
-                      <li key={acc.id} className="p-4 hover:bg-slate-800/30 transition-colors">
+                      <li key={acc.id} className="p-4 hover:bg-stone-800/30 transition-colors">
                         <button
                           type="button"
                           onClick={() => router.push(`/trading/trading_pnl/${acc.id}`)}
@@ -235,26 +235,26 @@ export default function TradingPnLAccountsPage() {
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-base font-semibold text-slate-50 group-hover:text-emerald-400 transition-colors">
+                                <span className="text-base font-semibold text-stone-900 group-hover:text-green-600 transition-colors">
                                   {acc.name}
                                 </span>
-                                <FaArrowRight className="w-3 h-3 text-slate-600 group-hover:text-emerald-400 shrink-0" />
+                                <FaArrowRight className="w-3 h-3 text-stone-600 group-hover:text-green-600 shrink-0" />
                               </div>
                               {acc.strategy ? (
-                                <p className="text-xs text-slate-400 mt-1 truncate">Strategy: {acc.strategy}</p>
+                                <p className="text-xs text-stone-400 mt-1 truncate">Strategy: {acc.strategy}</p>
                               ) : null}
-                              <p className="text-xs text-slate-500 mt-2 tabular-nums">
+                              <p className="text-xs text-stone-500 mt-2 tabular-nums">
                                 Capital {sym}
                                 {Number(acc.capital || 0).toFixed(2)}
                                 {acc.target && acc.target > 0 ? (
-                                  <span className="text-slate-400">
+                                  <span className="text-stone-400">
                                     {' '}
                                     · Target {sym}
                                     {Number(acc.target).toFixed(2)}
                                   </span>
                                 ) : null}
                                 {acc.maxLoss && acc.maxLoss > 0 ? (
-                                  <span className="text-slate-400">
+                                  <span className="text-stone-400">
                                     {' '}
                                     · Max loss/day {sym}
                                     {Number(acc.maxLoss).toFixed(2)}
@@ -280,7 +280,7 @@ export default function TradingPnLAccountsPage() {
                           <button
                             type="button"
                             onClick={() => openDeleteModal(acc)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 border border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer"
                           >
                             <FaTrash className="w-3 h-3" /> Delete
                           </button>
@@ -334,7 +334,7 @@ export default function TradingPnLAccountsPage() {
                       { value: 'funded', label: 'Funded' },
                     ]}
                   />
-                  <p className="text-xs text-slate-500 mt-2">Funded accounts do not support withdrawals in P&L.</p>
+                  <p className="text-xs text-stone-500 mt-2">Funded accounts do not support withdrawals in P&L.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -372,7 +372,7 @@ export default function TradingPnLAccountsPage() {
                     placeholder="Optional"
                     className={`${inputClassName} tabular-nums`}
                   />
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="text-xs text-stone-500 mt-2">
                     When daily loss hits this limit, P&L entry is locked and you can log a self punishment.
                   </p>
                 </div>
@@ -433,7 +433,7 @@ export default function TradingPnLAccountsPage() {
             }}
           />
           <div className="px-6 pb-6 space-y-4">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-stone-400">
               This action cannot be undone. Consider exporting data before deleting if you need a backup.
             </p>
             <div className="flex gap-3">

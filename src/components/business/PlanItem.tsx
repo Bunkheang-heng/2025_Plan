@@ -78,8 +78,8 @@ const PlanItem: React.FC<PlanItemProps> = ({
         {/* Header with badges */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
-            <p className="text-slate-600 mb-3">{description}</p>
+            <h3 className="text-lg font-bold text-stone-900 mb-2">{title}</h3>
+            <p className="text-stone-600 mb-3">{description}</p>
           </div>
           {onDelete && (
             <Button
@@ -96,7 +96,7 @@ const PlanItem: React.FC<PlanItemProps> = ({
         {(showTime || showPriority) && (
           <div className="flex items-center gap-4 text-sm">
             {showTime && startTime && (
-              <div className="flex items-center space-x-2 text-slate-600">
+              <div className="flex items-center space-x-2 text-stone-600">
                 <Icon name="clock" size="sm" />
                 <span className="font-medium">{startTime}</span>
                 {timePeriod && (
@@ -120,7 +120,7 @@ const PlanItem: React.FC<PlanItemProps> = ({
         )}
         
         {/* Status and Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+        <div className="flex items-center justify-between pt-4 border-t border-stone-100">
           <Badge variant={getStatusVariant(status)}>
             {status}
           </Badge>

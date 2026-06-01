@@ -179,11 +179,11 @@ export default function MyRulePage() {
     <div className="min-h-screen bg-theme-primary">
       <div className="w-full px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse" />
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
             My Rule
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-4">
+          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4">
             Rule For Myself In Trading
           </h1>
           <p className="text-lg text-theme-secondary font-medium">Author: Heng Bunkheang</p>
@@ -193,9 +193,9 @@ export default function MyRulePage() {
           {categories.map((category) => (
             <div
               key={category.id}
-              className="bg-gradient-to-br from-gray-800 to-gray-900 border border-theme-secondary rounded-2xl overflow-hidden shadow-lg shadow-black/20"
+              className="bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden shadow-lg shadow-black/20"
             >
-              <div className="bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 border-b border-yellow-500/20 px-5 py-4">
+              <div className="bg-blue-500/10 border-b border-blue-500/20 px-5 py-4">
                 <h2 className="text-lg font-bold text-theme-primary">
                   {category.id}. {category.category}
                 </h2>
@@ -205,8 +205,8 @@ export default function MyRulePage() {
                   {category.rules
                     .sort((a, b) => a.rule_number - b.rule_number)
                     .map((item) => (
-                      <div key={item.rule_number} className="flex items-start gap-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700/70">
-                        <span className="mt-0.5 inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs font-bold">
+                      <div key={item.rule_number} className="flex items-start gap-3 p-3 bg-stone-800/50 rounded-xl border border-stone-700/70">
+                        <span className="mt-0.5 inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-lg bg-blue-500/20 text-blue-600 text-xs font-bold">
                           {item.rule_number}
                         </span>
                         <p className="text-sm text-theme-secondary leading-relaxed">{item.rule}</p>

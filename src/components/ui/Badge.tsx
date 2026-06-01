@@ -18,17 +18,17 @@ const Badge: React.FC<BadgeProps> = ({
   const baseClasses = 'inline-flex items-center font-medium border transition-colors duration-200'
   
   const variantClasses = {
-    default: 'bg-slate-50 text-slate-700 border-slate-200',
+    default: 'bg-stone-50 text-stone-700 border-stone-200',
     success: 'bg-green-50 text-green-700 border-green-200',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200',
+    warning: 'bg-blue-50 text-blue-700 border-blue-200',
     danger: 'bg-red-50 text-red-700 border-red-200',
     info: 'bg-blue-50 text-blue-700 border-blue-200',
     'priority-high': 'bg-red-50 text-red-700 border-red-200',
-    'priority-medium': 'bg-amber-50 text-amber-700 border-amber-200',
-    'priority-low': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'priority-medium': 'bg-blue-50 text-blue-700 border-blue-200',
+    'priority-low': 'bg-green-50 text-green-700 border-green-200',
     'status-done': 'bg-green-50 text-green-700 border-green-200',
     'status-inprogress': 'bg-blue-50 text-blue-700 border-blue-200',
-    'status-notstarted': 'bg-slate-50 text-slate-700 border-slate-200'
+    'status-notstarted': 'bg-stone-50 text-stone-700 border-stone-200'
   }
   
   const sizeClasses = {

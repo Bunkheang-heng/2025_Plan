@@ -187,7 +187,7 @@ export default function WorkingProjectDetailPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsAddTaskOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all text-sm"
+              className="px-4 py-2 bg-blue-500 text-black font-semibold rounded-lg hover:bg-blue-400 transition-all text-sm"
             >
               Add Task
             </button>
@@ -247,18 +247,18 @@ export default function WorkingProjectDetailPage() {
                           <input
                             value={editDraft.name}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-yellow-500"
+                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-blue-500"
                           />
                           <textarea
                             value={editDraft.description}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, description: e.target.value }))}
                             rows={2}
-                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-xs focus:outline-none focus:border-yellow-500 resize-none"
+                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-xs focus:outline-none focus:border-blue-500 resize-none"
                           />
                           <select
                             value={editDraft.status}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-xs focus:outline-none focus:border-yellow-500"
+                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-xs focus:outline-none focus:border-blue-500"
                           >
                             <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
                             <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
@@ -268,7 +268,7 @@ export default function WorkingProjectDetailPage() {
                             <button
                               onClick={saveEditTask}
                               disabled={isSaving}
-                              className="flex-1 px-3 py-2 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 text-xs"
+                              className="flex-1 px-3 py-2 bg-blue-500 text-black font-semibold rounded-lg hover:bg-blue-400 text-xs"
                             >
                               Save
                             </button>
@@ -347,7 +347,7 @@ export default function WorkingProjectDetailPage() {
                   value={newTask.name}
                   onChange={(e) => setNewTask((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Example: Create login screen"
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
                 />
                 <label className="block text-xs text-theme-tertiary mt-3 mb-2">Description (optional)</label>
                 <textarea
@@ -355,7 +355,7 @@ export default function WorkingProjectDetailPage() {
                   onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder="Add more detail..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500 resize-none"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500 resize-none"
                 />
               </div>
               <div>
@@ -363,7 +363,7 @@ export default function WorkingProjectDetailPage() {
                 <select
                   value={newTask.status}
                   onChange={(e) => setNewTask((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-yellow-500"
+                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
                 >
                   <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
                   <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
@@ -372,7 +372,7 @@ export default function WorkingProjectDetailPage() {
                 <button
                   onClick={handleAddTask}
                   disabled={isSaving || !newTask.name.trim()}
-                  className="mt-4 w-full px-4 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all disabled:opacity-50"
+                  className="mt-4 w-full px-4 py-3 bg-blue-500 text-black font-semibold rounded-xl hover:bg-blue-400 transition-all disabled:opacity-50"
                 >
                   {isSaving ? 'Saving...' : 'Add Task'}
                 </button>

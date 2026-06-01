@@ -13,7 +13,7 @@ export default function FloatingBinary({ count = 12 }: FloatingBinaryProps) {
       {[...Array(count)].map((_, i) => (
         <div
           key={i}
-          className="absolute opacity-5 text-green-400 font-mono text-xs animate-pulse"
+          className="absolute opacity-5 text-green-600 font-mono text-xs animate-pulse"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,

@@ -44,9 +44,9 @@ export default function TradingAIPredication() {
 
   const trendColor = useMemo(() => {
     const t = payload?.prediction?.trend
-    if (t === 'UP') return 'from-emerald-500 to-emerald-600'
+    if (t === 'UP') return 'from-green-500 to-green-600'
     if (t === 'DOWN') return 'from-red-500 to-red-600'
-    return 'from-yellow-500 to-yellow-600'
+    return 'from-blue-500 to-blue-600'
   }, [payload?.prediction?.trend])
 
   const runAgain = async () => {
@@ -95,10 +95,10 @@ export default function TradingAIPredication() {
       <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-400 text-sm font-semibold mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
             AI Forecast
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 mb-3">
+          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-3">
             Gold Trend Prediction (Today)
           </h1>
           <p className="text-theme-secondary">
@@ -108,19 +108,19 @@ export default function TradingAIPredication() {
             <button
               onClick={runAgain}
               disabled={isRunning}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-theme-primary font-bold rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50"
+              className="px-6 py-3 bg-blue-600 text-theme-primary font-bold rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50"
             >
               {isRunning ? 'Analyzing...' : 'Analyze Latest News Again'}
             </button>
             <button
               onClick={() => router.push('/trading/trading_news')}
-              className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-theme-primary font-bold rounded-xl hover:bg-gray-700/60 transition-all"
+              className="px-6 py-3 bg-theme-card/60 border border-theme-secondary text-theme-primary font-bold rounded-xl hover:bg-stone-700/60 transition-all"
             >
               Back to News
             </button>
           </div>
           {error && (
-            <p className="text-sm text-red-400 mt-3">{error}</p>
+            <p className="text-sm text-red-600 mt-3">{error}</p>
           )}
         </div>
 
@@ -134,7 +134,7 @@ export default function TradingAIPredication() {
         ) : (
           <div className="space-y-6">
             {/* Main Result */}
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10">
+            <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10">
               <div className="p-6 border-b border-blue-500/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <p className="text-theme-tertiary text-sm">Prediction</p>
@@ -151,7 +151,7 @@ export default function TradingAIPredication() {
                 </div>
               </div>
               <div className="p-6">
-                <p className="text-gray-200 font-semibold mb-3">Summary</p>
+                <p className="text-stone-200 font-semibold mb-3">Summary</p>
                 <p className="text-theme-secondary leading-relaxed">{payload.prediction.summary}</p>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function TradingAIPredication() {
                 <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.rationale?.length ? payload.prediction.rationale.map((x, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-blue-400">•</span>
+                      <span className="text-blue-600">•</span>
                       <span>{x}</span>
                     </li>
                   )) : <li className="text-theme-muted">No details.</li>}
@@ -175,7 +175,7 @@ export default function TradingAIPredication() {
                 <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.keyWatchItems?.length ? payload.prediction.keyWatchItems.map((x, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-yellow-400">•</span>
+                      <span className="text-blue-600">•</span>
                       <span>{x}</span>
                     </li>
                   )) : <li className="text-theme-muted">No items.</li>}
@@ -187,7 +187,7 @@ export default function TradingAIPredication() {
                 <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.bullishDrivers?.length ? payload.prediction.bullishDrivers.map((x, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-emerald-400">•</span>
+                      <span className="text-green-600">•</span>
                       <span>{x}</span>
                     </li>
                   )) : <li className="text-theme-muted">None.</li>}
@@ -199,7 +199,7 @@ export default function TradingAIPredication() {
                 <ul className="space-y-2 text-theme-secondary text-sm">
                   {payload.prediction.bearishDrivers?.length ? payload.prediction.bearishDrivers.map((x, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-red-400">•</span>
+                      <span className="text-red-600">•</span>
                       <span>{x}</span>
                     </li>
                   )) : <li className="text-theme-muted">None.</li>}

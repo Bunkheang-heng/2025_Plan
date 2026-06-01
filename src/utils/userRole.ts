@@ -1,7 +1,7 @@
 import { auth } from '../../firebase'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 
-export type UserRole = 'admin' | 'restricted' | 'partner'
+export type UserRole = 'admin' | 'restricted'
 
 export interface UserProfile {
   role: UserRole
@@ -9,6 +9,10 @@ export interface UserProfile {
   name?: string
   /** @deprecated Prefer userPrivateSettings/{uid}.mt5IngestToken */
   mt5IngestToken?: string
+}
+
+function normalizeUserRole(role: unknown): UserRole {
+  return role === 'admin' || role === 'restricted' ? role : 'restricted'
 }
 
 /**
@@ -22,7 +26,7 @@ export async function getUserRole(userId: string): Promise<UserRole> {
     
     if (userDoc.exists()) {
       const data = userDoc.data()
-      return (data.role as UserRole) || 'restricted'
+      return normalizeUserRole(data.role)
     }
     
     // If user doesn't exist in users collection, default to restricted
@@ -68,7 +72,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     const userDoc = await getDoc(doc(db, 'users', userId))
     
     if (userDoc.exists()) {
-      return userDoc.data() as UserProfile
+      const data = userDoc.data()
+      return { ...data, role: normalizeUserRole(data.role) } as UserProfile
     }
     
     return null
@@ -92,12 +97,6 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
       || path === '/setup' || path.startsWith('/setup')
   }
 
-  // Trading partners can access trading partner and setup pages
-  if (role === 'partner') {
-    return path === '/trading_partner' || path.startsWith('/trading_partner')
-      || path === '/setup' || path.startsWith('/setup')
-  }
-  
   return false
 }
 

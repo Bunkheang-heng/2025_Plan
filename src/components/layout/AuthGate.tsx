@@ -9,7 +9,6 @@ const PUBLIC_PATHS = ['/login', '/signup']
 
 function getDefaultRouteForRole(role: UserRole): string {
   if (role === 'restricted') return '/couple_saving'
-  if (role === 'partner') return '/trading_partner'
   return '/'
 }
 
