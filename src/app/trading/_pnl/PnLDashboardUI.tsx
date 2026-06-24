@@ -6,8 +6,8 @@ import React from 'react'
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-28 lg:pt-32 pb-16">{children}</div>
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8 md:pt-10 pb-16">{children}</div>
     </div>
   )
 }
@@ -24,8 +24,8 @@ export function PageHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
       <div>
-        <h1 className="text-2xl sm:text-[1.75rem] font-semibold text-stone-900 tracking-tight">{title}</h1>
-        {subtitle ? <p className="text-sm text-stone-500 mt-1.5">{subtitle}</p> : null}
+        <h1 className="text-2xl font-bold text-stone-900 tracking-tight">{title}</h1>
+        {subtitle ? <p className="text-sm text-stone-500 mt-1">{subtitle}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2 flex-shrink-0">{actions}</div> : null}
     </div>
@@ -34,9 +34,9 @@ export function PageHeader({
 
 export function SectionTitle({ children, description }: { children: React.ReactNode; description?: string }) {
   return (
-    <div className="mb-4">
-      <h2 className="text-base font-semibold text-stone-900">{children}</h2>
-      {description ? <p className="text-sm text-stone-500 mt-0.5">{description}</p> : null}
+    <div className="mb-3">
+      <h2 className="text-sm font-semibold text-stone-900">{children}</h2>
+      {description ? <p className="text-xs text-stone-400 mt-0.5">{description}</p> : null}
     </div>
   )
 }
@@ -53,9 +53,7 @@ export function Card({
   padding?: boolean
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-stone-200 bg-white shadow-sm ${padding ? 'p-5 sm:p-6' : ''} ${className}`}
-    >
+    <div className={`rounded-xl border border-stone-200 bg-white ${padding ? 'p-5 sm:p-6' : ''} ${className}`}>
       {children}
     </div>
   )
@@ -71,13 +69,13 @@ export function Badge({
   const styles = {
     default: 'bg-stone-100 text-stone-600 border-stone-200',
     success: 'bg-green-50 text-green-700 border-green-200',
-    warning: 'bg-blue-50 text-blue-700 border-blue-200',
-    info: 'bg-blue-50 text-blue-700 border-blue-200',
-    real: 'bg-blue-50 text-blue-700 border-blue-200',
-    funded: 'bg-blue-50 text-blue-700 border-blue-200',
+    warning: 'bg-amber-50 text-amber-700 border-amber-200',
+    info: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    real: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    funded: 'bg-stone-100 text-stone-600 border-stone-200',
   }
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${styles[variant]}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${styles[variant]}`}>
       {children}
     </span>
   )
@@ -100,9 +98,9 @@ export function BtnGhost({
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
       aria-label={ariaLabel}
-      className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-stone-700 bg-white border border-stone-200 hover:bg-stone-50 hover:text-stone-900 hover:border-stone-300 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-stone-700 ${className}`}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors disabled:opacity-50 cursor-pointer ${className}`}
     >
       {children}
     </button>
@@ -125,7 +123,7 @@ export function BtnPrimary({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-500 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer ${className}`}
     >
       {children}
     </button>
@@ -345,13 +343,9 @@ export function ModalShell({
   onClose: () => void
 }) {
   return (
-    <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div className="relative bg-white border border-stone-200 rounded-2xl max-w-md w-full shadow-2xl shadow-stone-900/15 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-white rounded-2xl border border-stone-200 overflow-hidden">
         {children}
       </div>
     </div>
@@ -370,30 +364,28 @@ export function ModalHeader({
   onClose: () => void
 }) {
   return (
-    <div className="border-b border-stone-200 px-6 py-5 flex items-start justify-between gap-4">
-      <div>
-        {badges ? <div className="flex flex-wrap gap-2 mb-2">{badges}</div> : null}
-        <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
-        {subtitle ? <p className="text-sm text-stone-500 mt-1">{subtitle}</p> : null}
+    <div className="px-6 py-5 border-b border-stone-100">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold text-stone-900">{title}</h2>
+          {subtitle && <p className="text-sm text-stone-500 mt-0.5">{subtitle}</p>}
+          {badges && <div className="mt-2 flex gap-2 flex-wrap">{badges}</div>}
+        </div>
+        <button
+          onClick={onClose}
+          className="text-stone-400 hover:text-stone-600 transition-colors shrink-0 cursor-pointer"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="p-2 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
-        aria-label="Close"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
     </div>
   )
 }
 
-export const inputClassName =
-  'w-full px-4 py-3 rounded-xl text-stone-900 bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/25 focus:border-green-500/40 transition-shadow'
-
-export const labelClassName = 'block text-xs font-medium uppercase tracking-wider text-stone-500 mb-2'
+export const inputClassName = 'w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors'
+export const labelClassName = 'block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5'
 
 export function SegmentedControl<T extends string>({
   value,
@@ -402,19 +394,19 @@ export function SegmentedControl<T extends string>({
 }: {
   value: T
   onChange: (v: T) => void
-  options: { value: T; label: React.ReactNode }[]
+  options: { value: T; label: string }[]
 }) {
   return (
-    <div className="inline-flex w-full p-1 rounded-xl bg-stone-100 border border-stone-200 gap-1">
+    <div className="flex gap-1 p-1 bg-stone-100 rounded-lg border border-stone-200">
       {options.map((opt) => (
         <button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer ${
+          className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
             value === opt.value
-              ? 'bg-white text-stone-900 border border-stone-200 shadow-sm'
-              : 'text-stone-500 hover:text-stone-800 border border-transparent'
+              ? 'bg-white text-stone-900 border border-stone-200'
+              : 'text-stone-500 hover:text-stone-700'
           }`}
         >
           {opt.label}
