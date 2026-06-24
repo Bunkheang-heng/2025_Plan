@@ -42,6 +42,56 @@ function BoltIcon() {
   return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
 }
 
+// Module-level constant — no runtime dependencies on props/state
+const ALL_NAV_LINKS: NavLink[] = [
+  { path: '/', label: 'Dashboard', icon: <DashIcon /> },
+  { path: '/settings/ai', label: 'AI Settings', icon: <SettingsIcon /> },
+  {
+    label: 'Tasks',
+    icon: <CalendarIcon />,
+    subLinks: [
+      { path: '/task/daily', label: 'Daily Tasks' },
+      { path: '/task/weekly', label: 'Weekly Tasks' },
+      { path: '/task/monthly', label: 'Monthly Tasks' },
+      { path: '/self_punishment', label: 'Self Punishment' },
+    ],
+  },
+  {
+    label: 'Trading',
+    icon: <TradingIcon />,
+    subLinks: [
+      { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
+      { path: '/trading/bot_trading_pnl', label: 'Bot Trading P&L', group: 'Trading' },
+      { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
+      { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
+      { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
+      { path: '/trading/tools', label: 'Tools', group: 'Learning' },
+      { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
+      { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
+      { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
+      { path: '/setup', label: 'My Setup', group: 'Trading' },
+    ],
+  },
+  {
+    label: 'Saving',
+    icon: <HeartIcon />,
+    subLinks: [
+      { path: '/couple_saving', label: 'Couple Saving' },
+      { path: '/business_idea', label: 'Business Idea' },
+    ],
+  },
+  { path: '/chat', label: 'AI Chat', icon: <ChatIcon /> },
+  { path: '/working_project', label: 'Working Project', icon: <ProjectIcon /> },
+  {
+    label: 'Admin',
+    icon: <AdminIcon />,
+    subLinks: [
+      { path: '/admin/set-role', label: 'Set Role' },
+      { path: '/admin/create-account', label: 'Create Account' },
+    ],
+  },
+]
+
 function NavIcon({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
   return (
     <div className="relative group">
@@ -71,59 +121,10 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
-  const allNavLinks: NavLink[] = [
-    { path: '/', label: 'Dashboard', icon: <DashIcon /> },
-    { path: '/settings/ai', label: 'AI Settings', icon: <SettingsIcon /> },
-    {
-      label: 'Tasks',
-      icon: <CalendarIcon />,
-      subLinks: [
-        { path: '/task/daily', label: 'Daily Tasks' },
-        { path: '/task/weekly', label: 'Weekly Tasks' },
-        { path: '/task/monthly', label: 'Monthly Tasks' },
-        { path: '/self_punishment', label: 'Self Punishment' },
-      ],
-    },
-    {
-      label: 'Trading',
-      icon: <TradingIcon />,
-      subLinks: [
-        { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
-        { path: '/trading/bot_trading_pnl', label: 'Bot Trading P&L', group: 'Trading' },
-        { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
-        { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
-        { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
-        { path: '/trading/tools', label: 'Tools', group: 'Learning' },
-        { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
-        { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
-        { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
-        { path: '/setup', label: 'My Setup', group: 'Trading' },
-      ],
-    },
-    {
-      label: 'Saving',
-      icon: <HeartIcon />,
-      subLinks: [
-        { path: '/couple_saving', label: 'Couple Saving' },
-        { path: '/business_idea', label: 'Business Idea' },
-      ],
-    },
-    { path: '/chat', label: 'AI Chat', icon: <ChatIcon /> },
-    { path: '/working_project', label: 'Working Project', icon: <ProjectIcon /> },
-    {
-      label: 'Admin',
-      icon: <AdminIcon />,
-      subLinks: [
-        { path: '/admin/set-role', label: 'Set Role' },
-        { path: '/admin/create-account', label: 'Create Account' },
-      ],
-    },
-  ]
-
   const navLinks = useMemo(() => {
     if (roleLoading) return []
-    return allNavLinks.filter((link) => {
-      if (link.path?.startsWith('/admin') && role !== 'admin') return false
+    return ALL_NAV_LINKS.filter((link) => {
+      if (link.subLinks?.some(sub => sub.path.startsWith('/admin')) && role !== 'admin') return false
       if (link.path && !canAccessRoute(role, link.path)) return false
       if (link.subLinks) return link.subLinks.some((sub) => canAccessRoute(role, sub.path))
       return true
@@ -151,7 +152,7 @@ export default function Nav() {
         {/* Logo */}
         <button
           onClick={() => router.push('/')}
-          className="w-9 h-9 flex items-center justify-center bg-emerald-600 rounded-lg mb-2 hover:bg-emerald-700 transition-colors cursor-pointer"
+          className="w-9 h-9 flex items-center justify-center bg-emerald-600 rounded-lg mb-2 hover:bg-emerald-700 transition-colors cursor-pointer text-white"
           aria-label="Home"
         >
           <BoltIcon />
@@ -193,11 +194,47 @@ export default function Nav() {
         )}
       </aside>
 
+      {/* Desktop sub-link flyout panel */}
+      {openDropdown && (() => {
+        const activeLink = navLinks.find(l => l.label === openDropdown)
+        if (!activeLink?.subLinks) return null
+        return (
+          <div className="fixed left-14 top-0 h-full w-48 bg-white border-r border-stone-200 z-40 py-3 overflow-y-auto">
+            <div className="px-3 mb-2">
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">{activeLink.label}</p>
+            </div>
+            <nav className="space-y-0.5 px-2">
+              {activeLink.subLinks.map((sub) => (
+                <button
+                  key={sub.path}
+                  onClick={() => { router.push(sub.path); setOpenDropdown(null) }}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    pathname === sub.path
+                      ? 'bg-emerald-50 text-emerald-700 font-medium'
+                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        )
+      })()}
+
+      {/* Overlay to close flyout when clicking outside */}
+      {openDropdown && (
+        <div
+          className="fixed inset-0 z-30"
+          onClick={() => setOpenDropdown(null)}
+        />
+      )}
+
       {/* Mobile top bar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-stone-200">
-        <div className="flex items-center justify-between px-4 py-3">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-stone-200 h-14">
+        <div className="flex items-center justify-between px-4 h-full">
           <button onClick={() => router.push('/')} className="flex items-center gap-2 cursor-pointer">
-            <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
               <BoltIcon />
             </div>
             <span className="text-sm font-bold text-emerald-600">Super Assistent</span>
