@@ -187,12 +187,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
-  }
-  50% {
-    box-shadow: 0 0 28px rgba(59, 130, 246, 0.45);
-  }
+  0%, 100% { box-shadow: 0 0 16px rgba(5, 150, 105, 0.25); }
+  50% { box-shadow: 0 0 28px rgba(5, 150, 105, 0.45); }
 }
 
 @keyframes bounce-subtle {
@@ -421,7 +417,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(37, 99, 235, 0.02);
+  background-color: rgba(5, 150, 105, 0.02);
   pointer-events: none;
 }
 
@@ -499,21 +495,16 @@ body {
 }
 
 .spinner-terminal {
-  border: 2px solid rgba(59, 130, 246, 0.15);
+  border: 2px solid rgba(5, 150, 105, 0.15);
   border-top: 2px solid var(--accent-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
-/* Priority badge styles */
-.priority-high {}
-.priority-medium {}
-.priority-low {}
-
 /* Code syntax highlighting */
 .code-block {
-  background: #f0eeea;
-  border: 1px solid #e7e3dd;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   font-family: 'Fira Code', monospace;
   padding: 16px;
@@ -521,7 +512,7 @@ body {
 }
 
 .code-keyword {
-  color: #2563eb;
+  color: var(--accent-secondary);
 }
 
 .code-string {
@@ -534,11 +525,11 @@ body {
 }
 
 .code-function {
-  color: #3b82f6;
+  color: var(--accent-primary);
 }
 
 .code-variable {
-  color: #3b82f6;
+  color: var(--accent-primary);
 }
 
 
@@ -599,7 +590,7 @@ html {
 .typing-dot {
   width: 8px;
   height: 8px;
-  background: #60a5fa;
+  background: var(--accent-primary);
   border-radius: 50%;
   animation: typing-bounce 1.4s infinite ease-in-out;
 }
