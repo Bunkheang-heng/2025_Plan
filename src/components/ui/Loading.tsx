@@ -6,66 +6,35 @@ export default function Loading() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) return 90
-        return prev + Math.random() * 15
-      })
+      setProgress((prev) => (prev >= 90 ? 90 : prev + Math.random() * 15))
     }, 200)
-
     return () => clearInterval(timer)
   }, [])
 
   return (
-    <div className="min-h-screen bg-theme-primary flex items-center justify-center transition-colors duration-300">
-      <div className="max-w-md w-full mx-auto p-8">
-        <div className="text-center space-y-10">
-          {/* Logo */}
-          <div className="flex justify-center">
-            <div className="p-6 bg-blue-500 rounded-2xl shadow-2xl shadow-blue-500/25 border border-blue-300">
-              <svg className="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
+    <div className="min-h-screen bg-[#fafaf9] flex items-center justify-center">
+      <div className="w-full max-w-xs mx-auto px-6 text-center space-y-8">
+        <div className="flex justify-center">
+          <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center">
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
-
-          {/* Loading Text */}
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-blue-600">J.A.R.V.I.S</h2>
-            <p className="text-lg text-theme-secondary font-medium">Initializing AI systems...</p>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-stone-900">Super Assistent</h2>
+          <p className="text-sm text-stone-500 mt-1">Loading your workspace...</p>
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-stone-400">
+            <span>Initializing</span>
+            <span>{Math.round(progress)}%</span>
           </div>
-
-          {/* Spinner */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="w-12 h-12 border-4 border-theme-tertiary rounded-full"></div>
-              <div className="absolute inset-0 w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-theme-secondary">System Status</span>
-              <span className="text-sm font-bold text-blue-600">{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full bg-theme-tertiary rounded-full h-3 overflow-hidden border border-theme-secondary">
-              <div 
-                className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out shadow-lg"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="text-center space-y-2">
-            <p className="text-sm text-theme-muted font-medium">
-              Preparing your mission control center...
-            </p>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-            </div>
+          <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-600 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
       </div>

@@ -1,14 +1,11 @@
 import React from 'react'
-import Card from './Card'
-import Icon from './Icon'
 
 interface StatCardProps {
   title: string
   total: number
   completed: number
   onClick?: () => void
-  icon?: string
-  gradient?: string
+  icon?: React.ReactNode
   description?: string
   type?: string
   showProgress?: boolean
@@ -16,77 +13,38 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({
-  title,
-  total,
-  completed,
-  onClick,
-  icon = 'clipboard',
-  gradient = 'bg-blue-600',
-  description = '',
-  type = '',
-  showProgress = true,
-  className = ''
+  title, total, completed, onClick, icon, description, type, showProgress = true, className = '',
 }) => {
   const progress = total > 0 ? (completed / total) * 100 : 0
-  
+
   return (
-    <Card
-      variant="elevated"
-      padding="lg"
-      hover={!!onClick}
-      clickable={!!onClick}
+    <div
+      className={`bg-white border border-stone-200 rounded-xl p-5 ${onClick ? 'cursor-pointer hover:border-stone-300 transition-colors' : ''} ${className}`}
       onClick={onClick}
-      className={`group cursor-pointer ${className}`}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className={`p-3 rounded-xl ${gradient} shadow-lg`}>
-          <Icon name={icon} className="text-white" />
-        </div>
-        {description && (
-          <div className="text-right">
-            <p className="text-sm text-theme-muted font-medium">{description}</p>
+      <div className="flex items-start justify-between mb-4">
+        {icon && (
+          <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+            {icon}
           </div>
         )}
+        {description && <span className="text-xs text-stone-400">{description}</span>}
       </div>
-      
-      <div className="space-y-4">
-        <h3 className="text-xl lg:text-2xl font-bold text-theme-primary">{title}</h3>
-        
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="text-3xl lg:text-4xl font-bold text-theme-primary">
-              {isNaN(progress) ? '0' : progress.toFixed(0)}%
-            </div>
-            <div className="text-sm text-theme-tertiary font-medium">
-              {completed} of {total} completed
-            </div>
+      <div className="space-y-3">
+        <p className="text-sm font-medium text-stone-500">{title}</p>
+        <p className="text-2xl font-bold text-stone-900">{Math.round(progress)}%</p>
+        <p className="text-xs text-stone-400">{completed} of {total} completed</p>
+        {showProgress && (
+          <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-600 rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
           </div>
-          
-          {showProgress && (
-            <div className="flex-1 ml-6">
-              <div className="w-full bg-theme-tertiary rounded-full h-3 overflow-hidden">
-                <div 
-                  className={`h-full ${gradient} rounded-full transition-all duration-700 ease-out`}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-        
+        )}
         {onClick && (
-          <div className="flex items-center justify-between pt-4 border-t border-theme-secondary">
-            <span className="text-sm font-semibold text-theme-secondary group-hover:text-blue-600 transition-colors">
-              View {type || 'Details'}
-            </span>
-            <div className="text-theme-muted group-hover:text-blue-600 transition-colors transform group-hover:translate-x-1">
-              <Icon name="plus" size="sm" />
-            </div>
-          </div>
+          <p className="text-xs font-semibold text-emerald-600 pt-1">View {type || 'Details'} →</p>
         )}
       </div>
-    </Card>
+    </div>
   )
 }
 
-export default StatCard 
+export default StatCard
