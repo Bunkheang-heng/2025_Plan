@@ -1,25 +1,67 @@
 'use client'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useState, useMemo } from 'react'
-import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { canAccessRoute } from '@/utils/userRole'
 
-interface AuthButtonProps {
-  isLoggedIn: boolean
-}
-
-interface SubLink {
-  path: string;
-  label: string;
-  group?: string;
-}
-
 interface NavLink {
-  path?: string;
-  label: string;
-  icon: () => React.JSX.Element;
-  subLinks?: SubLink[];
+  path?: string
+  label: string
+  icon: React.ReactNode
+  subLinks?: { path: string; label: string; group?: string }[]
+}
+
+function DashIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+}
+function CalendarIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+}
+function TradingIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+}
+function HeartIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M12 21C12 21 4 13.5 4 8.7A5 5 0 0112 4a5 5 0 018 4.7C20 13.5 12 21 12 21z"/></svg>
+}
+function ChatIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.97 9.97 0 01-4-.8L3 20l1.2-4.2A7.97 7.97 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+}
+function ProjectIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3 7h18a1 1 0 011 1v11a2 2 0 01-2 2H4a2 2 0 01-2-2V8a1 1 0 011-1z"/></svg>
+}
+function SettingsIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+}
+function AdminIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+}
+function LogoutIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+}
+function BoltIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+}
+
+function NavIcon({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <div className="relative group">
+      <button
+        onClick={onClick}
+        className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors duration-150 cursor-pointer ${
+          active ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:bg-emerald-50 hover:text-emerald-600'
+        }`}
+        aria-label={label}
+      >
+        {icon}
+      </button>
+      <div className="absolute left-12 top-1/2 -translate-y-1/2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <div className="bg-stone-900 text-white text-xs font-medium px-2 py-1 rounded-md whitespace-nowrap">
+          {label}
+          <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-stone-900" />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function Nav() {
@@ -28,31 +70,26 @@ export default function Nav() {
   const { isAuthenticated, role, isLoading: roleLoading, signOut } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
-
-  const toggleGroup = (key: string) => {
-    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
 
   const allNavLinks: NavLink[] = [
-    { path: '/', label: 'Dashboard', icon: DashboardIcon },
-    { path: '/settings/ai', label: 'AI settings', icon: AiSettingsIcon },
-    { 
-      label: 'Tasks', 
-      icon: CalendarDayIcon,
+    { path: '/', label: 'Dashboard', icon: <DashIcon /> },
+    { path: '/settings/ai', label: 'AI Settings', icon: <SettingsIcon /> },
+    {
+      label: 'Tasks',
+      icon: <CalendarIcon />,
       subLinks: [
         { path: '/task/daily', label: 'Daily Tasks' },
         { path: '/task/weekly', label: 'Weekly Tasks' },
         { path: '/task/monthly', label: 'Monthly Tasks' },
-        { path: '/self_punishment', label: 'Self Punishment' }
-      ]
+        { path: '/self_punishment', label: 'Self Punishment' },
+      ],
     },
-    { 
-      label: 'Trading', 
-      icon: TradingIcon,
+    {
+      label: 'Trading',
+      icon: <TradingIcon />,
       subLinks: [
         { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
-        { path: '/trading/bot_trading_pnl', label: 'Bot trading P&L', group: 'Trading' },
+        { path: '/trading/bot_trading_pnl', label: 'Bot Trading P&L', group: 'Trading' },
         { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
         { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
         { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
@@ -60,592 +97,175 @@ export default function Nav() {
         { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
         { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
         { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
-        { path: '/setup', label: 'My Setup', group: 'Trading' }
-      ]
+        { path: '/setup', label: 'My Setup', group: 'Trading' },
+      ],
     },
-    { 
-      label: 'Saving', 
-      icon: CoupleSavingIcon,
+    {
+      label: 'Saving',
+      icon: <HeartIcon />,
       subLinks: [
         { path: '/couple_saving', label: 'Couple Saving' },
-        { path: '/business_idea', label: 'Business Idea' }
-      ]
+        { path: '/business_idea', label: 'Business Idea' },
+      ],
     },
-    { path: '/chat', label: 'AI Chat', icon: ChatIcon },
-    { path: '/working_project', label: 'Working Project', icon: WorkingProjectIcon },
-    { 
-      label: 'Admin', 
-      icon: AdminIcon,
+    { path: '/chat', label: 'AI Chat', icon: <ChatIcon /> },
+    { path: '/working_project', label: 'Working Project', icon: <ProjectIcon /> },
+    {
+      label: 'Admin',
+      icon: <AdminIcon />,
       subLinks: [
         { path: '/admin/set-role', label: 'Set Role' },
-        { path: '/admin/create-account', label: 'Create Account' }
-      ]
+        { path: '/admin/create-account', label: 'Create Account' },
+      ],
     },
   ]
 
-  // Filter nav links based on user role
   const navLinks = useMemo(() => {
     if (roleLoading) return []
-    
-    return allNavLinks.filter(link => {
-      // Admin-only pages (like admin/set-role) should only show for admins
-      if (link.path?.startsWith('/admin') && role !== 'admin') {
-        return false
-      }
-      
-      // Check main path
-      if (link.path && !canAccessRoute(role, link.path)) {
-        return false
-      }
-      
-      // Check sublinks - if any sublink is accessible, show the parent
-      if (link.subLinks) {
-        const hasAccessibleSubLink = link.subLinks.some(subLink => 
-          canAccessRoute(role, subLink.path)
-        )
-        return hasAccessibleSubLink
-      }
-      
+    return allNavLinks.filter((link) => {
+      if (link.path?.startsWith('/admin') && role !== 'admin') return false
+      if (link.path && !canAccessRoute(role, link.path)) return false
+      if (link.subLinks) return link.subLinks.some((sub) => canAccessRoute(role, sub.path))
       return true
     })
   }, [role, roleLoading])
 
-  function AiSettingsIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
-        />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    )
+  const isLinkActive = (link: NavLink) => {
+    if (link.path) return pathname === link.path
+    if (link.subLinks) return link.subLinks.some((sub) => pathname.startsWith(sub.path))
+    return false
   }
 
-  function DashboardIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h7v7H3V3zM14 3h7v7h-7V3zM14 14h7v7h-7v-7zM3 14h7v7H3v-7z" />
-      </svg>
-    )
-  }
-
-  function CalendarDayIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
-      </svg>
-    )
-  }
-
-  function CalendarWeekIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 10h18M3 21h18" />
-      </svg>
-    )
-  }
-
-  function CalendarMonthIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M3 8h18M3 21h18" />
-      </svg>
-    )
-  }
-
-  function ChatIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.97 9.97 0 01-4-.8L3 20l1.2-4.2A7.97 7.97 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    )
-  }
-
-  function TradingIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    )
-  }
-
-  // WORKING PROJECT = Briefcase Icon
-  function WorkingProjectIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3 7h18a1 1 0 011 1v11a2 2 0 01-2 2H4a2 2 0 01-2-2V8a1 1 0 011-1z"
-        />
-      </svg>
-    )
-  }
-
-  // BUSINESS IDEA = Lightbulb Icon
-  function BusinessIdeaIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 3a7 7 0 017 7c0 2.281-1.218 4.177-3.09 5.207A2.992 2.992 0 0112 21m0 0a2.992 2.992 0 01-3.91-5.793C6.218 14.177 5 12.281 5 10a7 7 0 017-7zm0 14v1m-3-1h6"
-        />
-      </svg>
-    )
-  }
-
-  // SETUP = Desk / Monitor Icon
-  function SetupIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    )
-  }
-
-  // COUPLE SAVING = Heart with Dollar Icon
-  function CoupleSavingIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 21C12 21 4 13.476 4 8.727A4.727 4.727 0 0112 4a4.727 4.727 0 018 4.727C20 13.476 12 21 12 21z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13.5 11.5a1.5 1.5 0 11-3 0c0-.828.896-1.5 2-1.5s2 .672 2 1.5z"
-        />
-        <text
-          x="12"
-          y="15"
-          textAnchor="middle"
-          fontSize="5"
-          fill="currentColor"
-          fontFamily="monospace"
-          dy=".3em"
-        >$</text>
-      </svg>
-    )
-  }
-
-  // ADMIN = Shield Icon
-  function AdminIcon() {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-        />
-      </svg>
-    )
-  }
-
-  const NavItem = ({ link }: { link: NavLink }) => {
-    // Check if any sublink is active
-    const isSubLinkActive = link.subLinks?.some(sub => pathname === sub.path)
-    const active = link.path ? pathname === link.path : false
-    const isOpen = openDropdown === link.label
-
-    if (link.subLinks) {
-      return (
-        <div>
-          <button
-            onClick={() => setOpenDropdown(isOpen ? null : link.label)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-r-lg transition-colors duration-200 text-sm font-medium ${
-              isSubLinkActive
-                ? 'bg-blue-500 text-black shadow-lg'
-                : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <span className={`flex items-center justify-center w-6 h-6 ${isSubLinkActive ? 'text-black' : 'text-theme-secondary'}`}>
-                <link.icon />
-              </span>
-              <span>{link.label}</span>
-            </div>
-            <svg 
-              className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {isOpen && (
-            <div className="ml-4 mt-1 animate-slide-down">
-              {(() => {
-                const hasGroups = link.subLinks.some((s) => s.group)
-                if (!hasGroups) {
-                  return (
-                    <div className="space-y-1">
-                      {link.subLinks.map((subLink) => (
-                        <button
-                          key={subLink.path}
-                          onClick={() => router.push(subLink.path)}
-                          className={`w-full text-left px-4 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
-                            pathname === subLink.path
-                              ? 'bg-blue-500/20 text-blue-600 border-l-2 border-blue-400'
-                              : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
-                          }`}
-                        >
-                          {subLink.label}
-                        </button>
-                      ))}
-                    </div>
-                  )
-                }
-                const groups: { name: string; items: SubLink[] }[] = []
-                link.subLinks.forEach((s) => {
-                  const gName = s.group || ''
-                  const existing = groups.find((g) => g.name === gName)
-                  if (existing) existing.items.push(s)
-                  else groups.push({ name: gName, items: [s] })
-                })
-                return (
-                  <div className="space-y-1">
-                    {groups.map((g) => {
-                      const groupKey = `${link.label}-${g.name}`
-                      const isGroupOpen = !!openGroups[groupKey]
-                      const hasActiveItem = g.items.some((s) => pathname === s.path)
-                      return (
-                        <div key={g.name}>
-                          {g.name ? (
-                            <button
-                              onClick={() => toggleGroup(groupKey)}
-                              className={`w-full flex items-center justify-between px-4 py-2 rounded-r-lg transition-colors duration-200 text-xs font-bold uppercase tracking-wider ${
-                                hasActiveItem
-                                  ? 'text-blue-600'
-                                  : 'text-theme-muted hover:text-theme-secondary'
-                              }`}
-                            >
-                              <span>{g.name}</span>
-                              <svg
-                                className={`w-3 h-3 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
-                          ) : null}
-                          {(!g.name || isGroupOpen) && (
-                            <div className="space-y-0.5 animate-slide-down">
-                              {g.items.map((subLink) => (
-                                <button
-                                  key={subLink.path}
-                                  onClick={() => router.push(subLink.path)}
-                                  className={`w-full text-left px-6 py-2 rounded-r-lg transition-colors duration-200 text-sm ${
-                                    pathname === subLink.path
-                                      ? 'bg-blue-500/20 text-blue-600 border-l-2 border-blue-400'
-                                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
-                                  }`}
-                                >
-                                  {subLink.label}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              })()}
-            </div>
-          )}
-        </div>
-      )
+  const handleNavClick = (link: NavLink) => {
+    if (link.path) {
+      router.push(link.path)
+    } else {
+      setOpenDropdown(openDropdown === link.label ? null : link.label)
     }
-
-    return (
-      <button
-        onClick={() => router.push(link.path!)}
-        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-r-lg transition-colors duration-200 text-sm font-medium ${
-          active
-            ? 'bg-blue-500 text-black shadow-lg'
-            : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
-        }`}
-      >
-        <span className={`flex items-center justify-center w-6 h-6 ${active ? 'text-black' : 'text-theme-secondary'}`}>
-          <link.icon />
-        </span>
-        <span>{link.label}</span>
-      </button>
-    )
   }
-
-  const MobileNavItem = ({ link }: { link: NavLink }) => {
-    const isSubLinkActive = link.subLinks?.some(sub => pathname === sub.path)
-    const isOpen = openDropdown === link.label
-
-    if (link.subLinks) {
-      return (
-        <div>
-          <button
-            onClick={() => setOpenDropdown(isOpen ? null : link.label)}
-            className={`w-full text-left px-4 py-3 rounded-lg transition-colors duration-150 ${
-              isSubLinkActive ? 'text-blue-600 bg-theme-tertiary/50' : 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="w-6 h-6"><link.icon /></span>
-                <span>{link.label}</span>
-              </div>
-              <svg 
-                className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </button>
-          
-          {isOpen && (
-            <div className="ml-9 mt-1">
-              {(() => {
-                const hasGroups = link.subLinks.some((s) => s.group)
-                if (!hasGroups) {
-                  return (
-                    <div className="space-y-1">
-                      {link.subLinks.map((subLink) => (
-                        <button
-                          key={subLink.path}
-                          onClick={() => {
-                            router.push(subLink.path)
-                            setMobileOpen(false)
-                            setOpenDropdown(null)
-                          }}
-                          className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-150 text-sm ${
-                            pathname === subLink.path
-                              ? 'text-blue-600 bg-theme-tertiary/50'
-                              : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
-                          }`}
-                        >
-                          {subLink.label}
-                        </button>
-                      ))}
-                    </div>
-                  )
-                }
-                const groups: { name: string; items: SubLink[] }[] = []
-                link.subLinks.forEach((s) => {
-                  const gName = s.group || ''
-                  const existing = groups.find((g) => g.name === gName)
-                  if (existing) existing.items.push(s)
-                  else groups.push({ name: gName, items: [s] })
-                })
-                return (
-                  <div className="space-y-1">
-                    {groups.map((g) => {
-                      const groupKey = `${link.label}-${g.name}`
-                      const isGroupOpen = !!openGroups[groupKey]
-                      const hasActiveItem = g.items.some((s) => pathname === s.path)
-                      return (
-                        <div key={g.name}>
-                          {g.name ? (
-                            <button
-                              onClick={() => toggleGroup(groupKey)}
-                              className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors duration-150 text-xs font-bold uppercase tracking-wider ${
-                                hasActiveItem
-                                  ? 'text-blue-600'
-                                  : 'text-theme-muted hover:text-theme-secondary'
-                              }`}
-                            >
-                              <span>{g.name}</span>
-                              <svg
-                                className={`w-3 h-3 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
-                          ) : null}
-                          {(!g.name || isGroupOpen) && (
-                            <div className="space-y-0.5">
-                              {g.items.map((subLink) => (
-                                <button
-                                  key={subLink.path}
-                                  onClick={() => {
-                                    router.push(subLink.path)
-                                    setMobileOpen(false)
-                                    setOpenDropdown(null)
-                                  }}
-                                  className={`w-full text-left px-6 py-2 rounded-lg transition-colors duration-150 text-sm ${
-                                    pathname === subLink.path
-                                      ? 'text-blue-600 bg-theme-tertiary/50'
-                                      : 'text-theme-tertiary hover:text-accent hover:bg-theme-tertiary/30'
-                                  }`}
-                                >
-                                  {subLink.label}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              })()}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <button
-        onClick={() => {
-          router.push(link.path!)
-          setMobileOpen(false)
-        }}
-        className="w-full text-left px-4 py-3 rounded-lg transition-colors duration-150 text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50"
-      >
-        <div className="flex items-center space-x-3">
-          <span className="w-6 h-6"><link.icon /></span>
-          <span>{link.label}</span>
-        </div>
-      </button>
-    )
-  }
-
-  const AuthButton = ({ isLoggedIn }: AuthButtonProps) => (
-    <button
-      onClick={
-        isLoggedIn
-          ? async () => {
-              await signOut()
-              router.push('/login')
-            }
-          : () => router.push('/login')
-      }
-      className={`w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-        isLoggedIn
-          ? 'text-theme-secondary hover:text-accent hover:bg-theme-tertiary/50'
-          : 'bg-blue-500 text-black shadow-lg'
-      }`}
-    >
-      {isLoggedIn ? 'Sign Out' : 'Sign In'}
-    </button>
-  )
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-72 z-50 flex-col border-r shadow-xl p-4 transition-colors duration-300"
-        style={{ 
-          background: 'var(--nav-bg)', 
-          borderColor: 'var(--nav-border)' 
-        }}
-      >
-        <div className="flex items-center space-x-3 mb-6 cursor-pointer" onClick={() => router.push('/')}>
-          <div className="p-3 bg-blue-500 rounded-lg shadow-lg border border-blue-300">
-            <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-blue-600">J.A.R.V.I.S</h1>
-            <p className="text-xs text-theme-muted">Personal Assistant</p>
-          </div>
-        </div>
+      {/* Desktop icon sidebar */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-14 z-50 flex-col items-center py-3 gap-1 bg-white border-r border-stone-200">
+        {/* Logo */}
+        <button
+          onClick={() => router.push('/')}
+          className="w-9 h-9 flex items-center justify-center bg-emerald-600 rounded-lg mb-2 hover:bg-emerald-700 transition-colors cursor-pointer"
+          aria-label="Home"
+        >
+          <BoltIcon />
+        </button>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto">
-          {isAuthenticated && navLinks.map((l) => <NavItem key={l.label} link={l} />)}
-        </nav>
+        <div className="w-6 h-px bg-stone-200 mb-1" />
 
-        <div className="mt-4">
-          <AuthButton isLoggedIn={isAuthenticated} />
-        </div>
+        {/* Nav items */}
+        {isAuthenticated &&
+          navLinks.map((link) => (
+            <NavIcon
+              key={link.label}
+              icon={link.icon}
+              label={link.label}
+              active={isLinkActive(link)}
+              onClick={() => handleNavClick(link)}
+            />
+          ))}
+
+        <div className="mt-auto" />
+
+        {/* Sign out */}
+        {isAuthenticated && (
+          <div className="relative group">
+            <button
+              onClick={async () => { await signOut(); router.push('/login') }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-stone-400 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+              aria-label="Sign Out"
+            >
+              <LogoutIcon />
+            </button>
+            <div className="absolute left-12 top-1/2 -translate-y-1/2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <div className="bg-stone-900 text-white text-xs font-medium px-2 py-1 rounded-md whitespace-nowrap">
+                Sign Out
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-stone-900" />
+              </div>
+            </div>
+          </div>
+        )}
       </aside>
 
-      {/* Mobile Top Bar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 border-b shadow-md transition-colors duration-300"
-        style={{ 
-          background: 'var(--nav-bg)', 
-          borderColor: 'var(--nav-border)' 
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push('/')}>
-            <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
-              <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+      {/* Mobile top bar */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-stone-200">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button onClick={() => router.push('/')} className="flex items-center gap-2 cursor-pointer">
+            <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <BoltIcon />
             </div>
-            <h2 className="text-sm font-bold text-blue-600">J.A.R.V.I.S</h2>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-md text-theme-secondary hover:text-accent focus:outline-none transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-            <div>
-              <AuthButton isLoggedIn={isAuthenticated} />
-            </div>
-          </div>
+            <span className="text-sm font-bold text-emerald-600">Super Assistent</span>
+          </button>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-2 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              {mobileOpen
+                ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
+          </button>
         </div>
       </header>
 
-      {/* Mobile slide-down menu */}
+      {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 z-40 border-t shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto transition-colors duration-300"
-          style={{ 
-            background: 'var(--nav-bg)', 
-            borderColor: 'var(--nav-border)' 
-          }}
-        >
-          <div className="p-4 space-y-2">
-            {isAuthenticated && navLinks.map((l) => <MobileNavItem key={l.label} link={l} />)}
-          </div>
+        <div className="md:hidden fixed top-14 left-0 right-0 z-40 bg-white border-b border-stone-200 max-h-[80vh] overflow-y-auto">
+          <nav className="p-3 space-y-1">
+            {isAuthenticated &&
+              navLinks.map((link) => (
+                <div key={link.label}>
+                  <button
+                    onClick={() => {
+                      if (link.path) { router.push(link.path); setMobileOpen(false) }
+                      else setOpenDropdown(openDropdown === link.label ? null : link.label)
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isLinkActive(link) ? 'bg-emerald-50 text-emerald-700' : 'text-stone-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    <span className={isLinkActive(link) ? 'text-emerald-600' : 'text-stone-400'}>{link.icon}</span>
+                    {link.label}
+                    {link.subLinks && (
+                      <svg className={`ml-auto w-4 h-4 transition-transform ${openDropdown === link.label ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                    )}
+                  </button>
+                  {link.subLinks && openDropdown === link.label && (
+                    <div className="ml-9 mt-1 space-y-0.5">
+                      {link.subLinks.map((sub) => (
+                        <button
+                          key={sub.path}
+                          onClick={() => { router.push(sub.path); setMobileOpen(false); setOpenDropdown(null) }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                            pathname === sub.path ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+                          }`}
+                        >
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            <div className="pt-2 border-t border-stone-100">
+              <button
+                onClick={async () => { await signOut(); router.push('/login'); setMobileOpen(false) }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+              >
+                <LogoutIcon />
+                Sign Out
+              </button>
+            </div>
+          </nav>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-slide-down {
-          animation: slide-down 0.2s ease-out;
-        }
-      `}</style>
     </>
   )
 }

@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Heng Bunkheang's Planner | Daily, Weekly & Monthly Planning",
-  description: "Personal productivity planner for Heng Bunkheang - Organize daily tasks, weekly goals, and monthly objectives with a clean light interface.",
+  title: "Super Assistent | Personal Productivity System",
+  description: "Personal productivity system for Heng Bunkheang - Organize daily tasks, weekly goals, and monthly objectives.",
   keywords: ["productivity", "planner", "task management", "daily planning", "weekly planning", "monthly planning"],
   authors: [{ name: "Heng Bunkheang" }],
 };
@@ -47,7 +47,7 @@ export default function RootLayout({
         <AuthProvider>
           <AuthGate />
           <Nav/>
-          <main className="flex-1 md:pl-72 pt-0 bg-theme-primary text-theme-primary">
+          <main className="flex-1 md:pl-14 pt-0 bg-[#fafaf9] text-stone-900">
             {children}
           </main>
           <ToastContainer
