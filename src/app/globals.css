@@ -508,7 +508,7 @@ body {
   border-radius: 8px;
   font-family: 'Fira Code', monospace;
   padding: 16px;
-  color: #1c1917;
+  color: var(--text-primary);
 }
 
 .code-keyword {
@@ -516,11 +516,11 @@ body {
 }
 
 .code-string {
-  color: #16a34a;
+  color: var(--success);
 }
 
 .code-comment {
-  color: #78716c;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
