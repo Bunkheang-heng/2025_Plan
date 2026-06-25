@@ -119,18 +119,18 @@ function CreatePlanContent() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2"></div>
             Create New Plan
           </div>
         </div>
 
         {/* Form Container with Dark Theme */}
-        <div className="bg-theme-card border border-blue-500/30 rounded-2xl shadow-lg shadow-blue-500/10 p-6 lg:p-8">
+        <div className="bg-white border border-stone-200 rounded-2xl  p-6 lg:p-8">
           <PlanForm
             onSubmit={handleSubmit}
             onCancel={handleCancel}

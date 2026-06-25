@@ -302,29 +302,29 @@ export default function CoupleSavingPage() {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-theme-primary relative overflow-hidden">
+    <div className="min-h-screen bg-[#fafaf9] relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-50 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-50 rounded-full blur-3xl animate-float-delayed"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/5 rounded-full blur-3xl animate-float-slow"></div>
         {/* Floating hearts */}
-        <div className="absolute top-32 left-1/4 text-blue-600/20 animate-float" style={{ animationDelay: '1s' }}>
+        <div className="absolute top-32 left-1/4 text-emerald-600/20 animate-float" style={{ animationDelay: '1s' }}>
           <FaHeart className="w-8 h-8" />
         </div>
         <div className="absolute top-48 right-1/4 text-red-600/20 animate-float-delayed" style={{ animationDelay: '1.5s' }}>
           <FaHeart className="w-6 h-6" />
         </div>
-        <div className="absolute bottom-32 left-1/3 text-blue-600/20 animate-float-slow" style={{ animationDelay: '2s' }}>
+        <div className="absolute bottom-32 left-1/3 text-emerald-600/20 animate-float-slow" style={{ animationDelay: '2s' }}>
           <FaHeart className="w-7 h-7" />
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse"></div>
             Couple Savings Tracker
           </div>
           
@@ -334,8 +334,8 @@ export default function CoupleSavingPage() {
             <div className="relative group">
               <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/30 to-blue-600/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative">
-                <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500/20 rounded-full blur-sm animate-pulse"></div>
-                <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-blue-500/50 shadow-lg shadow-blue-500/30 ring-4 ring-blue-500/20">
+                <div className="absolute -top-2 -left-2 w-6 h-6 bg-emerald-50 rounded-full blur-sm animate-pulse"></div>
+                <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-emerald-500/50  ring-4 ring-stone-200">
                   <Image
                     src="/bunkheang.png"
                     alt="Bunkheang"
@@ -344,19 +344,19 @@ export default function CoupleSavingPage() {
                     sizes="(max-width: 768px) 96px, 128px"
                   />
                 </div>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500/80 backdrop-blur-sm px-4 py-1 rounded-full border border-blue-400/50 shadow-lg">
-                  <span className="text-sm lg:text-base font-bold text-theme-primary">Bunkheang</span>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-emerald-600/80 backdrop-blur-sm px-4 py-1 rounded-full border border-stone-200">
+                  <span className="text-sm lg:text-base font-bold text-stone-900">Bunkheang</span>
                 </div>
               </div>
             </div>
 
             {/* Hearts between images */}
             <div className="flex flex-col items-center gap-2">
-              <FaHeart className="w-8 h-8 lg:w-10 lg:h-10 text-blue-600 animate-pulse" />
+              <FaHeart className="w-8 h-8 lg:w-10 lg:h-10 text-emerald-600 animate-pulse" />
               <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
                 <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></div>
               </div>
               <FaHeart className="w-8 h-8 lg:w-10 lg:h-10 text-red-600 animate-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
@@ -366,7 +366,7 @@ export default function CoupleSavingPage() {
               <div className="absolute -inset-2 bg-gradient-to-r from-blue-600/30 to-blue-500/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative">
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500/20 rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-red-500/50 shadow-lg shadow-red-500/30 ring-4 ring-red-500/20">
+                <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-red-500/50 shadow-red-500/30 ring-4 ring-red-500/20">
                   <Image
                     src="/monika.png"
                     alt="Monika"
@@ -375,29 +375,29 @@ export default function CoupleSavingPage() {
                     sizes="(max-width: 768px) 96px, 128px"
                   />
                 </div>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-red-500/80 backdrop-blur-sm px-4 py-1 rounded-full border border-red-400/50 shadow-lg">
-                  <span className="text-sm lg:text-base font-bold text-theme-primary">Monika</span>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-red-500/80 backdrop-blur-sm px-4 py-1 rounded-full border border-red-400/50">
+                  <span className="text-sm lg:text-base font-bold text-stone-900">Monika</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <h1 className="text-4xl lg:text-6xl font-bold text-blue-600 mb-4 flex items-center justify-center gap-3">
-            <FaHeart className="w-10 h-10 lg:w-12 lg:h-12 text-blue-600" />
+          <h1 className="text-4xl lg:text-6xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
+            <FaHeart className="w-10 h-10 lg:w-12 lg:h-12 text-emerald-600" />
             <span>Our Savings Journey</span>
-            <FaHeart className="w-10 h-10 lg:w-12 lg:h-12 text-blue-600" />
+            <FaHeart className="w-10 h-10 lg:w-12 lg:h-12 text-emerald-600" />
           </h1>
-          <p className="text-xl text-theme-secondary font-medium max-w-2xl mx-auto">
+          <p className="text-xl text-stone-600 font-medium max-w-2xl mx-auto">
             Building our future together, one saving at a time 💕
           </p>
           
           {/* Decorative elements */}
           <div className="mt-8 flex items-center justify-center gap-2">
-            <div className="w-16 h-0.5 bg-blue-500/40"></div>
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-emerald-600/40"></div>
+            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
             <div className="w-32 h-0.5 bg-red-500/40"></div>
             <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <div className="w-16 h-0.5 bg-blue-500/40"></div>
+            <div className="w-16 h-0.5 bg-emerald-600/40"></div>
           </div>
         </div>
 
@@ -409,7 +409,7 @@ export default function CoupleSavingPage() {
               value: `$${monthStats.totalMonthSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               icon: FaDollarSign,
               gradient: 'from-blue-500 to-blue-600',
-              color: 'text-blue-600',
+              color: 'text-emerald-600',
               isMain: true
             },
             {
@@ -417,21 +417,21 @@ export default function CoupleSavingPage() {
               value: monthStats.daysWithSavings.toString(),
               icon: FaChartLine,
               gradient: 'from-blue-500 to-blue-600',
-              color: 'text-blue-600'
+              color: 'text-emerald-600'
             },
             {
               label: 'Best Day',
               value: `$${monthStats.bestDay.toFixed(0)}`,
               icon: FaDollarSign,
               gradient: 'from-blue-500 to-blue-600',
-              color: 'text-blue-600'
+              color: 'text-emerald-600'
             },
             {
               label: 'Avg/Day',
               value: `$${monthStats.averagePerDay.toFixed(0)}`,
               icon: FaChartLine,
               gradient: 'from-blue-500 to-blue-600',
-              color: 'text-blue-600'
+              color: 'text-emerald-600'
             }
           ].map((stat, index) => {
             const IconComponent = stat.icon
@@ -441,16 +441,16 @@ export default function CoupleSavingPage() {
                 className="group relative animate-slide-in-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="absolute inset-0 bg-theme-card border border-blue-500/30 rounded-xl transform group-hover:scale-105 transition-all duration-300" />
+                <div className="absolute inset-0 bg-white border border-stone-200 rounded-xl transform group-hover:scale-105 transition-all duration-300" />
                 <div className="relative p-4 z-10">
                   <div className="text-center">
                     <div className={`mb-2 p-2 bg-gradient-to-br ${stat.gradient} rounded-lg inline-block`}>
-                      <IconComponent className="w-5 h-5 text-theme-primary" />
+                      <IconComponent className="w-5 h-5 text-stone-900" />
                     </div>
                     <div className={`font-bold ${stat.isMain ? 'text-xl' : 'text-lg'} ${stat.color} mb-1`}>
                       {stat.value}
                     </div>
-                    <div className="text-xs text-theme-tertiary font-medium">{stat.label}</div>
+                    <div className="text-xs text-stone-400 font-medium">{stat.label}</div>
                   </div>
                 </div>
               </div>
@@ -459,16 +459,16 @@ export default function CoupleSavingPage() {
         </div>
 
         {/* Calendar */}
-        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10 relative">
+        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden  relative">
           {/* Decorative corner elements */}
-          <div className="absolute top-0 left-0 w-20 h-20 bg-blue-500/10 rounded-br-full"></div>
+          <div className="absolute top-0 left-0 w-20 h-20 bg-emerald-50 rounded-br-full"></div>
           <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-bl-full"></div>
-          <div className="absolute bottom-0 left-0 w-20 h-20 bg-blue-500/10 rounded-tr-full"></div>
+          <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-50 rounded-tr-full"></div>
           <div className="absolute bottom-0 right-0 w-20 h-20 bg-red-500/10 rounded-tl-full"></div>
           
           {/* Calendar Header */}
-          <div className="bg-blue-500/10 border-b border-blue-500/30 p-6 relative">
-            <div className="absolute top-2 left-4 text-blue-600/30">
+          <div className="bg-emerald-50 border-b border-stone-200 p-6 relative">
+            <div className="absolute top-2 left-4 text-emerald-600/30">
               <FaHeart className="w-4 h-4" />
             </div>
             <div className="absolute top-2 right-4 text-red-600/30">
@@ -477,23 +477,23 @@ export default function CoupleSavingPage() {
             <div className="flex items-center justify-between">
               <button
                 onClick={() => changeMonth(-1)}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors relative z-10"
+                className="p-2 hover:bg-stone-100/50 rounded-lg transition-colors relative z-10"
               >
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
-                <p className="text-xs text-blue-600/70 mt-1">Bunkheang & Monika's Savings</p>
+                <h2 className="text-2xl font-bold text-stone-900">{monthName}</h2>
+                <p className="text-xs text-emerald-600/70 mt-1">Bunkheang & Monika's Savings</p>
               </div>
               
               <button
                 onClick={() => changeMonth(1)}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors relative z-10"
+                className="p-2 hover:bg-stone-100/50 rounded-lg transition-colors relative z-10"
               >
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -505,7 +505,7 @@ export default function CoupleSavingPage() {
             {/* Day Headers */}
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-blue-600 font-bold text-sm py-2">
+                <div key={day} className="text-center text-emerald-600 font-bold text-sm py-2">
                   {day}
                 </div>
               ))}
@@ -531,25 +531,25 @@ export default function CoupleSavingPage() {
                     onClick={() => handleDateClick(day)}
                     className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
                       isToday 
-                        ? 'border-blue-400 bg-blue-400/10' 
+                        ? 'border-emerald-500 bg-emerald-50' 
                         : dayData && dayData.totalAmount > 0
-                        ? 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
-                        : 'border-theme-secondary bg-theme-secondary hover:bg-stone-700/50'
+                        ? 'border-emerald-500/50 bg-emerald-50 hover:bg-emerald-50'
+                        : 'border-stone-200 bg-stone-100 hover:bg-stone-100/50'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
-                        isToday ? 'text-blue-600' : 'text-theme-secondary'
+                        isToday ? 'text-emerald-600' : 'text-stone-600'
                       }`}>
                         {day}
                       </div>
                       {dayData && dayData.totalAmount > 0 && (
                         <>
-                          <div className="text-xs font-bold text-blue-600">
+                          <div className="text-xs font-bold text-emerald-600">
                             ${dayData.totalAmount.toFixed(0)}
                           </div>
                           {dayData.entries.length > 1 && (
-                            <div className="text-xs text-theme-tertiary">
+                            <div className="text-xs text-stone-400">
                               {dayData.entries.length} entries
                             </div>
                           )}
@@ -565,25 +565,25 @@ export default function CoupleSavingPage() {
 
         {/* Decorative Footer */}
         <div className="mt-12 text-center animate-fade-in-delayed">
-          <div className="inline-flex items-center gap-3 px-6 py-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl backdrop-blur-sm">
-            <FaHeart className="w-5 h-5 text-blue-600 animate-pulse" />
+          <div className="inline-flex items-center gap-3 px-6 py-4 bg-emerald-50 border border-stone-200 rounded-2xl backdrop-blur-sm">
+            <FaHeart className="w-5 h-5 text-emerald-600 animate-pulse" />
             <div className="flex items-center gap-2">
-              <span className="text-blue-600 font-semibold">Bunkheang</span>
-              <span className="text-theme-muted">×</span>
+              <span className="text-emerald-600 font-semibold">Bunkheang</span>
+              <span className="text-stone-400">×</span>
               <span className="text-red-600 font-semibold">Phan Chan Monika</span>
             </div>
             <FaHeart className="w-5 h-5 text-red-600 animate-pulse" style={{ animationDelay: '0.3s' }} />
           </div>
-          <p className="text-xs text-theme-muted mt-4">Building our dreams together, one day at a time</p>
+          <p className="text-xs text-stone-400 mt-4">Building our dreams together, one day at a time</p>
         </div>
       </div>
 
       {/* Add/Edit Entry Modal */}
       {isEntryModalOpen && selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-theme-card rounded-3xl shadow-2xl border border-theme-secondary max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up relative">
+          <div className="bg-white rounded-3xl border border-stone-200 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up relative">
             {/* Decorative hearts in modal */}
-            <div className="absolute top-4 left-4 text-blue-600/20">
+            <div className="absolute top-4 left-4 text-emerald-600/20">
               <FaHeart className="w-6 h-6" />
             </div>
             <div className="absolute top-4 right-4 text-red-600/20">
@@ -595,7 +595,7 @@ export default function CoupleSavingPage() {
                   <h2 className="text-2xl font-bold text-red-600">
                     {isEditing ? 'Edit Savings' : dailyData[selectedDate]?.entries.length > 0 ? 'Savings for' : 'Add Savings'}
                   </h2>
-                  <p className="text-sm text-theme-tertiary mt-1">
+                  <p className="text-sm text-stone-400 mt-1">
                     {new Date(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'long',
                       month: 'long', 
@@ -603,7 +603,7 @@ export default function CoupleSavingPage() {
                       year: 'numeric'
                     })}
                   </p>
-                  <p className="text-xs text-blue-600/60 mt-1">💕 Bunkheang & Monika 💕</p>
+                  <p className="text-xs text-emerald-600/60 mt-1">💕 Bunkheang & Monika 💕</p>
                 </div>
                 <button
                   onClick={() => {
@@ -612,29 +612,29 @@ export default function CoupleSavingPage() {
                     setIsEditing(false)
                     setEditingEntryId(null)
                   }}
-                  className="w-10 h-10 bg-theme-card hover:bg-stone-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 bg-white hover:bg-stone-100 rounded-full flex items-center justify-center transition-colors"
                 >
-                  <FaTimes className="w-6 h-6 text-theme-tertiary" />
+                  <FaTimes className="w-6 h-6 text-stone-400" />
                 </button>
               </div>
 
               {/* Existing Entries - View Mode */}
               {!isEditing && dailyData[selectedDate] && dailyData[selectedDate].entries && dailyData[selectedDate].entries.length > 0 && (
                 <div className="mb-6 space-y-3">
-                  <h3 className="text-lg font-semibold text-theme-primary mb-3">Savings Entries</h3>
+                  <h3 className="text-lg font-semibold text-stone-900 mb-3">Savings Entries</h3>
                   {dailyData[selectedDate].entries.map((entry) => {
                     const fullEntry = entries.find(e => e.id === entry.id)
                     return (
-                      <div key={entry.id} className="bg-theme-secondary border border-blue-500/30 rounded-xl p-4">
+                      <div key={entry.id} className="bg-stone-100 border border-stone-200 rounded-xl p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold text-theme-primary">${entry.amount.toFixed(2)}</span>
+                          <span className="font-semibold text-stone-900">${entry.amount.toFixed(2)}</span>
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleEdit(fullEntry!)}
-                              className="p-2 hover:bg-stone-700 rounded-lg transition-colors"
+                              className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
                               aria-label="Edit entry"
                             >
-                              <FaEdit className="w-4 h-4 text-theme-tertiary" />
+                              <FaEdit className="w-4 h-4 text-stone-400" />
                             </button>
                             <button
                               onClick={() => handleDelete(entry.id)}
@@ -646,15 +646,15 @@ export default function CoupleSavingPage() {
                           </div>
                         </div>
                         {entry.note && (
-                          <p className="text-sm text-theme-tertiary">{entry.note}</p>
+                          <p className="text-sm text-stone-400">{entry.note}</p>
                         )}
                       </div>
                     )
                   })}
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                  <div className="bg-emerald-50 border border-stone-200 rounded-xl p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-theme-primary">Total for this day:</span>
-                      <span className="text-blue-600 font-bold text-xl">
+                      <span className="font-bold text-stone-900">Total for this day:</span>
+                      <span className="text-emerald-600 font-bold text-xl">
                         ${dailyData[selectedDate].totalAmount.toFixed(2)}
                       </span>
                     </div>
@@ -669,7 +669,7 @@ export default function CoupleSavingPage() {
                       setIsEditing(false)
                       setEditingEntryId(null)
                     }}
-                    className="w-full px-6 py-3 bg-blue-500 text-theme-primary font-semibold rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl  transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
                   >
                     <FaPlus className="w-4 h-4" />
                     Add Another Entry
@@ -681,11 +681,11 @@ export default function CoupleSavingPage() {
               {(isEditing || !dailyData[selectedDate] || !dailyData[selectedDate]?.entries || dailyData[selectedDate].entries.length === 0) && (
                 <form onSubmit={handleEntrySubmit} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-theme-secondary mb-2">
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">
                       Amount ($) *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-tertiary text-lg font-bold">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-lg font-bold">$</span>
                       <input
                         type="number"
                         value={entryFormData.amount}
@@ -694,13 +694,13 @@ export default function CoupleSavingPage() {
                         min="0.01"
                         step="0.01"
                         placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                        className="w-full pl-8 pr-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-theme-secondary mb-2">
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">
                       Date *
                     </label>
                     <input
@@ -708,12 +708,12 @@ export default function CoupleSavingPage() {
                       value={entryFormData.date}
                       onChange={(e) => setEntryFormData({ ...entryFormData, date: e.target.value })}
                       required
-                      className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                      className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-theme-secondary mb-2">
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">
                       Note (Optional)
                     </label>
                     <textarea
@@ -721,7 +721,7 @@ export default function CoupleSavingPage() {
                       onChange={(e) => setEntryFormData({ ...entryFormData, note: e.target.value })}
                       rows={3}
                       placeholder="Add a note about this savings..."
-                      className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all resize-none"
+                      className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none"
                     />
                   </div>
 
@@ -734,13 +734,13 @@ export default function CoupleSavingPage() {
                         setIsEditing(false)
                         setEditingEntryId(null)
                       }}
-                      className="flex-1 px-6 py-3 bg-theme-card hover:bg-stone-700 text-theme-secondary font-semibold rounded-xl transition-colors"
+                      className="flex-1 px-6 py-3 bg-white hover:bg-stone-100 text-stone-600 font-semibold rounded-xl transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 bg-blue-500 text-theme-primary font-semibold rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transform hover:scale-105 transition-all duration-300"
+                      className="flex-1 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl  transform hover:scale-105 transition-all duration-300"
                     >
                       {isEditing ? 'Update Savings' : 'Add Savings'}
                     </button>

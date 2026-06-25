@@ -160,40 +160,40 @@ export default function TradingPnLAccountsPage() {
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 py-8">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse"></div>
             Bot trading accounts
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4 flex items-center justify-center gap-3">
+          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
             <span>Bot P&amp;L accounts</span>
-            <FaChartLine className="w-10 h-10 text-blue-600" />
+            <FaChartLine className="w-10 h-10 text-emerald-600" />
           </h1>
-          <p className="text-xl text-theme-secondary font-medium">
+          <p className="text-xl text-stone-600 font-medium">
             Daily P&amp;L only — no trade count per day
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden">
-            <div className="p-4 border-b border-theme-secondary flex items-center justify-between">
+          <div className="lg:col-span-7 bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between">
               <div>
-                <h2 className="text-theme-primary font-semibold">Accounts</h2>
-                <p className="text-xs text-theme-tertiary">Click to open bot P&amp;L</p>
+                <h2 className="text-stone-900 font-semibold">Accounts</h2>
+                <p className="text-xs text-stone-400">Click to open bot P&amp;L</p>
               </div>
-              <span className="text-xs text-theme-muted">{sortedAccounts.length}</span>
+              <span className="text-xs text-stone-400">{sortedAccounts.length}</span>
             </div>
 
             <div className="p-4 space-y-3">
               {sortedAccounts.length === 0 ? (
-                <div className="text-sm text-theme-tertiary">No accounts yet. Create one to start.</div>
+                <div className="text-sm text-stone-400">No accounts yet. Create one to start.</div>
               ) : (
                 sortedAccounts.map(acc => (
                   <div
                     key={acc.id}
-                    className="w-full text-left px-4 py-4 rounded-xl border bg-theme-card border-theme-secondary text-theme-primary hover:bg-theme-secondary hover:border-stone-600 transition-colors"
+                    className="w-full text-left px-4 py-4 rounded-xl border bg-white border-stone-200 text-stone-900 hover:bg-stone-100 hover:border-stone-600 transition-colors"
                   >
                     <button
                       onClick={() => router.push(`/trading/bot_trading_pnl/${acc.id}`)}
@@ -201,41 +201,41 @@ export default function TradingPnLAccountsPage() {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <div className="font-semibold text-theme-primary">{acc.name}</div>
+                          <div className="font-semibold text-stone-900">{acc.name}</div>
                           {acc.strategy && (
-                            <div className="text-xs text-blue-600 mt-0.5">📊 {acc.strategy}</div>
+                            <div className="text-xs text-emerald-600 mt-0.5">📊 {acc.strategy}</div>
                           )}
-                          <div className="text-[11px] text-theme-muted font-mono break-all">{acc.id}</div>
-                          <div className="text-xs text-theme-tertiary mt-1">
+                          <div className="text-[11px] text-stone-400 font-mono break-all">{acc.id}</div>
+                          <div className="text-xs text-stone-400 mt-1">
                             Capital: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.capital || 0).toFixed(2)}
                             {acc.target && acc.target > 0 && (
-                              <span className="ml-2 text-blue-600">| 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.target).toFixed(2)}</span>
+                              <span className="ml-2 text-emerald-600">| 🎯 Target: {acc.currency === 'cent' ? '¢' : '$'}{Number(acc.target).toFixed(2)}</span>
                             )}
                           </div>
                         </div>
                         <div className="flex flex-col gap-1 items-end">
                           <div className={`text-xs px-3 py-1 rounded-full border ${
                             acc.type === 'real'
-                              ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
-                              : 'bg-blue-500/20 text-blue-600 border-blue-500/30'
+                              ? 'bg-emerald-50 text-emerald-600 border-stone-200'
+                              : 'bg-emerald-50 text-emerald-600 border-stone-200'
                           }`}>
                             {acc.type === 'real' ? 'Real' : 'Funded'}
                           </div>
                           <div className={`text-xs px-3 py-1 rounded-full border ${
                             acc.currency === 'cent'
-                              ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
+                              ? 'bg-emerald-50 text-emerald-600 border-stone-200'
                               : 'bg-green-500/20 text-green-600 border-green-500/30'
                           }`}>
                             {acc.currency === 'cent' ? '¢ Cent' : '$ USD'}
                           </div>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-blue-600">Open P&amp;L →</div>
+                      <div className="mt-2 text-xs text-emerald-600">Open P&amp;L →</div>
                     </button>
                     <div className="mt-3 flex items-center gap-2">
                       <button
                         onClick={() => router.push(`/trading/bot_trading_pnl/${acc.id}/edit`)}
-                        className="px-3 py-1.5 rounded-lg bg-theme-card/60 border border-theme-secondary text-stone-200 hover:bg-theme-card transition-colors text-xs"
+                        className="px-3 py-1.5 rounded-lg bg-white/60 border border-stone-200 text-stone-700 hover:bg-white transition-colors text-xs"
                       >
                         Edit
                       </button>
@@ -252,29 +252,29 @@ export default function TradingPnLAccountsPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 bg-theme-card border border-blue-500/20 rounded-2xl p-5">
-            <h2 className="text-lg font-semibold text-theme-primary mb-2">Create bot account</h2>
-            <p className="text-xs text-theme-tertiary mb-4">
+          <div className="lg:col-span-5 bg-white border border-stone-200 rounded-2xl p-5">
+            <h2 className="text-lg font-semibold text-stone-900 mb-2">Create bot account</h2>
+            <p className="text-xs text-stone-400 mb-4">
               Same calendar as Trading P&amp;L, without logging number of trades per day.
             </p>
 
-            <label className="block text-xs text-theme-tertiary mb-2">Account name</label>
+            <label className="block text-xs text-stone-400 mb-2">Account name</label>
             <input
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Example: Apex 50K, Personal MT5"
-              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 bg-white/60 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
             />
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Currency</label>
-            <div className="inline-flex items-center bg-stone-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Currency</label>
+            <div className="inline-flex items-center bg-white/60 border border-stone-200 rounded-xl p-1 w-full">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, currency: 'usd' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.currency === 'usd'
-                    ? 'bg-green-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
+                    ? 'bg-green-600 text-stone-900'
+                    : 'text-stone-400 hover:text-stone-600'
                 }`}
               >
                 $ USD
@@ -284,54 +284,54 @@ export default function TradingPnLAccountsPage() {
                 onClick={() => setFormData(prev => ({ ...prev, currency: 'cent' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.currency === 'cent'
-                    ? 'bg-blue-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
+                    ? 'bg-emerald-600 text-white'
+                    : 'text-stone-400 hover:text-stone-600'
                 }`}
               >
                 ¢ Cent
               </button>
             </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Capital ({formData.currency === 'cent' ? '¢' : '$'})</label>
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Capital ({formData.currency === 'cent' ? '¢' : '$'})</label>
             <input
               type="number"
               step="0.01"
               value={formData.capital}
               onChange={(e) => setFormData(prev => ({ ...prev, capital: e.target.value }))}
               placeholder="0.00"
-              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 bg-white/60 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
             />
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})</label>
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Monthly Target ({formData.currency === 'cent' ? '¢' : '$'})</label>
             <input
               type="number"
               step="0.01"
               value={formData.target}
               onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
               placeholder="Your profit goal for the month"
-              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 bg-white/60 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
             />
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Daily Max Loss ({formData.currency === 'cent' ? '¢' : '$'})</label>
             <input
               type="number"
               step="0.01"
               value={formData.maxLoss}
               onChange={(e) => setFormData(prev => ({ ...prev, maxLoss: e.target.value }))}
               placeholder="Maximum allowed loss per day before locking"
-              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 bg-white/60 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
             />
-            <p className="text-xs text-theme-muted mt-2">If your daily P&amp;L loss reaches this amount, we’ll warn you, lock that day, and prompt a self punishment.</p>
+            <p className="text-xs text-stone-400 mt-2">If your daily P&amp;L loss reaches this amount, we’ll warn you, lock that day, and prompt a self punishment.</p>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Account type</label>
-            <div className="inline-flex items-center bg-stone-900/60 border border-theme-secondary rounded-xl p-1 w-full">
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Account type</label>
+            <div className="inline-flex items-center bg-white/60 border border-stone-200 rounded-xl p-1 w-full">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, type: 'real' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.type === 'real'
-                    ? 'bg-blue-600 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
+                    ? 'bg-emerald-600 text-white'
+                    : 'text-stone-400 hover:text-stone-600'
                 }`}
               >
                 <FaWallet className="w-4 h-4" />
@@ -342,8 +342,8 @@ export default function TradingPnLAccountsPage() {
                 onClick={() => setFormData(prev => ({ ...prev, type: 'funded' }))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   formData.type === 'funded'
-                    ? 'bg-blue-500 text-theme-primary'
-                    : 'text-theme-tertiary hover:text-theme-secondary'
+                    ? 'bg-emerald-600 text-white'
+                    : 'text-stone-400 hover:text-stone-600'
                 }`}
               >
                 <FaChartLine className="w-4 h-4" />
@@ -351,27 +351,27 @@ export default function TradingPnLAccountsPage() {
               </button>
             </div>
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Strategy</label>
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Strategy</label>
             <input
               value={formData.strategy}
               onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
               placeholder="Example: ICT, SMC, Price Action, Scalping"
-              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 bg-white/60 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
             />
 
-            <label className="block text-xs text-theme-tertiary mt-4 mb-2">Trading Rules</label>
+            <label className="block text-xs text-stone-400 mt-4 mb-2">Trading Rules</label>
             <textarea
               value={formData.rules}
               onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
               placeholder="Define your trading rules for this account...&#10;Example:&#10;• Max 2 trades per day&#10;• Risk 1% per trade&#10;• No trading on Fridays"
               rows={4}
-              className="w-full px-4 py-3 bg-stone-900/60 border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full px-4 py-3 bg-white/60 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500 resize-none"
             />
 
             <button
               onClick={handleCreate}
               disabled={isCreating || !formData.name.trim()}
-              className="mt-4 w-full px-5 py-3 bg-blue-500 text-black font-semibold rounded-xl hover:bg-blue-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 w-full px-5 py-3 bg-emerald-600 text-black font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <FaPlus />
               {isCreating ? 'Creating...' : 'Create Account'}
@@ -382,25 +382,25 @@ export default function TradingPnLAccountsPage() {
 
       {isDeleteModalOpen && deletingAccount && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg bg-theme-card border border-red-500/30 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-theme-secondary/60">
-              <h3 className="text-xl font-bold text-theme-primary">Delete account</h3>
-              <p className="text-sm text-theme-tertiary mt-1">
+          <div className="w-full max-w-lg bg-white border border-red-500/30 rounded-2xl overflow-hidden">
+            <div className="p-6 border-b border-stone-200/60">
+              <h3 className="text-xl font-bold text-stone-900">Delete account</h3>
+              <p className="text-sm text-stone-400 mt-1">
                 This deletes the account. P&amp;L entries under it will remain.
               </p>
             </div>
             <div className="p-6 space-y-3">
-              <div className="text-sm text-theme-secondary">
-                <span className="text-theme-tertiary">Account:</span>{' '}
-                <span className="font-semibold text-theme-primary">{deletingAccount.name}</span>
+              <div className="text-sm text-stone-600">
+                <span className="text-stone-400">Account:</span>{' '}
+                <span className="font-semibold text-stone-900">{deletingAccount.name}</span>
               </div>
-              <div className="text-xs text-theme-muted font-mono break-all">{deletingAccount.id}</div>
+              <div className="text-xs text-stone-400 font-mono break-all">{deletingAccount.id}</div>
             </div>
-            <div className="p-6 border-t border-theme-secondary/60 flex items-center justify-end gap-3">
+            <div className="p-6 border-t border-stone-200/60 flex items-center justify-end gap-3">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-theme-card/60 border border-theme-secondary text-stone-200 rounded-lg hover:bg-theme-card transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-white/60 border border-stone-200 text-stone-700 rounded-lg hover:bg-white transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

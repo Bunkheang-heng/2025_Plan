@@ -57,7 +57,7 @@ const SETUP_TYPES: { value: SetupType; label: string; icon: React.ReactNode; col
 const OUTCOMES: { value: 'win' | 'loss' | 'pending'; label: string; icon: React.ReactNode; color: string }[] = [
   { value: 'win', label: 'Win', icon: <FaCheck />, color: 'bg-green-500/20 text-green-600 border-green-500/30' },
   { value: 'loss', label: 'Loss', icon: <FaTimes />, color: 'bg-red-500/20 text-red-600 border-red-500/30' },
-  { value: 'pending', label: 'Pending', icon: <FaClock />, color: 'bg-blue-500/20 text-blue-600 border-blue-500/30' },
+  { value: 'pending', label: 'Pending', icon: <FaClock />, color: 'bg-emerald-50 text-emerald-600 border-stone-200' },
 ]
 
 export default function SetupPage() {
@@ -237,10 +237,10 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-[#fafaf9]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 lg:pt-28">
         {/* Hero Header */}
-        <Card className="relative overflow-hidden !rounded-3xl !bg-theme-card !border-blue-500/20 !p-8 mb-8">
+        <Card className="relative overflow-hidden !rounded-3xl !bg-white !border-stone-200 !p-8 mb-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
           
@@ -248,19 +248,19 @@ export default function SetupPage() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center ">
                     <FaChartLine className="w-6 h-6 text-stone-900" />
                   </div>
                   <div>
-                    <h1 className="text-3xl lg:text-4xl font-bold text-theme-primary tracking-tight">Trading Setups</h1>
-                    <p className="text-theme-tertiary mt-1">Document and track your trading chart patterns</p>
+                    <h1 className="text-3xl lg:text-4xl font-bold text-stone-900 tracking-tight">Trading Setups</h1>
+                    <p className="text-stone-400 mt-1">Document and track your trading chart patterns</p>
                   </div>
                 </div>
               </div>
               
               <Button
                 onClick={openAddModal}
-                className="!bg-blue-500 !text-stone-900 !font-bold !rounded-2xl hover:!bg-blue-400 !shadow-xl !shadow-blue-500/25 hover:!shadow-blue-500/40 hover:!scale-[1.02] active:!scale-[0.98] !px-6 !py-4"
+                className="!bg-emerald-600 !text-stone-900 !font-bold !rounded-2xl hover:!bg-emerald-500 !! hover:! hover:!scale-[1.02] active:!scale-[0.98] !px-6 !py-4"
                 icon={<FaPlus className="w-4 h-4" />}
               >
                 New Setup
@@ -270,47 +270,47 @@ export default function SetupPage() {
             {/* Stats Cards */}
             {list.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
-                <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
+                <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-stone-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-600">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                       <FaChartBar className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-theme-primary">{stats.total}</p>
-                      <p className="text-xs text-theme-muted">Total Setups</p>
+                      <p className="text-2xl font-bold text-stone-900">{stats.total}</p>
+                      <p className="text-xs text-stone-400">Total Setups</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
+                <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-stone-200">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-600">
                       <FaTrophy className="w-5 h-5" />
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-green-600">{stats.wins}</p>
-                      <p className="text-xs text-theme-muted">Wins</p>
+                      <p className="text-xs text-stone-400">Wins</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
+                <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-stone-200">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-600">
                       <FaTimesCircle className="w-5 h-5" />
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-red-600">{stats.losses}</p>
-                      <p className="text-xs text-theme-muted">Losses</p>
+                      <p className="text-xs text-stone-400">Losses</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-theme-card/50 backdrop-blur-sm rounded-2xl p-4 border border-theme-secondary">
+                <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-stone-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-600">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                       <FaChartLine className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-blue-600">{stats.winRate}%</p>
-                      <p className="text-xs text-theme-muted">Win Rate</p>
+                      <p className="text-2xl font-bold text-emerald-600">{stats.winRate}%</p>
+                      <p className="text-xs text-stone-400">Win Rate</p>
                     </div>
                   </div>
                 </div>
@@ -324,7 +324,7 @@ export default function SetupPage() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as SetupType | 'all')}
-                  className="px-4 py-3 bg-theme-secondary/50 border border-theme-tertiary/50 rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 cursor-pointer"
+                  className="px-4 py-3 bg-stone-100/50 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                 >
                   <option value="all">All Types</option>
                   {SETUP_TYPES.map(type => (
@@ -336,7 +336,7 @@ export default function SetupPage() {
                 <select
                   value={filterOutcome}
                   onChange={(e) => setFilterOutcome(e.target.value as 'win' | 'loss' | 'pending' | 'all')}
-                  className="px-4 py-3 bg-theme-secondary/50 border border-theme-tertiary/50 rounded-xl text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 cursor-pointer"
+                  className="px-4 py-3 bg-stone-100/50 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                 >
                   <option value="all">All Outcomes</option>
                   {OUTCOMES.map(o => (
@@ -345,16 +345,16 @@ export default function SetupPage() {
                 </select>
 
                 {/* View Toggle */}
-                <div className="flex bg-theme-secondary/50 rounded-xl p-1 border border-theme-tertiary/50 ml-auto">
+                <div className="flex bg-stone-100/50 rounded-xl p-1 border border-stone-200 ml-auto">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-blue-500 text-stone-900' : 'text-theme-muted hover:text-theme-primary'}`}
+                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:text-stone-900'}`}
                   >
                     <FaTh className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-blue-500 text-stone-900' : 'text-theme-muted hover:text-theme-primary'}`}
+                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:text-stone-900'}`}
                   >
                     <FaList className="w-4 h-4" />
                   </button>
@@ -384,14 +384,14 @@ export default function SetupPage() {
               return (
                 <Card 
                   key={entry.id}
-                  className={`group !bg-theme-card !border-theme-secondary !rounded-2xl overflow-hidden hover:!border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 !p-0 ${
+                  className={`group !bg-white !border-stone-200 !rounded-2xl overflow-hidden hover:!border-stone-200 transition-all duration-300 !p-0 ${
                     viewMode === 'list' ? 'flex flex-col sm:flex-row' : ''
                   }`}
                 >
                   {/* Image Section */}
                   {entry.imageUrl && (
                     <div 
-                      className={`relative bg-theme-secondary cursor-pointer overflow-hidden ${
+                      className={`relative bg-stone-100 cursor-pointer overflow-hidden ${
                         viewMode === 'list' ? 'sm:w-64 h-48 sm:h-auto flex-shrink-0' : 'aspect-video'
                       }`}
                       onClick={() => setLightboxImage(entry.imageUrl)}
@@ -413,7 +413,7 @@ export default function SetupPage() {
                       </div>
                       
                       {/* Type Badge on Image */}
-                      <Badge className={`absolute top-3 left-3 !px-3 !py-1.5 !rounded-lg !bg-gradient-to-r ${typeInfo.color} !text-white !text-xs !font-bold !shadow-lg !border-0`}>
+                      <Badge className={`absolute top-3 left-3 !px-3 !py-1.5 !rounded-lg !bg-gradient-to-r ${typeInfo.color} !text-white !text-xs !font-bold !!border-0`}>
                         <span className="mr-1.5">{typeInfo.icon}</span>
                         {typeInfo.label}
                       </Badge>
@@ -431,7 +431,7 @@ export default function SetupPage() {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex-1 min-w-0">
                         {entry.pair && (
-                          <h3 className="text-lg font-bold text-theme-primary truncate">
+                          <h3 className="text-lg font-bold text-stone-900 truncate">
                             {entry.pair}
                           </h3>
                         )}
@@ -460,7 +460,7 @@ export default function SetupPage() {
                             </button>
                             <button
                               onClick={() => setDeleteConfirmId(null)}
-                              className="text-xs font-bold text-theme-muted hover:text-theme-primary px-2 py-1"
+                              className="text-xs font-bold text-stone-400 hover:text-stone-900 px-2 py-1"
                             >
                               No
                             </button>
@@ -469,14 +469,14 @@ export default function SetupPage() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => openEditModal(entry)}
-                              className="p-2 rounded-xl hover:bg-theme-secondary text-theme-muted hover:text-blue-500 transition-all"
+                              className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-emerald-600 transition-all"
                               title="Edit"
                             >
                               <FaEdit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setDeleteConfirmId(entry.id)}
-                              className="p-2 rounded-xl hover:bg-red-500/10 text-theme-muted hover:text-red-600 transition-all"
+                              className="p-2 rounded-xl hover:bg-red-500/10 text-stone-400 hover:text-red-600 transition-all"
                               title="Delete"
                             >
                               <FaTrash className="w-4 h-4" />
@@ -488,22 +488,22 @@ export default function SetupPage() {
 
                     {/* Description */}
                     {entry.description && (
-                      <p className="text-theme-secondary text-sm leading-relaxed line-clamp-3 mb-3">
+                      <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-3">
                         {entry.description}
                       </p>
                     )}
 
                     {/* Notes */}
                     {entry.notes && (
-                      <div className="bg-theme-secondary/50 rounded-xl p-3 mb-3">
-                        <p className="text-xs text-theme-muted mb-1 font-medium flex items-center gap-1"><FaStickyNote className="w-3 h-3" /> Notes</p>
-                        <p className="text-sm text-theme-tertiary line-clamp-2">{entry.notes}</p>
+                      <div className="bg-stone-100/50 rounded-xl p-3 mb-3">
+                        <p className="text-xs text-stone-400 mb-1 font-medium flex items-center gap-1"><FaStickyNote className="w-3 h-3" /> Notes</p>
+                        <p className="text-sm text-stone-400 line-clamp-2">{entry.notes}</p>
                       </div>
                     )}
 
                     {/* Footer */}
-                    <div className="mt-auto pt-3 border-t border-theme-secondary/50 flex items-center justify-between">
-                      <span className="text-xs text-theme-muted flex items-center gap-1.5">
+                    <div className="mt-auto pt-3 border-t border-stone-200/50 flex items-center justify-between">
+                      <span className="text-xs text-stone-400 flex items-center gap-1.5">
                         <FaClock className="w-3 h-3" />
                         {entry.updatedAt.toLocaleDateString(undefined, {
                           month: 'short',
@@ -524,18 +524,18 @@ export default function SetupPage() {
           </div>
         ) : list.length > 0 ? (
           /* No results from filter */
-          <Card className="flex flex-col items-center justify-center py-16 px-6 !bg-theme-card !border-theme-secondary !rounded-2xl">
-            <div className="w-16 h-16 rounded-full bg-theme-tertiary/50 flex items-center justify-center mb-4 text-theme-muted">
+          <Card className="flex flex-col items-center justify-center py-16 px-6 !bg-white !border-stone-200 !rounded-2xl">
+            <div className="w-16 h-16 rounded-full bg-stone-200/50 flex items-center justify-center mb-4 text-stone-400">
               <FaSearch className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-semibold text-theme-primary mb-2">No matching setups</h2>
-            <p className="text-theme-tertiary text-center max-w-sm mb-4">
+            <h2 className="text-xl font-semibold text-stone-900 mb-2">No matching setups</h2>
+            <p className="text-stone-400 text-center max-w-sm mb-4">
               Try adjusting your filters to find what you&apos;re looking for.
             </p>
             <Button
               variant="ghost"
               onClick={() => { setFilterType('all'); setFilterOutcome('all'); }}
-              className="!text-blue-500 hover:!text-blue-600"
+              className="!text-emerald-600 hover:!text-emerald-600"
             >
               Clear all filters
             </Button>
@@ -545,18 +545,18 @@ export default function SetupPage() {
           <Card
             onClick={openAddModal}
             clickable
-            className="group flex flex-col items-center justify-center py-20 px-6 !bg-gradient-to-br from-theme-card to-theme-secondary/30 !border-2 !border-dashed !border-theme-secondary !rounded-3xl cursor-pointer hover:!border-blue-500/40 transition-all duration-300"
+            className="group flex flex-col items-center justify-center py-20 px-6 !bg-gradient-to-br from-theme-card to-theme-secondary/30 !border-2 !border-dashed !border-stone-200 !rounded-3xl cursor-pointer hover:!border-stone-200 transition-all duration-300"
           >
             <div className="relative mb-6">
-              <div className="w-24 h-24 rounded-3xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-blue-500">
+              <div className="w-24 h-24 rounded-3xl bg-emerald-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-emerald-600">
                 <FaChartLine className="w-12 h-12" />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:rotate-90 transition-transform duration-300">
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center  group-hover:rotate-90 transition-transform duration-300">
                 <FaPlus className="w-5 h-5 text-stone-900" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-theme-primary mb-2">Start Building Your Playbook</h2>
-            <p className="text-theme-tertiary text-center max-w-md mb-6">
+            <h2 className="text-2xl font-bold text-stone-900 mb-2">Start Building Your Playbook</h2>
+            <p className="text-stone-400 text-center max-w-md mb-6">
               Document your trading setups with screenshots, notes, and outcomes. Track what works and improve your strategy over time.
             </p>
             <div className="flex flex-wrap justify-center gap-3 mb-6">
@@ -566,7 +566,7 @@ export default function SetupPage() {
                 </Badge>
               ))}
             </div>
-            <span className="inline-flex items-center gap-2 text-sm font-semibold text-blue-500 group-hover:text-blue-600">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 group-hover:text-emerald-600">
               <span>Add your first setup</span>
               <FaArrowUp className="w-3 h-3 rotate-90 group-hover:translate-x-1 transition-transform" />
             </span>
@@ -581,27 +581,27 @@ export default function SetupPage() {
           onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
           <div
-            className="bg-theme-card border border-blue-500/30 rounded-3xl max-w-2xl w-full shadow-2xl shadow-blue-500/10 my-8"
+            className="bg-white border border-stone-200 rounded-3xl max-w-2xl w-full  my-8"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="bg-blue-500/10 border-b border-blue-500/20 px-6 py-5 rounded-t-3xl">
+            <div className="bg-emerald-50 border-b border-stone-200 px-6 py-5 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-stone-900">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-stone-900">
                     {editingId ? <FaEdit className="w-5 h-5" /> : <FaPlus className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-theme-primary">
+                    <h2 className="text-xl font-bold text-stone-900">
                       {editingId ? 'Edit Setup' : 'New Trading Setup'}
                     </h2>
-                    <p className="text-sm text-theme-muted">Document your chart pattern and analysis</p>
+                    <p className="text-sm text-stone-400">Document your chart pattern and analysis</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="p-2 hover:bg-theme-tertiary/50 rounded-xl transition-colors text-theme-tertiary"
+                  className="p-2 hover:bg-stone-200/50 rounded-xl transition-colors text-stone-400"
                   aria-label="Close"
                 >
                   <FaTimes className="w-5 h-5" />
@@ -612,18 +612,18 @@ export default function SetupPage() {
             <form onSubmit={handleSave} className="p-6 space-y-6">
               {/* Image URL with Preview */}
               <div>
-                <label className="text-sm font-semibold text-theme-primary mb-2 flex items-center gap-2">
-                  <FaImage className="w-4 h-4 text-theme-muted" /> Chart Screenshot URL
+                <label className="text-sm font-semibold text-stone-900 mb-2 flex items-center gap-2">
+                  <FaImage className="w-4 h-4 text-stone-400" /> Chart Screenshot URL
                 </label>
                 <input
                   type="text"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://example.com/your-chart-screenshot.jpg"
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
                 />
                 {imageUrl && (
-                  <div className="mt-3 relative aspect-video rounded-xl overflow-hidden bg-theme-secondary border border-theme-tertiary">
+                  <div className="mt-3 relative aspect-video rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
                     <img
                       src={imageUrl}
                       alt="Preview"
@@ -643,19 +643,19 @@ export default function SetupPage() {
               {/* Trading Pair & Setup Type */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-theme-primary mb-2 flex items-center gap-2">
-                    <FaChartLine className="w-4 h-4 text-theme-muted" /> Trading Pair
+                  <label className="text-sm font-semibold text-stone-900 mb-2 flex items-center gap-2">
+                    <FaChartLine className="w-4 h-4 text-stone-400" /> Trading Pair
                   </label>
                   <input
                     type="text"
                     value={pair}
                     onChange={(e) => setPair(e.target.value)}
                     placeholder="e.g., XAUUSD, EURUSD, BTC/USDT"
-                    className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all uppercase"
+                    className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-theme-primary mb-2">Setup Type</label>
+                  <label className="block text-sm font-semibold text-stone-900 mb-2">Setup Type</label>
                   <div className="grid grid-cols-4 gap-2">
                     {SETUP_TYPES.slice(0, 4).map(type => (
                       <button
@@ -664,8 +664,8 @@ export default function SetupPage() {
                         onClick={() => setSetupType(type.value)}
                         className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                           setupType === type.value
-                            ? `bg-gradient-to-r ${type.color} text-white shadow-lg`
-                            : 'bg-theme-secondary text-theme-muted hover:text-theme-primary border border-theme-tertiary'
+                            ? `bg-gradient-to-r ${type.color} text-white`
+                            : 'bg-stone-100 text-stone-400 hover:text-stone-900 border border-stone-200'
                         }`}
                       >
                         {type.icon} {type.label}
@@ -680,8 +680,8 @@ export default function SetupPage() {
                         onClick={() => setSetupType(type.value)}
                         className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                           setupType === type.value
-                            ? `bg-gradient-to-r ${type.color} text-white shadow-lg`
-                            : 'bg-theme-secondary text-theme-muted hover:text-theme-primary border border-theme-tertiary'
+                            ? `bg-gradient-to-r ${type.color} text-white`
+                            : 'bg-stone-100 text-stone-400 hover:text-stone-900 border border-stone-200'
                         }`}
                       >
                         {type.icon} {type.label}
@@ -693,8 +693,8 @@ export default function SetupPage() {
 
               {/* Outcome */}
               <div>
-                <label className="text-sm font-semibold text-theme-primary mb-2 flex items-center gap-2">
-                  <FaTrophy className="w-4 h-4 text-theme-muted" /> Trade Outcome
+                <label className="text-sm font-semibold text-stone-900 mb-2 flex items-center gap-2">
+                  <FaTrophy className="w-4 h-4 text-stone-400" /> Trade Outcome
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {OUTCOMES.map(o => (
@@ -705,8 +705,8 @@ export default function SetupPage() {
                       className={`px-4 py-3 rounded-xl text-sm font-bold transition-all border flex items-center justify-center gap-2 ${
                         outcome === o.value
                           ? o.color + ' ring-2 ring-offset-2 ring-offset-theme-card'
-                          : 'bg-theme-secondary text-theme-muted border-theme-tertiary hover:text-theme-primary'
-                      } ${outcome === o.value ? (o.value === 'win' ? 'ring-green-500/50' : o.value === 'loss' ? 'ring-red-500/50' : 'ring-blue-500/50') : ''}`}
+                          : 'bg-stone-100 text-stone-400 border-stone-200 hover:text-stone-900'
+                      } ${outcome === o.value ? (o.value === 'win' ? 'ring-green-500/50' : o.value === 'loss' ? 'ring-red-500/50' : 'ring-emerald-500/50') : ''}`}
                     >
                       {o.icon} {o.label}
                     </button>
@@ -716,27 +716,27 @@ export default function SetupPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-semibold text-theme-primary mb-2">Setup Analysis</label>
+                <label className="block text-sm font-semibold text-stone-900 mb-2">Setup Analysis</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your trade setup: entry reason, key levels, confluence factors..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 resize-none transition-all"
                 />
               </div>
 
               {/* Notes */}
               <div>
-                <label className="text-sm font-semibold text-theme-primary mb-2 flex items-center gap-2">
-                  <FaStickyNote className="w-4 h-4 text-theme-muted" /> Additional Notes
+                <label className="text-sm font-semibold text-stone-900 mb-2 flex items-center gap-2">
+                  <FaStickyNote className="w-4 h-4 text-stone-400" /> Additional Notes
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Lessons learned, what went right/wrong, adjustments for next time..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-tertiary rounded-xl text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 resize-none transition-all"
                 />
               </div>
 
@@ -754,7 +754,7 @@ export default function SetupPage() {
                   variant="secondary"
                   onClick={closeModal}
                   fullWidth
-                  className="!bg-theme-secondary hover:!bg-theme-tertiary !text-theme-primary !border-theme-tertiary"
+                  className="!bg-stone-100 hover:!bg-stone-200 !text-stone-900 !border-stone-200"
                 >
                   Cancel
                 </Button>
@@ -762,7 +762,7 @@ export default function SetupPage() {
                   type="submit"
                   isLoading={isSaving}
                   fullWidth
-                  className="!bg-blue-500 !text-stone-900 !font-bold hover:!bg-blue-400 !shadow-lg !shadow-blue-500/20 hover:!shadow-blue-500/30"
+                  className="!bg-emerald-600 !text-stone-900 !font-bold hover:!bg-emerald-500 !! hover:!"
                 >
                   {editingId ? 'Update Setup' : 'Save Setup'}
                 </Button>
@@ -787,7 +787,7 @@ export default function SetupPage() {
           <img
             src={lightboxImage}
             alt="Trading setup enlarged"
-            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

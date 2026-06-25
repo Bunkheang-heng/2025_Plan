@@ -47,7 +47,7 @@ const PlanContext: React.FC<PlanContextProps> = ({ plans, stats, isVisible, onTo
           className="flex items-center justify-between w-full text-left group"
         >
           <div className="flex items-center space-x-3">
-            <Icon name="clipboard" size="md" className="text-blue-600" />
+            <Icon name="clipboard" size="md" className="text-emerald-600" />
             <div>
               <h3 className="text-lg font-semibold text-stone-900">Current Plan Context</h3>
               <p className="text-sm text-stone-600">
@@ -68,13 +68,13 @@ const PlanContext: React.FC<PlanContextProps> = ({ plans, stats, isVisible, onTo
             <div className="grid grid-cols-3 gap-4">
               <Card variant="default" padding="sm">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stats.daily.completed}/{stats.daily.total}</div>
+                  <div className="text-2xl font-bold text-emerald-600">{stats.daily.completed}/{stats.daily.total}</div>
                   <div className="text-sm text-stone-600">Daily</div>
                 </div>
               </Card>
               <Card variant="default" padding="sm">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stats.weekly.completed}/{stats.weekly.total}</div>
+                  <div className="text-2xl font-bold text-emerald-600">{stats.weekly.completed}/{stats.weekly.total}</div>
                   <div className="text-sm text-stone-600">Weekly</div>
                 </div>
               </Card>

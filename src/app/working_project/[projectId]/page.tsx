@@ -164,9 +164,9 @@ export default function WorkingProjectDetailPage() {
   if (isLoading) return <Loading />
   if (!project) {
     return (
-      <div className="min-h-screen bg-theme-primary">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
-          <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6 text-center text-theme-secondary">
+      <div className="min-h-screen bg-[#fafaf9]">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 py-8">
+          <div className="bg-white border border-stone-200 rounded-2xl p-6 text-center text-stone-600">
             Project not found.
           </div>
         </div>
@@ -175,19 +175,19 @@ export default function WorkingProjectDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32 space-y-8">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8 space-y-8">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <button
             onClick={() => router.push('/working_project')}
-            className="px-4 py-2 bg-theme-secondary border border-theme-secondary text-theme-secondary rounded-lg hover:bg-theme-tertiary transition-colors text-sm"
+            className="px-4 py-2 bg-stone-100 border border-stone-200 text-stone-600 rounded-lg hover:bg-stone-200 transition-colors text-sm"
           >
             Back to Projects
           </button>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsAddTaskOpen(true)}
-              className="px-4 py-2 bg-blue-500 text-black font-semibold rounded-lg hover:bg-blue-400 transition-all text-sm"
+              className="px-4 py-2 bg-emerald-600 text-black font-semibold rounded-lg hover:bg-emerald-700 transition-all text-sm"
             >
               Add Task
             </button>
@@ -197,21 +197,21 @@ export default function WorkingProjectDetailPage() {
           </div>
         </div>
 
-        <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-theme-tertiary/50 border border-theme-secondary text-accent">
+            <div className="p-3 rounded-xl bg-stone-200/50 border border-stone-200 text-accent">
               {getTypeIcon(project.type)}
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-theme-primary">{project.name}</h1>
-              <p className="text-sm text-theme-tertiary mt-1 capitalize">{project.type}</p>
-              <p className="text-theme-secondary mt-4">{project.description}</p>
+              <h1 className="text-3xl font-bold text-stone-900">{project.name}</h1>
+              <p className="text-sm text-stone-400 mt-1 capitalize">{project.type}</p>
+              <p className="text-stone-600 mt-4">{project.description}</p>
               {project.techStack?.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {project.techStack.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3 py-1 rounded-full text-xs bg-theme-secondary border border-theme-secondary text-theme-secondary"
+                      className="px-3 py-1 rounded-full text-xs bg-stone-100 border border-stone-200 text-stone-600"
                     >
                       {tech}
                     </span>
@@ -226,55 +226,55 @@ export default function WorkingProjectDetailPage() {
           {statusColumns.map((column) => (
             <div
               key={column.key}
-              className="bg-theme-card border border-theme-secondary rounded-2xl p-4 h-[520px] flex flex-col"
+              className="bg-white border border-stone-200 rounded-2xl p-4 h-[520px] flex flex-col"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-theme-primary font-semibold">{column.label}</div>
-                  <div className="text-xs text-theme-tertiary">{column.helper}</div>
+                  <div className="text-stone-900 font-semibold">{column.label}</div>
+                  <div className="text-xs text-stone-400">{column.helper}</div>
                 </div>
-                <span className="text-xs text-theme-muted">{groupedFeatures[column.key].length}</span>
+                <span className="text-xs text-stone-400">{groupedFeatures[column.key].length}</span>
               </div>
 
               <div className="space-y-3 overflow-y-auto pr-1 flex-1 min-h-0">
                 {groupedFeatures[column.key].length === 0 ? (
-                  <div className="text-xs text-theme-muted">No tasks yet.</div>
+                  <div className="text-xs text-stone-400">No tasks yet.</div>
                 ) : (
                   groupedFeatures[column.key].map((feature) => (
-                    <div key={feature.id} className="bg-theme-secondary/50 border border-theme-secondary rounded-xl p-3">
+                    <div key={feature.id} className="bg-stone-100/50 border border-stone-200 rounded-xl p-3">
                       {editingTaskId === feature.id ? (
                         <div className="space-y-3">
                           <input
                             value={editDraft.name}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-sm focus:outline-none focus:border-blue-500"
+                            className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-emerald-500"
                           />
                           <textarea
                             value={editDraft.description}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, description: e.target.value }))}
                             rows={2}
-                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-xs focus:outline-none focus:border-blue-500 resize-none"
+                            className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 text-xs focus:outline-none focus:border-emerald-500 resize-none"
                           />
                           <select
                             value={editDraft.status}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                            className="w-full px-3 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary text-xs focus:outline-none focus:border-blue-500"
+                            className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 text-xs focus:outline-none focus:border-emerald-500"
                           >
-                            <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
-                            <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
-                            <option value="done" className="bg-theme-secondary text-theme-primary">Done</option>
+                            <option value="next" className="bg-stone-100 text-stone-900">Next</option>
+                            <option value="in-progress" className="bg-stone-100 text-stone-900">In Progress</option>
+                            <option value="done" className="bg-stone-100 text-stone-900">Done</option>
                           </select>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={saveEditTask}
                               disabled={isSaving}
-                              className="flex-1 px-3 py-2 bg-blue-500 text-black font-semibold rounded-lg hover:bg-blue-400 text-xs"
+                              className="flex-1 px-3 py-2 bg-emerald-600 text-black font-semibold rounded-lg hover:bg-emerald-700 text-xs"
                             >
                               Save
                             </button>
                             <button
                               onClick={() => setEditingTaskId(null)}
-                              className="flex-1 px-3 py-2 bg-theme-tertiary border border-theme-secondary text-theme-primary rounded-lg hover:bg-theme-secondary text-xs"
+                              className="flex-1 px-3 py-2 bg-stone-200 border border-stone-200 text-stone-900 rounded-lg hover:bg-stone-100 text-xs"
                             >
                               Cancel
                             </button>
@@ -284,9 +284,9 @@ export default function WorkingProjectDetailPage() {
                         <>
                           <div className="flex items-start justify-between">
                             <div>
-                              <div className="text-sm font-semibold text-theme-primary">{feature.name}</div>
+                              <div className="text-sm font-semibold text-stone-900">{feature.name}</div>
                               {feature.description && (
-                                <div className="text-xs text-theme-tertiary mt-1">{feature.description}</div>
+                                <div className="text-xs text-stone-400 mt-1">{feature.description}</div>
                               )}
                             </div>
                             <span className={`text-[10px] px-2 py-1 rounded-full border ${getFeatureStatusColor(feature.status)}`}>
@@ -298,14 +298,14 @@ export default function WorkingProjectDetailPage() {
                               <button
                                 key={item.key}
                                 onClick={() => handleChangeStatus(feature.id, item.key)}
-                                className="px-2 py-1 text-[10px] rounded-full border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-theme-primary"
+                                className="px-2 py-1 text-[10px] rounded-full border border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-200"
                               >
                                 {item.label}
                               </button>
                             ))}
                             <button
                               onClick={() => startEditTask(feature)}
-                              className="px-2 py-1 text-[10px] rounded-full border border-theme-secondary text-theme-secondary hover:text-theme-primary hover:border-theme-primary"
+                              className="px-2 py-1 text-[10px] rounded-full border border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-200"
                             >
                               Edit
                             </button>
@@ -329,12 +329,12 @@ export default function WorkingProjectDetailPage() {
 
       {isAddTaskOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-2xl bg-theme-card border border-theme-secondary rounded-2xl p-6">
+          <div className="w-full max-w-2xl bg-white border border-stone-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-theme-primary">Add Task</h2>
+              <h2 className="text-lg font-semibold text-stone-900">Add Task</h2>
               <button
                 onClick={closeAddTaskModal}
-                className="px-3 py-1 text-xs rounded-lg bg-theme-secondary border border-theme-secondary text-theme-secondary hover:text-theme-primary"
+                className="px-3 py-1 text-xs rounded-lg bg-stone-100 border border-stone-200 text-stone-600 hover:text-stone-900"
               >
                 Close
               </button>
@@ -342,37 +342,37 @@ export default function WorkingProjectDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-xs text-theme-tertiary mb-2">Task name</label>
+                <label className="block text-xs text-stone-400 mb-2">Task name</label>
                 <input
                   value={newTask.name}
                   onChange={(e) => setNewTask((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Example: Create login screen"
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
                 />
-                <label className="block text-xs text-theme-tertiary mt-3 mb-2">Description (optional)</label>
+                <label className="block text-xs text-stone-400 mt-3 mb-2">Description (optional)</label>
                 <textarea
                   value={newTask.description}
                   onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder="Add more detail..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500 resize-none"
                 />
               </div>
               <div>
-                <label className="block text-xs text-theme-tertiary mb-2">Status</label>
+                <label className="block text-xs text-stone-400 mb-2">Status</label>
                 <select
                   value={newTask.status}
                   onChange={(e) => setNewTask((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="next" className="bg-theme-secondary text-theme-primary">Next</option>
-                  <option value="in-progress" className="bg-theme-secondary text-theme-primary">In Progress</option>
-                  <option value="done" className="bg-theme-secondary text-theme-primary">Done</option>
+                  <option value="next" className="bg-stone-100 text-stone-900">Next</option>
+                  <option value="in-progress" className="bg-stone-100 text-stone-900">In Progress</option>
+                  <option value="done" className="bg-stone-100 text-stone-900">Done</option>
                 </select>
                 <button
                   onClick={handleAddTask}
                   disabled={isSaving || !newTask.name.trim()}
-                  className="mt-4 w-full px-4 py-3 bg-blue-500 text-black font-semibold rounded-xl hover:bg-blue-400 transition-all disabled:opacity-50"
+                  className="mt-4 w-full px-4 py-3 bg-emerald-600 text-black font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
                 >
                   {isSaving ? 'Saving...' : 'Add Task'}
                 </button>

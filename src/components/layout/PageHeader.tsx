@@ -19,7 +19,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   badgeText,
   badgeVariant = 'info',
   icon,
-  gradient = 'bg-blue-600',
+  gradient = 'bg-emerald-600',
   className = '',
   children
 }) => {
@@ -36,18 +36,18 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       
       {icon && (
         <div className="flex justify-center mb-8">
-          <div className={`p-4 ${gradient} rounded-2xl shadow-lg`}>
+          <div className={`p-4 ${gradient} rounded-2xl`}>
             <Icon name={icon} size="lg" className="text-white" />
           </div>
         </div>
       )}
       
-      <h1 className="text-4xl lg:text-5xl font-bold text-theme-primary mb-4">
+      <h1 className="text-4xl lg:text-5xl font-bold text-stone-900 mb-4">
         {title}
       </h1>
       
       {subtitle && (
-        <p className="text-xl text-theme-secondary font-medium">
+        <p className="text-xl text-stone-600 font-medium">
           {subtitle}
         </p>
       )}

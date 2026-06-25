@@ -25,15 +25,15 @@ const Container: React.FC<ContainerProps> = ({
   
   const backgroundClasses = {
     default: 'bg-white',
-    gradient: 'bg-theme-primary',
+    gradient: 'bg-[#fafaf9]',
     none: ''
   }
   
   const paddingClasses = {
     sm: 'px-4 py-8',
     md: 'px-6 py-12',
-    lg: 'px-6 lg:px-8 py-12 pt-28 lg:pt-32',
-    xl: 'px-8 py-16 pt-32 lg:pt-40'
+    lg: 'px-6 lg:px-8 py-8',
+    xl: 'px-8 py-8'
   }
   
   const minHeightClass = background !== 'none' ? 'min-h-screen' : ''

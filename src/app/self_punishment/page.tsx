@@ -195,17 +195,17 @@ function SelfPunishmentPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="w-full max-w-full mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="w-full max-w-full mx-auto px-6 lg:px-8 py-12 py-8">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse" />
             Accountability
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4">
+          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4">
             Self Punishment
           </h1>
-          <p className="text-xl text-theme-secondary font-medium">
+          <p className="text-xl text-stone-600 font-medium">
             Log when you break your own rules and the punishment you commit to
           </p>
         </div>
@@ -213,7 +213,7 @@ function SelfPunishmentPageContent() {
         <div className="flex justify-center mb-8">
           <button
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-stone-900 font-bold rounded-xl hover:bg-blue-400 transition-all shadow-lg"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -222,24 +222,24 @@ function SelfPunishmentPageContent() {
           </button>
         </div>
 
-        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg">
-          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-blue-500/30 p-4">
-            <h2 className="text-lg font-bold text-theme-primary">Entries</h2>
-            <p className="text-sm text-theme-tertiary">{state.entries.length} record(s)</p>
+        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-stone-200 p-4">
+            <h2 className="text-lg font-bold text-stone-900">Entries</h2>
+            <p className="text-sm text-stone-400">{state.entries.length} record(s)</p>
           </div>
-          <div className="divide-y divide-stone-700/50">
+          <div className="divide-y divide-stone-200/50">
             {state.entries.length === 0 ? (
               <div className="p-12 text-center">
-                <div className="inline-flex p-4 bg-stone-700/50 rounded-xl border border-blue-500/20 mb-4">
-                  <svg className="w-12 h-12 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="inline-flex p-4 bg-stone-200/50 rounded-xl border border-stone-200 mb-4">
+                  <svg className="w-12 h-12 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-stone-200 mb-2">No entries yet</h3>
-                <p className="text-theme-tertiary mb-4">When you break a rule, log it here with the punishment you set for yourself.</p>
+                <h3 className="text-lg font-semibold text-stone-700 mb-2">No entries yet</h3>
+                <p className="text-stone-400 mb-4">When you break a rule, log it here with the punishment you set for yourself.</p>
                 <button
                   onClick={openAddModal}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-stone-900 font-semibold rounded-xl"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -257,25 +257,25 @@ function SelfPunishmentPageContent() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') router.push(`/self_punishment/${entry.id}`)
                   }}
-                  className={`p-6 hover:bg-stone-700/20 transition-colors cursor-pointer ${isExpired(entry) ? 'opacity-80' : ''}`}
+                  className={`p-6 hover:bg-stone-100/20 transition-colors cursor-pointer ${isExpired(entry) ? 'opacity-80' : ''}`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <p className="text-xs text-blue-600/90 font-semibold">{dateLabel(entry.date)}</p>
+                        <p className="text-xs text-emerald-600/90 font-semibold">{dateLabel(entry.date)}</p>
                         {entry.expiresAt && (
-                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${isExpired(entry) ? 'bg-stone-600 text-theme-tertiary' : 'bg-blue-500/20 text-blue-600 border border-blue-500/40'}`}>
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${isExpired(entry) ? 'bg-stone-600 text-stone-400' : 'bg-emerald-50 text-emerald-600 border border-stone-200'}`}>
                             {isExpired(entry) ? 'Expired' : 'Active'}
                           </span>
                         )}
                       </div>
                       {entry.expiresAt && (
-                        <p className="text-xs text-theme-tertiary mb-1">
+                        <p className="text-xs text-stone-400 mb-1">
                           Expires: {dateLabel(entry.expiresAt)}
                         </p>
                       )}
-                      <p className="text-theme-primary font-semibold mb-2">Rule broken: {entry.ruleBroken}</p>
-                      <p className="text-theme-secondary text-sm">Punishment: {entry.punishment}</p>
+                      <p className="text-stone-900 font-semibold mb-2">Rule broken: {entry.ruleBroken}</p>
+                      <p className="text-stone-600 text-sm">Punishment: {entry.punishment}</p>
                     </div>
                     <button
                       type="button"
@@ -301,14 +301,14 @@ function SelfPunishmentPageContent() {
           onClick={closeAddModal}
         >
           <div
-            className="bg-theme-card border border-blue-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-theme-primary">Log self punishment</h2>
+              <h2 className="text-xl font-bold text-stone-900">Log self punishment</h2>
               <button
                 onClick={closeAddModal}
-                className="p-2 hover:bg-stone-700/50 rounded-lg text-theme-tertiary"
+                className="p-2 hover:bg-stone-100/50 rounded-lg text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -317,62 +317,62 @@ function SelfPunishmentPageContent() {
             </div>
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Rule I broke</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Rule I broke</label>
                 <input
                   type="text"
                   value={form.ruleBroken}
                   onChange={(e) => setForm(prev => ({ ...prev, ruleBroken: e.target.value }))}
                   placeholder="e.g. Traded more than 2 times today"
                   required
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isAdding}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Punishment</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Punishment</label>
                 <input
                   type="text"
                   value={form.punishment}
                   onChange={(e) => setForm(prev => ({ ...prev, punishment: e.target.value }))}
                   placeholder="e.g. No trading tomorrow"
                   required
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isAdding}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Date</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Date</label>
                 <input
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isAdding}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Expires on (optional)</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Expires on (optional)</label>
                 <input
                   type="date"
                   value={form.expiresAt}
                   onChange={(e) => setForm(prev => ({ ...prev, expiresAt: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isAdding}
                 />
-                <p className="text-xs text-theme-tertiary mt-1">When this punishment period ends. Leave blank for no expiry.</p>
+                <p className="text-xs text-stone-400 mt-1">When this punishment period ends. Leave blank for no expiry.</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={closeAddModal}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl"
+                  className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-600 text-stone-900 font-medium rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={state.isAdding}
-                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 font-semibold rounded-xl"
+                  className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 font-semibold rounded-xl"
                 >
                   {state.isAdding ? 'Saving...' : 'Save'}
                 </button>
@@ -389,32 +389,32 @@ function SelfPunishmentPageContent() {
           onClick={closeDeleteConfirm}
         >
           <div
-            className="bg-theme-card border border-red-500/40 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-white border border-red-500/40 rounded-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-theme-primary">Remove entry</h2>
+              <h2 className="text-xl font-bold text-stone-900">Remove entry</h2>
               <button
                 onClick={closeDeleteConfirm}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors text-theme-tertiary"
+                className="p-2 hover:bg-stone-100/50 rounded-lg transition-colors text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <p className="text-theme-secondary mb-2">
+            <p className="text-stone-600 mb-2">
               Remove this self punishment entry?
             </p>
-            <div className="bg-stone-800/50 border border-stone-700 rounded-xl p-3 mb-6">
-              <p className="text-theme-primary font-medium text-sm">{state.entryToDelete.ruleBroken}</p>
-              <p className="text-theme-tertiary text-sm mt-1">Punishment: {state.entryToDelete.punishment}</p>
+            <div className="bg-stone-100/50 border border-stone-200 rounded-xl p-3 mb-6">
+              <p className="text-stone-900 font-medium text-sm">{state.entryToDelete.ruleBroken}</p>
+              <p className="text-stone-400 text-sm mt-1">Punishment: {state.entryToDelete.punishment}</p>
             </div>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={closeDeleteConfirm}
-                className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl transition-colors"
+                className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
               >
                 Cancel
               </button>

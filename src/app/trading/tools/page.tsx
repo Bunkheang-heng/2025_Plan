@@ -28,8 +28,8 @@ const STATUS_OPTIONS: { value: ToolStatus; label: string }[] = [
 
 const statusStyle = (s: ToolStatus) => {
   if (s === 'mastered') return 'bg-green-500/15 border-green-500/30 text-green-600'
-  if (s === 'in_progress') return 'bg-blue-500/15 border-blue-500/30 text-blue-600'
-  return 'bg-stone-700/50 border-stone-600 text-theme-tertiary'
+  if (s === 'in_progress') return 'bg-emerald-600/15 border-stone-200 text-emerald-600'
+  return 'bg-stone-200/50 border-stone-600 text-stone-400'
 }
 
 type Tool = {
@@ -216,18 +216,18 @@ export default function TradingToolsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="w-full px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="w-full px-6 lg:px-8 py-12 py-8">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse" />
             Trading Tools
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4">
+          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4">
             Tools to Master
           </h1>
-          <p className="text-lg text-theme-secondary font-medium max-w-2xl mx-auto">
+          <p className="text-lg text-stone-600 font-medium max-w-2xl mx-auto">
             Track the tools and platforms you need to master for your trading journey.
           </p>
         </div>
@@ -240,7 +240,7 @@ export default function TradingToolsPage() {
               setForm({ name: '', description: '', url: '', status: 'not_started' })
               setShowAddForm(true)
             }}
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-stone-900 font-semibold rounded-xl text-sm shadow-lg shadow-blue-500/20 transition-all"
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm  transition-all"
           >
             + Add Tool
           </button>
@@ -248,13 +248,13 @@ export default function TradingToolsPage() {
 
         {/* Tools Table */}
         {tools.length === 0 ? (
-          <div className="bg-theme-card border border-theme-secondary rounded-2xl px-5 py-16 text-center shadow-lg shadow-black/20">
-            <p className="text-theme-tertiary text-sm">No tools yet. Add the tools and platforms you want to master.</p>
+          <div className="bg-white border border-stone-200 rounded-2xl px-5 py-16 text-center shadow-black/20">
+            <p className="text-stone-400 text-sm">No tools yet. Add the tools and platforms you want to master.</p>
           </div>
         ) : (
-          <div className="bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden shadow-lg shadow-black/20">
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-black/20">
             {/* Table Header */}
-            <div className="hidden sm:grid sm:grid-cols-12 gap-4 px-5 py-3 bg-stone-800/80 border-b border-stone-700 text-[11px] text-theme-tertiary uppercase tracking-wider font-bold">
+            <div className="hidden sm:grid sm:grid-cols-12 gap-4 px-5 py-3 bg-stone-100/80 border-b border-stone-200 text-[11px] text-stone-400 uppercase tracking-wider font-bold">
               <div className="col-span-1">#</div>
               <div className="col-span-3">Tool Name</div>
               <div className="col-span-4">Description</div>
@@ -263,25 +263,25 @@ export default function TradingToolsPage() {
             </div>
 
             {/* Table Rows */}
-            <div className="divide-y divide-stone-800">
+            <div className="divide-y divide-stone-200">
               {tools.map((tool, idx) => {
                 const isEditing = editingId === tool.id
 
                 if (isEditing) {
                   return (
-                    <div key={tool.id} className="px-5 py-4 bg-stone-800/60 space-y-3">
+                    <div key={tool.id} className="px-5 py-4 bg-stone-100/60 space-y-3">
                       <input
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
-                        className="w-full px-3 py-2 bg-stone-900 border border-blue-500/40 rounded-lg text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                         placeholder="Tool name"
                         disabled={isSaving}
                       />
                       <textarea
                         value={editForm.description}
                         onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
-                        className="w-full px-3 py-2 bg-stone-900 border border-blue-500/40 rounded-lg text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
                         rows={2}
                         placeholder="Description"
                         disabled={isSaving}
@@ -290,7 +290,7 @@ export default function TradingToolsPage() {
                         type="url"
                         value={editForm.url}
                         onChange={(e) => setEditForm((p) => ({ ...p, url: e.target.value }))}
-                        className="w-full px-3 py-2 bg-stone-900 border border-blue-500/40 rounded-lg text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                         placeholder="URL (optional)"
                         disabled={isSaving}
                       />
@@ -299,7 +299,7 @@ export default function TradingToolsPage() {
                           type="button"
                           onClick={() => handleEditSave(tool.id)}
                           disabled={isSaving || !editForm.name.trim()}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 transition-colors"
                         >
                           {isSaving ? 'Saving...' : 'Save'}
                         </button>
@@ -307,7 +307,7 @@ export default function TradingToolsPage() {
                           type="button"
                           onClick={cancelEditing}
                           disabled={isSaving}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-700 hover:bg-stone-600 text-theme-primary transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-200 hover:bg-stone-600 text-stone-900 transition-colors"
                         >
                           Cancel
                         </button>
@@ -319,27 +319,27 @@ export default function TradingToolsPage() {
                 return (
                   <div
                     key={tool.id}
-                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 hover:bg-stone-800/40 transition-colors items-center"
+                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 hover:bg-stone-100/40 transition-colors items-center"
                   >
-                    <div className="hidden sm:block col-span-1 text-xs text-theme-tertiary font-mono">
+                    <div className="hidden sm:block col-span-1 text-xs text-stone-400 font-mono">
                       {idx + 1}
                     </div>
                     <div className="col-span-1 sm:col-span-3">
-                      <p className="text-sm font-semibold text-theme-primary">{tool.name}</p>
+                      <p className="text-sm font-semibold text-stone-900">{tool.name}</p>
                     </div>
                     <div className="col-span-1 sm:col-span-4">
-                      <p className="text-xs text-theme-secondary leading-relaxed line-clamp-2">
-                        {tool.description || <span className="text-theme-tertiary italic">No description</span>}
+                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-2">
+                        {tool.description || <span className="text-stone-400 italic">No description</span>}
                       </p>
                     </div>
                     <div className="col-span-1 sm:col-span-1">
                       <select
                         value={tool.status}
                         onChange={(e) => handleStatusChange(tool.id, e.target.value as ToolStatus)}
-                        className={`px-1.5 py-1 rounded-lg text-[10px] font-bold border bg-transparent cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500/50 ${statusStyle(tool.status)}`}
+                        className={`px-1.5 py-1 rounded-lg text-[10px] font-bold border bg-transparent cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500/50 ${statusStyle(tool.status)}`}
                       >
                         {STATUS_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value} className="bg-stone-900 text-theme-primary">{o.label}</option>
+                          <option key={o.value} value={o.value} className="bg-white text-stone-900">{o.label}</option>
                         ))}
                       </select>
                     </div>
@@ -360,7 +360,7 @@ export default function TradingToolsPage() {
                       <button
                         type="button"
                         onClick={() => startEditing(tool)}
-                        className="px-3 py-1 text-[11px] rounded-full border border-blue-500/40 text-blue-600 hover:bg-blue-500/10 transition-colors"
+                        className="px-3 py-1 text-[11px] rounded-full border border-stone-200 text-emerald-600 hover:bg-emerald-50 transition-colors"
                       >
                         Edit
                       </button>
@@ -388,14 +388,14 @@ export default function TradingToolsPage() {
           onClick={() => { if (!isSaving) setShowAddForm(false) }}
         >
           <div
-            className="bg-theme-card border border-blue-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-theme-primary">Add Tool</h2>
+              <h2 className="text-xl font-bold text-stone-900">Add Tool</h2>
               <button
                 onClick={() => { if (!isSaving) setShowAddForm(false) }}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors text-theme-tertiary"
+                className="p-2 hover:bg-stone-100/50 rounded-lg transition-colors text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -405,46 +405,46 @@ export default function TradingToolsPage() {
 
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-theme-secondary mb-1.5">Tool Name *</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1.5">Tool Name *</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                   placeholder="e.g. TradingView, MetaTrader 5"
-                  className="w-full px-4 py-2.5 bg-stone-900 border border-stone-700 rounded-xl text-sm text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   required
                   disabled={isSaving}
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-theme-secondary mb-1.5">Description</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1.5">Description</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                   placeholder="What is this tool used for? What features do you need to learn?"
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-stone-900 border border-stone-700 rounded-xl text-sm text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
                   disabled={isSaving}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-theme-secondary mb-1.5">URL (optional)</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1.5">URL (optional)</label>
                 <input
                   type="url"
                   value={form.url}
                   onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))}
                   placeholder="https://www.tradingview.com"
-                  className="w-full px-4 py-2.5 bg-stone-900 border border-stone-700 rounded-xl text-sm text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={isSaving}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-theme-secondary mb-1.5">Status</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1.5">Status</label>
                 <select
                   value={form.status}
                   onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as ToolStatus }))}
-                  className="w-full px-4 py-2.5 bg-stone-900 border border-stone-700 rounded-xl text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={isSaving}
                 >
                   {STATUS_OPTIONS.map((o) => (
@@ -457,14 +457,14 @@ export default function TradingToolsPage() {
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   disabled={isSaving}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 font-semibold rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 font-semibold rounded-xl transition-colors"
                 >
                   {isSaving ? 'Saving...' : 'Save Tool'}
                 </button>

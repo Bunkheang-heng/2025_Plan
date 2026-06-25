@@ -348,7 +348,7 @@ export default function ChatPage() {
         // Add welcome message
         setMessages([{
           id: '1',
-          message: "**Hey there, Bunkheang!** I'm J.A.R.V.I.S, your personal AI assistant and productivity partner. I'm here to help you with your planning, analyze your progress, and keep you on track with your goals.\n\n**Here's what I can do for you:**\n* Chat about your plans and give you productivity advice\n* **Create daily plans for you** - just tell me what tasks you need to do!\n* Analyze your progress and suggest improvements\n* Help you organize your schedule and priorities\n\n**What would you like to work on today?**",
+          message: "**Hey there, Bunkheang!** I'm Super Assistent, your personal AI assistant and productivity partner. I'm here to help you with your planning, analyze your progress, and keep you on track with your goals.\n\n**Here's what I can do for you:**\n* Chat about your plans and give you productivity advice\n* **Create daily plans for you** - just tell me what tasks you need to do!\n* Analyze your progress and suggest improvements\n* Help you organize your schedule and priorities\n\n**What would you like to work on today?**",
           isUser: false,
           timestamp: new Date()
         }])
@@ -422,7 +422,7 @@ export default function ChatPage() {
         throw new Error(data.error || 'Failed to get response')
       }
 
-      // Check if J.A.R.V.I.S wants to create plans
+      // Check if Super Assistent wants to create plans
       const createdPlans = await createPlansFromResponse(data.response)
       
       let finalMessage = data.response
@@ -538,34 +538,34 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-theme-card relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-white relative overflow-hidden">
       {/* Animated Background */}
       <AnimatedBackground />
 
       {/* Header with Arc Reactor Design */}
-      <div className="border-b border-blue-500/30 bg-theme-card backdrop-blur-sm px-4 py-6 relative z-10 shadow-xl shadow-blue-500/10">
+      <div className="border-b border-stone-200 bg-white backdrop-blur-sm px-4 py-6 relative z-10 ">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
-            {/* J.A.R.V.I.S Identity */}
+            {/* Super Assistent Identity */}
             <div className="flex items-center space-x-4">
               {/* Arc Reactor Icon */}
               <div className="relative group">
-                <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center shadow-2xl animate-arc-reactor border-2 border-blue-300">
+                <div className="w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center animate-arc-reactor border-2 border-stone-200">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center animate-inner-glow">
                     <span className="text-black font-bold text-2xl">⚡</span>
                   </div>
                 </div>
                 {/* Energy Rings */}
-                <div className="absolute inset-0 rounded-full border-2 border-blue-400/40 animate-energy-ring-1"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-blue-400/30 animate-energy-ring-2"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-blue-400/20 animate-energy-ring-3"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-stone-200 animate-energy-ring-1"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-stone-200 animate-energy-ring-2"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-stone-200 animate-energy-ring-3"></div>
               </div>
               
               <div>
-                <h1 className="text-3xl font-bold text-blue-600 animate-text-glow">
-                  J.A.R.V.I.S
+                <h1 className="text-3xl font-bold text-emerald-600 animate-text-glow">
+                  Super Assistent
                 </h1>
-                <p className="text-sm text-theme-tertiary font-medium tracking-wide">Just A Rather Very Intelligent System</p>
+                <p className="text-sm text-stone-400 font-medium tracking-wide">Just A Rather Very Intelligent System</p>
                 <div className="flex items-center space-x-2 mt-1">
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                   <span className="text-xs text-green-600 font-semibold tracking-wider">ONLINE • READY</span>
@@ -575,20 +575,20 @@ export default function ChatPage() {
 
             {/* Stats Display */}
             <div className="hidden lg:flex items-center space-x-4">
-              <div className="bg-theme-card backdrop-blur-sm border border-blue-500/20 rounded-xl px-4 py-3 shadow-lg">
+              <div className="bg-white backdrop-blur-sm border border-stone-200 rounded-xl px-4 py-3">
                 <div className="flex items-center space-x-6">
                   <div className="text-center">
-                    <p className="text-xs text-theme-tertiary mb-1">Daily</p>
-                    <p className="text-lg font-bold text-blue-600">{stats.daily.completed}/{stats.daily.total}</p>
+                    <p className="text-xs text-stone-400 mb-1">Daily</p>
+                    <p className="text-lg font-bold text-emerald-600">{stats.daily.completed}/{stats.daily.total}</p>
                   </div>
-                  <div className="w-px h-8 bg-stone-700"></div>
+                  <div className="w-px h-8 bg-stone-200"></div>
                   <div className="text-center">
-                    <p className="text-xs text-theme-tertiary mb-1">Weekly</p>
-                    <p className="text-lg font-bold text-blue-600">{stats.weekly.completed}/{stats.weekly.total}</p>
+                    <p className="text-xs text-stone-400 mb-1">Weekly</p>
+                    <p className="text-lg font-bold text-emerald-600">{stats.weekly.completed}/{stats.weekly.total}</p>
                   </div>
-                  <div className="w-px h-8 bg-stone-700"></div>
+                  <div className="w-px h-8 bg-stone-200"></div>
                   <div className="text-center">
-                    <p className="text-xs text-theme-tertiary mb-1">Monthly</p>
+                    <p className="text-xs text-stone-400 mb-1">Monthly</p>
                     <p className="text-lg font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</p>
                   </div>
                 </div>
@@ -597,20 +597,20 @@ export default function ChatPage() {
           </div>
 
           {/* Mobile Stats */}
-          <div className="lg:hidden mt-4 bg-theme-card backdrop-blur-sm border border-blue-500/20 rounded-xl p-3 shadow-lg">
+          <div className="lg:hidden mt-4 bg-white backdrop-blur-sm border border-stone-200 rounded-xl p-3">
             <div className="flex items-center justify-around">
               <div className="text-center">
-                <p className="text-xs text-theme-tertiary mb-1">Daily</p>
-                <p className="text-sm font-bold text-blue-600">{stats.daily.completed}/{stats.daily.total}</p>
+                <p className="text-xs text-stone-400 mb-1">Daily</p>
+                <p className="text-sm font-bold text-emerald-600">{stats.daily.completed}/{stats.daily.total}</p>
               </div>
-              <div className="w-px h-8 bg-stone-700"></div>
+              <div className="w-px h-8 bg-stone-200"></div>
               <div className="text-center">
-                <p className="text-xs text-theme-tertiary mb-1">Weekly</p>
-                <p className="text-sm font-bold text-blue-600">{stats.weekly.completed}/{stats.weekly.total}</p>
+                <p className="text-xs text-stone-400 mb-1">Weekly</p>
+                <p className="text-sm font-bold text-emerald-600">{stats.weekly.completed}/{stats.weekly.total}</p>
               </div>
-              <div className="w-px h-8 bg-stone-700"></div>
+              <div className="w-px h-8 bg-stone-200"></div>
               <div className="text-center">
-                <p className="text-xs text-theme-tertiary mb-1">Monthly</p>
+                <p className="text-xs text-stone-400 mb-1">Monthly</p>
                 <p className="text-sm font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</p>
               </div>
             </div>
@@ -641,7 +641,7 @@ export default function ChatPage() {
       </div>
 
       {/* Chat Input */}
-      <div className="border-t border-blue-500/30 bg-theme-card backdrop-blur-sm shadow-2xl shadow-blue-500/10 relative z-10">
+      <div className="border-t border-stone-200 bg-white backdrop-blur-sm  relative z-10">
         <div className="max-w-4xl mx-auto">
           <ChatInput
             onSendMessage={sendMessage}
@@ -743,12 +743,12 @@ export default function ChatPage() {
         }
 
         ::-webkit-scrollbar-thumb {
-          background: #3b82f6;
+          background: #059669;
           border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-          background: #2563eb;
+          background: #059669;
         }
       `}</style>
     </div>

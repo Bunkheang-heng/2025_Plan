@@ -116,33 +116,33 @@ export default function AiSettingsPageClient() {
     envStatus?.providers.find((p) => p.id === provider)?.configured ?? false
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="max-w-xl mx-auto px-6 lg:px-8 py-12 py-8">
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="mb-8 px-4 py-2 bg-stone-900/60 border border-theme-secondary text-stone-200 rounded-lg hover:bg-stone-900 transition-colors flex items-center gap-2 text-sm"
+          className="mb-8 px-4 py-2 bg-white/60 border border-stone-200 text-stone-700 rounded-lg hover:bg-white transition-colors flex items-center gap-2 text-sm"
         >
           <FaArrowLeft /> Dashboard
         </button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-600 mb-2">
+          <h1 className="text-3xl font-bold text-emerald-600 mb-2">
             AI settings
           </h1>
-          <p className="text-sm text-theme-secondary">
-            Choose which provider generates <span className="text-blue-600/90">MT5 trade coach</span> notes after
+          <p className="text-sm text-stone-600">
+            Choose which provider generates <span className="text-emerald-600/90">MT5 trade coach</span> notes after
             each close. Keys stay on the server (.env); this only stores your preference.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-theme-secondary bg-theme-card p-6 space-y-6">
+        <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-6">
           {envStatus && !envStatus.anyCoach ? (
-            <div className="text-sm text-blue-600/95 border border-blue-500/40 rounded-xl p-3 bg-blue-500/10">
+            <div className="text-sm text-emerald-600/95 border border-stone-200 rounded-xl p-3 bg-emerald-50">
               No AI API keys detected on the server. Add at least one of{' '}
-              <code className="text-blue-200/90">GEMINI_API_KEY</code>,{' '}
-              <code className="text-blue-200/90">OPENAI_API_KEY</code>, or{' '}
-              <code className="text-blue-200/90">SEALION_API_KEY</code> to your deployment environment.
+              <code className="text-stone-700/90">GEMINI_API_KEY</code>,{' '}
+              <code className="text-stone-700/90">OPENAI_API_KEY</code>, or{' '}
+              <code className="text-stone-700/90">SEALION_API_KEY</code> to your deployment environment.
             </div>
           ) : null}
 
@@ -155,8 +155,8 @@ export default function AiSettingsPageClient() {
                   key={id}
                   className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
                     provider === id
-                      ? 'border-blue-500/60 bg-blue-500/10'
-                      : 'border-theme-secondary bg-theme-secondary hover:border-theme-secondary/80'
+                      ? 'border-emerald-500/60 bg-emerald-50'
+                      : 'border-stone-200 bg-stone-100 hover:border-stone-200/80'
                   }`}
                 >
                   <input
@@ -167,36 +167,36 @@ export default function AiSettingsPageClient() {
                     className="mt-1"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-theme-primary">{MT5_AI_PROVIDER_LABELS[id]}</div>
-                    <div className="text-[11px] text-theme-muted mt-1">
-                      Server env: <code className="text-blue-200/80">{envKeys}</code>
+                    <div className="font-semibold text-stone-900">{MT5_AI_PROVIDER_LABELS[id]}</div>
+                    <div className="text-[11px] text-stone-400 mt-1">
+                      Server env: <code className="text-stone-700/80">{envKeys}</code>
                       {id === 'gemini' ? (
                         <>
                           {' '}
-                          · optional <code className="text-blue-200/80">GEMINI_MODEL</code>
+                          · optional <code className="text-stone-700/80">GEMINI_MODEL</code>
                         </>
                       ) : null}
                       {id === 'openai' ? (
                         <>
                           {' '}
-                          · optional <code className="text-blue-200/80">OPENAI_BASE_URL</code>,{' '}
-                          <code className="text-blue-200/80">OPENAI_MODEL</code>
+                          · optional <code className="text-stone-700/80">OPENAI_BASE_URL</code>,{' '}
+                          <code className="text-stone-700/80">OPENAI_MODEL</code>
                         </>
                       ) : null}
                       {id === 'sealion' ? (
                         <>
                           {' '}
-                          · optional <code className="text-blue-200/80">SEA_LION_BASE_URL</code>,{' '}
-                          <code className="text-blue-200/80">SEA_LION_MODEL</code>
+                          · optional <code className="text-stone-700/80">SEA_LION_BASE_URL</code>,{' '}
+                          <code className="text-stone-700/80">SEA_LION_MODEL</code>
                         </>
                       ) : null}
                     </div>
                     {configured === false ? (
-                      <div className="text-xs text-blue-600/90 mt-2">Not configured on server — pick another or add the key.</div>
+                      <div className="text-xs text-emerald-600/90 mt-2">Not configured on server — pick another or add the key.</div>
                     ) : configured === true ? (
                       <div className="text-xs text-green-600/90 mt-2">Key present on server</div>
                     ) : (
-                      <div className="text-xs text-theme-muted mt-2">Save to re-check status</div>
+                      <div className="text-xs text-stone-400 mt-2">Save to re-check status</div>
                     )}
                   </div>
                 </label>
@@ -205,7 +205,7 @@ export default function AiSettingsPageClient() {
           </div>
 
           {provider && !selectedConfigured && envStatus?.anyCoach ? (
-            <p className="text-xs text-blue-600/90">
+            <p className="text-xs text-emerald-600/90">
               Your current choice does not have a server key. MT5 coach will fail until you switch provider or add
               env vars.
             </p>
@@ -215,7 +215,7 @@ export default function AiSettingsPageClient() {
             type="button"
             disabled={saving}
             onClick={() => void handleSave()}
-            className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:opacity-95 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm hover:opacity-95 disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save preference'}
           </button>

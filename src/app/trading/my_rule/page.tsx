@@ -176,27 +176,27 @@ export default function MyRulePage() {
   if (isLoading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="w-full px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="w-full px-6 lg:px-8 py-12 py-8">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse" />
             My Rule
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4">
+          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4">
             Rule For Myself In Trading
           </h1>
-          <p className="text-lg text-theme-secondary font-medium">Author: Heng Bunkheang</p>
+          <p className="text-lg text-stone-600 font-medium">Author: Heng Bunkheang</p>
         </div>
 
         <div className="space-y-6">
           {categories.map((category) => (
             <div
               key={category.id}
-              className="bg-theme-card border border-theme-secondary rounded-2xl overflow-hidden shadow-lg shadow-black/20"
+              className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-black/20"
             >
-              <div className="bg-blue-500/10 border-b border-blue-500/20 px-5 py-4">
-                <h2 className="text-lg font-bold text-theme-primary">
+              <div className="bg-emerald-50 border-b border-stone-200 px-5 py-4">
+                <h2 className="text-lg font-bold text-stone-900">
                   {category.id}. {category.category}
                 </h2>
               </div>
@@ -205,11 +205,11 @@ export default function MyRulePage() {
                   {category.rules
                     .sort((a, b) => a.rule_number - b.rule_number)
                     .map((item) => (
-                      <div key={item.rule_number} className="flex items-start gap-3 p-3 bg-stone-800/50 rounded-xl border border-stone-700/70">
-                        <span className="mt-0.5 inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-lg bg-blue-500/20 text-blue-600 text-xs font-bold">
+                      <div key={item.rule_number} className="flex items-start gap-3 p-3 bg-stone-100/50 rounded-xl border border-stone-200/70">
+                        <span className="mt-0.5 inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold">
                           {item.rule_number}
                         </span>
-                        <p className="text-sm text-theme-secondary leading-relaxed">{item.rule}</p>
+                        <p className="text-sm text-stone-600 leading-relaxed">{item.rule}</p>
                       </div>
                     ))}
                 </div>

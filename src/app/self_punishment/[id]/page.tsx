@@ -95,13 +95,13 @@ export default function SelfPunishmentDetailPage() {
 
   if (!entry) {
     return (
-      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
-        <div className="bg-theme-card border border-theme-secondary rounded-2xl p-6 text-center max-w-md w-full">
-          <div className="text-theme-primary font-bold text-lg mb-1">Entry not found</div>
-          <div className="text-theme-tertiary text-sm mb-4">It may have been deleted or you don’t have access.</div>
+      <div className="min-h-screen bg-[#fafaf9] flex items-center justify-center">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 text-center max-w-md w-full">
+          <div className="text-stone-900 font-bold text-lg mb-1">Entry not found</div>
+          <div className="text-stone-400 text-sm mb-4">It may have been deleted or you don’t have access.</div>
           <button
             onClick={() => router.push('/self_punishment')}
-            className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-theme-primary font-semibold rounded-xl"
+            className="px-4 py-2 bg-stone-200 hover:bg-stone-600 text-stone-900 font-semibold rounded-xl"
           >
             Back
           </button>
@@ -111,12 +111,12 @@ export default function SelfPunishmentDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="w-full max-w-full mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="w-full max-w-full mx-auto px-6 lg:px-8 py-12 py-8">
         <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
           <button
             onClick={() => router.push('/self_punishment')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900/60 border border-theme-secondary text-stone-200 rounded-lg hover:bg-stone-900 transition-colors text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 border border-stone-200 text-stone-700 rounded-lg hover:bg-white transition-colors text-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -125,49 +125,49 @@ export default function SelfPunishmentDetailPage() {
           </button>
           {entry.expiresAt && (
             <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold border ${
-              expired ? 'bg-stone-600 text-theme-tertiary border-stone-500/40' : 'bg-blue-500/20 text-blue-600 border-blue-500/40'
+              expired ? 'bg-stone-600 text-stone-400 border-stone-500/40' : 'bg-emerald-50 text-emerald-600 border-stone-200'
             }`}>
               {expired ? 'Expired' : 'Active'}
             </span>
           )}
         </div>
 
-        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg">
-          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-blue-500/30 p-6">
-            <div className="text-xs text-blue-600/90 font-semibold mb-1">{dateLabel(entry.date)}</div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-theme-primary">Self Punishment</h1>
-            <p className="text-sm text-theme-tertiary mt-1">Created: {new Date(entry.createdAt).toLocaleString()}</p>
+        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-stone-200 p-6">
+            <div className="text-xs text-emerald-600/90 font-semibold mb-1">{dateLabel(entry.date)}</div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-stone-900">Self Punishment</h1>
+            <p className="text-sm text-stone-400 mt-1">Created: {new Date(entry.createdAt).toLocaleString()}</p>
           </div>
 
           <div className="p-6 space-y-6">
             <div>
-              <div className="text-xs text-theme-tertiary font-semibold mb-1">Rule broken</div>
-              <div className="text-theme-primary font-semibold">{entry.ruleBroken}</div>
+              <div className="text-xs text-stone-400 font-semibold mb-1">Rule broken</div>
+              <div className="text-stone-900 font-semibold">{entry.ruleBroken}</div>
             </div>
 
             <div>
-              <div className="text-xs text-theme-tertiary font-semibold mb-1">Punishment</div>
-              <div className="text-theme-secondary">{entry.punishment}</div>
+              <div className="text-xs text-stone-400 font-semibold mb-1">Punishment</div>
+              <div className="text-stone-600">{entry.punishment}</div>
             </div>
 
             {entry.expiresAt && (
               <div className={`border rounded-2xl p-5 ${
-                expired ? 'bg-stone-800/40 border-stone-700' : 'bg-blue-500/10 border-blue-500/30'
+                expired ? 'bg-stone-100/40 border-stone-200' : 'bg-emerald-50 border-stone-200'
               }`}>
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
-                    <div className="text-xs text-theme-tertiary font-semibold">Expires</div>
-                    <div className="text-sm text-theme-secondary">{dateLabel(entry.expiresAt)}</div>
+                    <div className="text-xs text-stone-400 font-semibold">Expires</div>
+                    <div className="text-sm text-stone-600">{dateLabel(entry.expiresAt)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-theme-tertiary font-semibold">{expired ? 'Status' : 'Time left'}</div>
-                    <div className={`text-2xl font-bold ${expired ? 'text-theme-tertiary' : 'text-blue-600'}`}>
+                    <div className="text-xs text-stone-400 font-semibold">{expired ? 'Status' : 'Time left'}</div>
+                    <div className={`text-2xl font-bold ${expired ? 'text-stone-400' : 'text-emerald-600'}`}>
                       {diffMs !== null && diffMs > 0 ? formatCountdown(diffMs) : 'Expired'}
                     </div>
                   </div>
                 </div>
                 {!expired && (
-                  <p className="text-xs text-theme-tertiary mt-3">
+                  <p className="text-xs text-stone-400 mt-3">
                     Countdown includes minutes and seconds, updates every second.
                   </p>
                 )}

@@ -13,7 +13,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onSelectAction, isLoading }
       icon: 'chart',
       text: "What's my progress today?",
       message: "Can you analyze my progress for today? Show me completion rates and any overdue tasks.",
-      color: 'text-blue-600'
+      color: 'text-emerald-600'
     },
     {
       icon: 'target',
@@ -25,30 +25,30 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onSelectAction, isLoading }
       icon: 'calendar',
       text: "How is my week looking?",
       message: "Give me an overview of my weekly plans. What are my key goals and how am I tracking?",
-      color: 'text-blue-600'
+      color: 'text-emerald-600'
     },
     {
       icon: 'clock',
       text: "Time management tips",
       message: "Can you give me personalized time management advice based on my current workload and schedule patterns?",
-      color: 'text-blue-600'
+      color: 'text-emerald-600'
     },
     {
       icon: 'star',
       text: "Monthly review",
       message: "Help me review my monthly goals. What have I accomplished and what needs more attention?",
-      color: 'text-blue-600'
+      color: 'text-emerald-600'
     },
     {
       icon: 'plus',
       text: "Suggest new goals",
       message: "Based on my current plans and progress, can you suggest some new goals or improvements for my productivity?",
-      color: 'text-blue-600'
+      color: 'text-emerald-600'
     }
   ]
 
   return (
-    <div className="bg-theme-secondary border-b border-stone-200 py-8">
+    <div className="bg-stone-100 border-b border-stone-200 py-8">
       <div className="max-w-5xl mx-auto px-4">
         <div className="text-center mb-8">
           <h3 className="text-xl font-bold text-stone-900 mb-2">
@@ -65,7 +65,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onSelectAction, isLoading }
               key={index}
               onClick={() => onSelectAction(action.message)}
               disabled={isLoading}
-              className="group relative p-6 text-left bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative p-6 text-left bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-start space-x-4">
                 <div className={`p-3 rounded-lg bg-stone-50 group-hover:bg-stone-100 transition-colors ${action.color}`}>

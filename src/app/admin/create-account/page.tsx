@@ -68,33 +68,33 @@ export default function CreateAccountPage() {
   return (
     <RouteProtection>
       {currentUserRole !== 'admin' ? (
-        <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+        <div className="min-h-screen bg-[#fafaf9] flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-            <p className="text-theme-tertiary">Only administrators can access this page.</p>
+            <p className="text-stone-400">Only administrators can access this page.</p>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-theme-primary p-8">
+        <div className="min-h-screen bg-[#fafaf9] p-8">
           <div className="max-w-2xl mx-auto">
             <div className="mb-6">
               <button
                 onClick={() => router.push('/admin/set-role')}
-                className="text-blue-600 hover:text-blue-600 mb-4 flex items-center gap-2 transition-colors"
+                className="text-emerald-600 hover:text-emerald-600 mb-4 flex items-center gap-2 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 Back to Role Management
               </button>
-              <h1 className="text-3xl font-bold text-theme-primary">Create New Account</h1>
-              <p className="text-theme-tertiary mt-2">Create accounts for new users. Only admins can access this page.</p>
+              <h1 className="text-3xl font-bold text-stone-900">Create New Account</h1>
+              <p className="text-stone-400 mt-2">Create accounts for new users. Only admins can access this page.</p>
             </div>
 
-            <div className="bg-theme-secondary border border-blue-500/30 rounded-lg p-6 mb-6">
+            <div className="bg-stone-100 border border-stone-200 rounded-lg p-6 mb-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-theme-secondary mb-2">
+                  <label className="block text-sm font-medium text-stone-600 mb-2">
                     Email Address <span className="text-red-600">*</span>
                   </label>
                   <input
@@ -102,13 +102,13 @@ export default function CreateAccountPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@example.com"
-                    className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-theme-secondary mb-2">
+                  <label className="block text-sm font-medium text-stone-600 mb-2">
                     Password <span className="text-red-600">*</span>
                   </label>
                   <input
@@ -116,15 +116,15 @@ export default function CreateAccountPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
-                    className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
                     required
                     minLength={6}
                   />
-                  <p className="mt-1 text-xs text-theme-tertiary">Password must be at least 6 characters long</p>
+                  <p className="mt-1 text-xs text-stone-400">Password must be at least 6 characters long</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-theme-secondary mb-2">
+                  <label className="block text-sm font-medium text-stone-600 mb-2">
                     Full Name (Optional)
                   </label>
                   <input
@@ -132,23 +132,23 @@ export default function CreateAccountPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="User's full name"
-                    className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-theme-secondary mb-2">
+                  <label className="block text-sm font-medium text-stone-600 mb-2">
                     Role <span className="text-red-600">*</span>
                   </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as UserRole)}
-                    className="w-full px-4 py-2 bg-stone-700 border border-stone-600 rounded-lg text-theme-primary focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
                   >
                     <option value="admin">Admin (Full Access)</option>
                     <option value="restricted">Restricted (Couple Saving Only)</option>
                   </select>
-                  <p className="mt-1 text-xs text-theme-tertiary">
+                  <p className="mt-1 text-xs text-stone-400">
                     {role === 'admin'
                       ? 'Admin users have full access to all pages'
                       : 'Restricted users can only access the Couple Saving page'}
@@ -158,7 +158,7 @@ export default function CreateAccountPage() {
                 <button
                   onClick={handleCreateAccount}
                   disabled={loading}
-                  className="w-full px-6 py-3 bg-blue-500 text-black font-bold rounded-lg hover:bg-blue-400 transition-all disabled:opacity-50"
+                  className="w-full px-6 py-3 bg-emerald-600 text-black font-bold rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-50"
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
@@ -173,16 +173,16 @@ export default function CreateAccountPage() {
               }`}>
                 {message}
                 {createdUid && (
-                  <div className="mt-2 text-xs text-theme-secondary">
-                    UID: <span className="font-mono text-theme-primary">{createdUid}</span>
+                  <div className="mt-2 text-xs text-stone-600">
+                    UID: <span className="font-mono text-stone-900">{createdUid}</span>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="mt-8 bg-theme-card/30 border border-theme-secondary rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-theme-primary mb-4">Instructions</h3>
-              <ol className="list-decimal list-inside space-y-2 text-theme-secondary text-sm">
+            <div className="mt-8 bg-white/30 border border-stone-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-stone-900 mb-4">Instructions</h3>
+              <ol className="list-decimal list-inside space-y-2 text-stone-600 text-sm">
                 <li>Enter the email address for the new user</li>
                 <li>Create a secure password (minimum 6 characters)</li>
                 <li>Optionally add the user's name</li>
