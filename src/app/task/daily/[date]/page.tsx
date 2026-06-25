@@ -343,7 +343,7 @@ export default function DailyPlanDatePage() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9] flex flex-col">
-      <div className="w-full flex-1 px-6 lg:px-8 py-12 py-8">
+      <div className="w-full flex-1 px-6 lg:px-8 py-8">
         <div className="mb-8">
           <Link
             href="/task/daily"
@@ -394,10 +394,10 @@ export default function DailyPlanDatePage() {
             </div>
           </div>
 
-          <div className="divide-y divide-stone-700/50">
+          <div className="divide-y divide-stone-200/50">
             {sortedPlans.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="p-3 bg-stone-700/50 rounded-xl inline-block mb-4 border border-emerald-500/20">
+                <div className="p-3 bg-stone-100 rounded-xl inline-block mb-4 border border-emerald-500/20">
                   <svg className="w-8 h-8 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
@@ -418,7 +418,7 @@ export default function DailyPlanDatePage() {
               periodOrder.map((period) => {
                 const list = plansByPeriod[period]
                 return (
-                  <div key={period} className="divide-y divide-stone-700/50">
+                  <div key={period} className="divide-y divide-stone-200/50">
                     <div className="px-6 py-4 bg-stone-100 border-b border-stone-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-emerald-600">{period}</span>
@@ -616,7 +616,7 @@ export default function DailyPlanDatePage() {
                 <button
                   type="button"
                   onClick={closeAddModal}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-300 text-stone-900 font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
@@ -721,7 +721,7 @@ export default function DailyPlanDatePage() {
                 <button
                   type="button"
                   onClick={closeEditModal}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-300 text-stone-900 font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
@@ -766,7 +766,7 @@ export default function DailyPlanDatePage() {
               <button
                 type="button"
                 onClick={closeClearConfirm}
-                className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
+                className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-300 text-stone-900 font-medium rounded-xl transition-colors"
               >
                 Cancel
               </button>

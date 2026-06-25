@@ -184,7 +184,7 @@ export default function WeeklyPlanSlugPage() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9] flex flex-col">
-      <div className="w-full flex-1 px-6 lg:px-8 py-12 py-8">
+      <div className="w-full flex-1 px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link
             href="/task/weekly"
@@ -233,7 +233,7 @@ export default function WeeklyPlanSlugPage() {
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-stone-700/50">
+            <div className="divide-y divide-stone-200/50">
               {state.plans.map((plan) => (
                 <div key={plan.id} className="p-5 hover:bg-stone-100/20 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -359,7 +359,7 @@ export default function WeeklyPlanSlugPage() {
                 <button
                   type="button"
                   onClick={closeAddModal}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-300 text-stone-900 font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>

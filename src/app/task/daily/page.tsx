@@ -205,7 +205,7 @@ export default function DailyPlans() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
