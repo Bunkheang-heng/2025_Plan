@@ -342,12 +342,12 @@ export default function DailyPlanDatePage() {
     : 'Invalid date'
 
   return (
-    <div className="min-h-screen bg-theme-primary flex flex-col">
-      <div className="w-full flex-1 px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9] flex flex-col">
+      <div className="w-full flex-1 px-6 lg:px-8 py-12 py-8">
         <div className="mb-8">
           <Link
             href="/task/daily"
-            className="inline-flex items-center gap-2 text-theme-secondary hover:text-blue-600 transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 text-stone-600 hover:text-emerald-600 transition-colors text-sm font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -357,24 +357,24 @@ export default function DailyPlanDatePage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-theme-primary">{dateLabel}</h1>
-          <p className="text-theme-tertiary mt-1">
+          <h1 className="text-3xl font-bold text-stone-900">{dateLabel}</h1>
+          <p className="text-stone-400 mt-1">
             {total > 0
               ? `${completed}/${total} tasks completed`
               : 'No tasks planned for this day'}
           </p>
         </div>
 
-        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10">
-          <div className="bg-blue-500/10 border-b border-blue-500/30 p-6">
+        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+          <div className="bg-emerald-600/10 border-b border-stone-200 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-theme-primary">Tasks</h2>
+              <h2 className="text-xl font-bold text-stone-900">Tasks</h2>
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-theme-primary/90 text-sm font-semibold">{completed}/{total}</span>
+                <span className="text-stone-900/90 text-sm font-semibold">{completed}/{total}</span>
                 <button
                   onClick={openClearConfirm}
                   disabled={state.plans.length === 0 || state.isResetting}
-                  className="flex items-center gap-2 px-4 py-2 bg-stone-600 hover:bg-stone-500 disabled:opacity-50 disabled:cursor-not-allowed text-theme-primary font-semibold rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-stone-600 hover:bg-stone-500 disabled:opacity-50 disabled:cursor-not-allowed text-stone-900 font-semibold rounded-lg transition-colors"
                 >
                   <svg className={`w-4 h-4 ${state.isResetting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -383,7 +383,7 @@ export default function DailyPlanDatePage() {
                 </button>
                 <button
                   onClick={openAddModal}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-stone-900 font-semibold rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -397,16 +397,16 @@ export default function DailyPlanDatePage() {
           <div className="divide-y divide-stone-700/50">
             {sortedPlans.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="p-3 bg-stone-700/50 rounded-xl inline-block mb-4 border border-blue-500/20">
-                  <svg className="w-8 h-8 text-theme-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-3 bg-stone-700/50 rounded-xl inline-block mb-4 border border-emerald-500/20">
+                  <svg className="w-8 h-8 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-stone-200 mb-2">No tasks for this day</h3>
-                <p className="text-theme-tertiary mb-4">Add a new task to get started</p>
+                <p className="text-stone-400 mb-4">Add a new task to get started</p>
                 <button
                   onClick={openAddModal}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-stone-900 font-semibold rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -419,19 +419,19 @@ export default function DailyPlanDatePage() {
                 const list = plansByPeriod[period]
                 return (
                   <div key={period} className="divide-y divide-stone-700/50">
-                    <div className="px-6 py-4 bg-theme-secondary border-b border-theme-secondary flex items-center justify-between">
+                    <div className="px-6 py-4 bg-stone-100 border-b border-stone-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-blue-600">{period}</span>
-                        <span className="text-xs text-theme-tertiary">({list.length})</span>
+                        <span className="text-sm font-bold text-emerald-600">{period}</span>
+                        <span className="text-xs text-stone-400">({list.length})</span>
                       </div>
                     </div>
                     {list.length === 0 ? (
-                      <div className="px-6 py-6 text-sm text-theme-tertiary">
+                      <div className="px-6 py-6 text-sm text-stone-400">
                         No tasks in {period.toLowerCase()}.
                       </div>
                     ) : (
                       list.map((plan, idx) => (
-                        <div key={plan.id} className="p-6 hover:bg-stone-700/30 transition-all duration-200">
+                        <div key={plan.id} className="p-6 hover:bg-stone-100/30 transition-all duration-200">
                           <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
                             <div className="flex flex-wrap items-center gap-3">
                               <div className="flex flex-col gap-1">
@@ -439,7 +439,7 @@ export default function DailyPlanDatePage() {
                                   type="button"
                                   onClick={() => movePlanWithin(period, plan.id, 'up')}
                                   disabled={idx === 0}
-                                  className="p-1.5 rounded-lg bg-theme-secondary border border-blue-500/20 hover:border-blue-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
+                                  className="p-1.5 rounded-lg bg-stone-100 border border-emerald-500/20 hover:border-emerald-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-stone-600"
                                   title="Move up"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -450,7 +450,7 @@ export default function DailyPlanDatePage() {
                                   type="button"
                                   onClick={() => movePlanWithin(period, plan.id, 'down')}
                                   disabled={idx === list.length - 1}
-                                  className="p-1.5 rounded-lg bg-theme-secondary border border-blue-500/20 hover:border-blue-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-theme-secondary"
+                                  className="p-1.5 rounded-lg bg-stone-100 border border-emerald-500/20 hover:border-emerald-500/50 disabled:opacity-40 disabled:cursor-not-allowed text-stone-600"
                                   title="Move down"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,8 +459,8 @@ export default function DailyPlanDatePage() {
                                 </button>
                               </div>
                               {plan.startTime && (
-                                <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg px-3 py-2">
-                                  <div className="text-blue-600 font-bold text-sm">
+                                <div className="bg-emerald-50 border border-stone-200 rounded-lg px-3 py-2">
+                                  <div className="text-emerald-600 font-bold text-sm">
                                     {new Date(`2000-01-01T${plan.startTime}`).toLocaleTimeString('en-US', {
                                       timeZone: 'Asia/Phnom_Penh',
                                       hour: 'numeric',
@@ -473,17 +473,17 @@ export default function DailyPlanDatePage() {
                               <select
                                 value={plan.status}
                                 onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                                className="px-3 py-2 border border-blue-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-stone-100 text-sm font-medium cursor-pointer bg-theme-secondary"
+                                className="px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-stone-100 text-sm font-medium cursor-pointer bg-stone-100"
                               >
-                                <option value="Not Started" className="bg-theme-card">Not Started</option>
-                                <option value="Done" className="bg-theme-card">Done</option>
-                                <option value="Missed" className="bg-theme-card">Missed</option>
-                                <option value="Failed" className="bg-theme-card">Failed</option>
+                                <option value="Not Started" className="bg-white">Not Started</option>
+                                <option value="Done" className="bg-white">Done</option>
+                                <option value="Missed" className="bg-white">Missed</option>
+                                <option value="Failed" className="bg-white">Failed</option>
                               </select>
                               <button
                                 type="button"
                                 onClick={() => openEditModal(plan)}
-                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-theme-secondary border border-blue-500/20 hover:border-blue-500/50 text-theme-secondary text-sm font-medium"
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-stone-100 border border-emerald-500/20 hover:border-emerald-500/50 text-stone-600 text-sm font-medium"
                                 title="Edit task"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -495,22 +495,22 @@ export default function DailyPlanDatePage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-3 mb-2">
                                 <h4 className={`font-semibold text-lg ${
-                                  plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-stone-100'
+                                  plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-stone-400 line-through' : 'text-stone-100'
                                 }`}>
                                   {plan.title}
                                 </h4>
                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
                                   plan.priority === 'high' ? 'bg-red-500/20 text-red-600 border-red-400/50' :
-                                  plan.priority === 'medium' ? 'bg-blue-500/20 text-blue-600 border-blue-400/50' :
+                                  plan.priority === 'medium' ? 'bg-emerald-50 text-emerald-600 border-stone-200' :
                                   plan.priority === 'low' ? 'bg-green-500/20 text-green-600 border-green-400/50' :
-                                  'bg-stone-500/20 text-theme-secondary border-stone-400/50'
+                                  'bg-stone-500/20 text-stone-600 border-stone-400/50'
                                 }`}>
                                   {plan.priority?.toUpperCase() || 'MEDIUM'}
                                 </span>
                               </div>
                               {plan.description && (
                                 <p className={`text-sm leading-relaxed ${
-                                  plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-theme-muted line-through' : 'text-theme-secondary'
+                                  plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-stone-400 line-through' : 'text-stone-600'
                                 }`}>
                                   {plan.description}
                                 </p>
@@ -523,8 +523,8 @@ export default function DailyPlanDatePage() {
                                   : plan.status === 'Missed'
                                     ? 'bg-red-500/20 text-red-600 border-red-400/50'
                                     : plan.status === 'Failed'
-                                      ? 'bg-blue-500/20 text-blue-600 border-blue-400/50'
-                                    : 'bg-stone-500/20 text-theme-secondary border-stone-400/50'
+                                      ? 'bg-emerald-50 text-emerald-600 border-stone-200'
+                                    : 'bg-stone-500/20 text-stone-600 border-stone-400/50'
                               }`}>
                                 {plan.status}
                               </span>
@@ -548,14 +548,14 @@ export default function DailyPlanDatePage() {
           onClick={closeAddModal}
         >
           <div
-            className="bg-theme-card border border-blue-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-theme-primary">Add task for {dateLabel}</h2>
+              <h2 className="text-xl font-bold text-stone-900">Add task for {dateLabel}</h2>
               <button
                 onClick={closeAddModal}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors text-theme-tertiary"
+                className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -565,34 +565,34 @@ export default function DailyPlanDatePage() {
 
             <form onSubmit={addTask} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Title</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Title</label>
                 <input
                   type="text"
                   value={newTask.title}
                   onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter task title"
                   required
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isAdding}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Description (optional)</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Description (optional)</label>
                 <textarea
                   value={newTask.description}
                   onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Add description"
                   rows={3}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
                   disabled={state.isAdding}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Priority</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Priority</label>
                 <select
                   value={newTask.priority}
                   onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -600,11 +600,11 @@ export default function DailyPlanDatePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Time period</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Time period</label>
                 <select
                   value={newTask.timePeriod}
                   onChange={(e) => setNewTask(prev => ({ ...prev, timePeriod: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
                   <option value="Morning">Morning</option>
                   <option value="Afternoon">Afternoon</option>
@@ -616,14 +616,14 @@ export default function DailyPlanDatePage() {
                 <button
                   type="button"
                   onClick={closeAddModal}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={state.isAdding}
-                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 font-semibold rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors"
                 >
                   {state.isAdding ? 'Adding...' : 'Add'}
                 </button>
@@ -640,14 +640,14 @@ export default function DailyPlanDatePage() {
           onClick={closeEditModal}
         >
           <div
-            className="bg-theme-card border border-blue-500/30 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-theme-primary">Edit task</h2>
+              <h2 className="text-xl font-bold text-stone-900">Edit task</h2>
               <button
                 onClick={closeEditModal}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors text-theme-tertiary"
+                className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -657,45 +657,45 @@ export default function DailyPlanDatePage() {
 
             <form onSubmit={saveEdit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Title</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Title</label>
                 <input
                   type="text"
                   value={editForm.title}
                   onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter task title"
                   required
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isSavingEdit}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Description (optional)</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Description (optional)</label>
                 <textarea
                   value={editForm.description}
                   onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Add description"
                   rows={3}
-                  className="w-full px-4 py-3 bg-theme-secondary border border-theme-secondary rounded-xl text-theme-primary placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
                   disabled={state.isSavingEdit}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Start time (optional)</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Start time (optional)</label>
                 <input
                   type="time"
                   value={editForm.startTime}
                   onChange={(e) => setEditForm(prev => ({ ...prev, startTime: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isSavingEdit}
                 />
-                <p className="text-xs text-theme-tertiary mt-1">24h format used for ordering</p>
+                <p className="text-xs text-stone-400 mt-1">24h format used for ordering</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Priority</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Priority</label>
                 <select
                   value={editForm.priority}
                   onChange={(e) => setEditForm(prev => ({ ...prev, priority: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isSavingEdit}
                 >
                   <option value="high">High</option>
@@ -704,11 +704,11 @@ export default function DailyPlanDatePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">Time period</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">Time period</label>
                 <select
                   value={editForm.timePeriod}
                   onChange={(e) => setEditForm(prev => ({ ...prev, timePeriod: e.target.value }))}
-                  className="w-full px-4 py-2 bg-theme-secondary border border-theme-secondary rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   disabled={state.isSavingEdit}
                 >
                   <option value="Morning">Morning</option>
@@ -721,14 +721,14 @@ export default function DailyPlanDatePage() {
                 <button
                   type="button"
                   onClick={closeEditModal}
-                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={state.isSavingEdit}
-                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-stone-900 font-semibold rounded-xl transition-colors"
+                  className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors"
                 >
                   {state.isSavingEdit ? 'Saving...' : 'Save'}
                 </button>
@@ -745,28 +745,28 @@ export default function DailyPlanDatePage() {
           onClick={closeClearConfirm}
         >
           <div
-            className="bg-theme-card border border-red-500/40 rounded-2xl max-w-md w-full shadow-2xl p-6"
+            className="bg-white border border-red-500/40 rounded-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-theme-primary">Clear all tasks</h2>
+              <h2 className="text-xl font-bold text-stone-900">Clear all tasks</h2>
               <button
                 onClick={closeClearConfirm}
-                className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors text-theme-tertiary"
+                className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <p className="text-theme-secondary mb-6">
+            <p className="text-stone-600 mb-6">
               Delete all {state.plans.length} task{state.plans.length !== 1 ? 's' : ''} for this day? This cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={closeClearConfirm}
-                className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-theme-primary font-medium rounded-xl transition-colors"
+                className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
               >
                 Cancel
               </button>

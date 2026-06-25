@@ -204,39 +204,39 @@ export default function DailyPlans() {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#fafaf9]">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-theme-secondary border border-blue-500/30 rounded-full text-blue-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
+            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse"></div>
             Daily Mission Planning
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-blue-600 mb-4 flex items-center justify-center gap-3">
+          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
             <span>Daily Plans Calendar</span>
-            <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
             </svg>
           </h1>
-          <p className="text-xl text-theme-secondary font-medium">
+          <p className="text-xl text-stone-600 font-medium">
             Click on a day to view and manage your daily tasks
           </p>
           {/* ...existing code... */}
           <div className="flex items-center justify-center gap-4 mt-8 mb-4">
             <button
               onClick={() => changeMonth(-1)}
-              className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors"
+              className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h2 className="text-2xl font-bold text-theme-primary">{monthName}</h2>
+            <h2 className="text-2xl font-bold text-stone-900">{monthName}</h2>
             <button
               onClick={() => changeMonth(1)}
-              className="p-2 hover:bg-stone-700/50 rounded-lg transition-colors"
+              className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -247,7 +247,7 @@ export default function DailyPlans() {
             {/* Day Headers */}
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-blue-600 font-bold text-sm py-2">
+                <div key={day} className="text-center text-emerald-600 font-bold text-sm py-2">
                   {day}
                 </div>
               ))}
@@ -275,24 +275,24 @@ export default function DailyPlans() {
                     onClick={() => handleDateClick(day)}
                     className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
                       isToday 
-                        ? 'border-blue-400 bg-blue-400/10' 
+                        ? 'border-emerald-400 bg-emerald-50' 
                         : hasPlans
                         ? allCompleted
-                          ? 'border-green-500/50 bg-green-500/10 hover:bg-green-500/20'
-                          : 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
-                        : 'border-theme-secondary bg-theme-secondary hover:bg-stone-700/50'
+                          ? 'border-green-300 bg-green-50 hover:bg-green-100'
+                          : 'border-emerald-500/50 bg-emerald-600/10 hover:bg-emerald-50'
+                        : 'border-stone-200 bg-stone-100 hover:bg-stone-100'
                     }`}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className={`text-sm font-bold mb-1 ${
-                        isToday ? 'text-blue-600' : 'text-theme-secondary'
+                        isToday ? 'text-emerald-600' : 'text-stone-600'
                       }`}>
                         {day}
                       </div>
                       {hasPlans && (
                         <>
                           <div className={`text-xs font-bold ${
-                            allCompleted ? 'text-green-600' : 'text-blue-600'
+                            allCompleted ? 'text-green-600' : 'text-emerald-600'
                           }`}>
                             {dayData.completedTasks}/{dayData.totalTasks}
               </div>
