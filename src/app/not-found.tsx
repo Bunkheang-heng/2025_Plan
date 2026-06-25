@@ -5,51 +5,51 @@ export default function NotFound() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-theme-primary flex items-center justify-center px-6">
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-6">
       {/* Animated Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-float-delayed" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-400/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl animate-float-delayed" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-400/5 rounded-full blur-3xl animate-float-slow" />
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto text-center">
         {/* 404 Number */}
         <div className="mb-8 animate-slide-in-up">
-          <h1 className="text-9xl font-bold text-blue-600 mb-4 animate-text-glow">
+          <h1 className="text-9xl font-bold text-emerald-600 mb-4 animate-text-glow">
             404
           </h1>
           <div className="flex items-center justify-center space-x-4 mb-6">
-            <div className="h-1 w-16 bg-gradient-to-r from-transparent via-blue-500 to-blue-500 rounded-full animate-pulse" />
-            <svg className="w-12 h-12 text-blue-600 animate-bounce-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="h-1 w-16 bg-gradient-to-r from-transparent via-emerald-500 to-emerald-500 rounded-full animate-pulse" />
+            <svg className="w-12 h-12 text-emerald-600 animate-bounce-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-transparent rounded-full animate-pulse" />
+            <div className="h-1 w-16 bg-gradient-to-r from-emerald-500 to-transparent rounded-full animate-pulse" />
           </div>
         </div>
 
         {/* Error Card */}
-        <div className="bg-theme-card border border-blue-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 p-8 mb-8 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
+        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-md p-8 mb-8 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
           {/* Scanning Line Effect */}
           <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-            <div className="absolute inset-0 bg-blue-400/10 w-full h-full transform -translate-x-full animate-scan-sweep" />
+            <div className="absolute inset-0 bg-emerald-400/10 w-full h-full transform -translate-x-full animate-scan-sweep" />
           </div>
 
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold text-theme-primary mb-4">
+            <h2 className="text-3xl font-bold text-stone-800 mb-4">
               Page Not Found
             </h2>
-            <p className="text-theme-secondary text-lg mb-6">
+            <p className="text-stone-500 text-lg mb-6">
               Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
             </p>
 
-            <div className="bg-stone-700/30 border border-blue-500/20 rounded-xl p-6 mb-6">
+            <div className="bg-stone-100 border border-stone-200 rounded-xl p-6 mb-6">
               <div className="flex items-start space-x-3 text-left">
-                <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="text-theme-secondary">
-                  <p className="font-semibold text-blue-600 mb-2">What happened?</p>
+                <div className="text-stone-600">
+                  <p className="font-semibold text-emerald-600 mb-2">What happened?</p>
                   <p className="text-sm">
                     The URL you entered might be incorrect, or the page may have been deleted or moved to a new location.
                   </p>
@@ -61,7 +61,7 @@ export default function NotFound() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center justify-center space-x-2 px-8 py-4 bg-blue-500 text-stone-900 font-bold rounded-xl hover:bg-blue-400 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105"
+                className="flex items-center justify-center space-x-2 px-8 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-500 transition-all duration-300 shadow-sm hover:scale-105"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -71,7 +71,7 @@ export default function NotFound() {
 
               <button
                 onClick={() => router.back()}
-                className="flex items-center justify-center space-x-2 px-8 py-4 bg-stone-700 hover:bg-stone-600 text-theme-primary font-bold rounded-xl transition-all duration-300 border border-blue-500/30 hover:border-blue-500/50"
+                className="flex items-center justify-center space-x-2 px-8 py-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition-all duration-300 border border-stone-200"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -84,7 +84,7 @@ export default function NotFound() {
 
         {/* Quick Links */}
         <div className="animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
-          <p className="text-theme-tertiary text-sm mb-4">Quick Links:</p>
+          <p className="text-stone-400 text-sm mb-4">Quick Links:</p>
           <div className="flex flex-wrap justify-center gap-3">
             {[
               { label: 'Dashboard', path: '/', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -95,7 +95,7 @@ export default function NotFound() {
               <button
                 key={link.path}
                 onClick={() => router.push(link.path)}
-                className="flex items-center space-x-2 px-4 py-2 bg-theme-secondary hover:bg-stone-700/50 border border-blue-500/20 hover:border-blue-500/50 rounded-lg text-theme-secondary hover:text-blue-600 transition-all duration-200 text-sm"
+                className="flex items-center space-x-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-200 hover:border-emerald-500/50 rounded-lg text-stone-600 hover:text-emerald-600 transition-all duration-200 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
@@ -130,10 +130,10 @@ export default function NotFound() {
 
         @keyframes text-glow {
           0%, 100% {
-            text-shadow: 0 0 20px rgba(250, 204, 21, 0.5);
+            text-shadow: 0 0 20px rgba(5, 150, 105, 0.3);
           }
           50% {
-            text-shadow: 0 0 40px rgba(250, 204, 21, 0.8), 0 0 60px rgba(250, 204, 21, 0.5);
+            text-shadow: 0 0 40px rgba(5, 150, 105, 0.6), 0 0 60px rgba(5, 150, 105, 0.3);
           }
         }
 
@@ -166,4 +166,3 @@ export default function NotFound() {
     </div>
   )
 }
-

@@ -222,11 +222,11 @@ export default function TradingPnLAccountsPage() {
                   />
                 </div>
               ) : (
-                <ul className="divide-y divide-stone-800">
+                <ul className="divide-y divide-stone-200">
                   {sortedAccounts.map((acc) => {
                     const sym = currencySymbol(acc.currency)
                     return (
-                      <li key={acc.id} className="p-4 hover:bg-stone-800/30 transition-colors">
+                      <li key={acc.id} className="p-4 hover:bg-stone-50 transition-colors">
                         <button
                           type="button"
                           onClick={() => router.push(`/trading/trading_pnl/${acc.id}`)}

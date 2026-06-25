@@ -551,7 +551,7 @@ export default function ChatPage() {
               {/* Arc Reactor Icon */}
               <div className="relative group">
                 <div className="w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center animate-arc-reactor border-2 border-stone-200">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center animate-inner-glow">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center animate-inner-glow">
                     <span className="text-black font-bold text-2xl">⚡</span>
                   </div>
                 </div>

@@ -91,7 +91,7 @@ export default function GoldMarketInfo() {
 
   const marketSessions = [
     { name: 'Asian', time: '00:00 - 09:00 GMT', active: false, color: 'from-red-500 to-red-600' },
-    { name: 'European', time: '08:00 - 17:00 GMT', active: true, color: 'from-blue-500 to-blue-600' },
+    { name: 'European', time: '08:00 - 17:00 GMT', active: true, color: 'from-emerald-500 to-emerald-600' },
     { name: 'US', time: '13:00 - 22:00 GMT', active: true, color: 'from-green-500 to-green-600' },
   ]
 
@@ -552,7 +552,7 @@ export default function GoldMarketInfo() {
         </div>
 
         {/* Trading Tips */}
-        <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/30 border border-stone-200 rounded-2xl p-6  animate-slide-up-3">
+        <div className="bg-stone-50 border border-stone-200 rounded-2xl p-6 animate-slide-up-3">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-emerald-600 rounded-lg">
               <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">

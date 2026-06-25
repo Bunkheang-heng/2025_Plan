@@ -32,26 +32,26 @@ interface BusinessIdea {
 }
 
 const categories = [
-  { value: 'tech', label: 'Technology', icon: FaLaptop, color: 'from-blue-500 to-blue-500' },
-  { value: 'ecommerce', label: 'E-Commerce', icon: FaShoppingCart, color: 'from-blue-500 to-blue-500' },
-  { value: 'saas', label: 'SaaS', icon: FaCloud, color: 'from-blue-500 to-blue-500' },
+  { value: 'tech', label: 'Technology', icon: FaLaptop, color: 'from-emerald-500 to-emerald-500' },
+  { value: 'ecommerce', label: 'E-Commerce', icon: FaShoppingCart, color: 'from-emerald-500 to-emerald-500' },
+  { value: 'saas', label: 'SaaS', icon: FaCloud, color: 'from-emerald-500 to-emerald-500' },
   { value: 'mobile', label: 'Mobile App', icon: FaMobileAlt, color: 'from-green-500 to-green-500' },
-  { value: 'ai', label: 'AI/ML', icon: FaRobot, color: 'from-blue-500 to-blue-500' },
-  { value: 'fintech', label: 'FinTech', icon: FaDollarSign, color: 'from-blue-500 to-blue-500' },
+  { value: 'ai', label: 'AI/ML', icon: FaRobot, color: 'from-emerald-500 to-emerald-500' },
+  { value: 'fintech', label: 'FinTech', icon: FaDollarSign, color: 'from-emerald-500 to-emerald-500' },
   { value: 'health', label: 'Health', icon: FaHospital, color: 'from-red-500 to-red-500' },
-  { value: 'education', label: 'Education', icon: FaBook, color: 'from-blue-500 to-blue-500' },
+  { value: 'education', label: 'Education', icon: FaBook, color: 'from-emerald-500 to-emerald-500' },
   { value: 'other', label: 'Other', icon: FaLightbulb, color: 'from-stone-500 to-stone-500' }
 ]
 
 const ideaColors = [
-  'from-blue-400 to-blue-600',
-  'from-blue-400 to-blue-600',
-  'from-blue-400 to-blue-600',
+  'from-emerald-400 to-emerald-600',
+  'from-emerald-400 to-emerald-600',
+  'from-emerald-400 to-emerald-600',
   'from-green-400 to-green-600',
-  'from-blue-400 to-blue-600',
-  'from-blue-400 to-blue-600',
-  'from-blue-400 to-blue-600',
-  'from-blue-400 to-blue-600'
+  'from-emerald-400 to-emerald-600',
+  'from-emerald-400 to-emerald-600',
+  'from-emerald-400 to-emerald-600',
+  'from-emerald-400 to-emerald-600'
 ]
 
 // Memoized category lookup map

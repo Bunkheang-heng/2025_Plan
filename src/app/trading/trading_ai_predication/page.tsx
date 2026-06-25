@@ -46,7 +46,7 @@ export default function TradingAIPredication() {
     const t = payload?.prediction?.trend
     if (t === 'UP') return 'from-green-500 to-green-600'
     if (t === 'DOWN') return 'from-red-500 to-red-600'
-    return 'from-blue-500 to-blue-600'
+    return 'from-emerald-500 to-emerald-600'
   }, [payload?.prediction?.trend])
 
   const runAgain = async () => {

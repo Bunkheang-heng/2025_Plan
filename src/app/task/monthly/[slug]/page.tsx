@@ -259,7 +259,7 @@ export default function MonthlyPlanSlugPage() {
                       <select
                         value={plan.status}
                         onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                        className="px-3 py-2 border border-stone-200 rounded-lg text-stone-100 text-sm font-medium cursor-pointer bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="px-3 py-2 border border-stone-200 rounded-lg text-stone-700 text-sm font-medium cursor-pointer bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       >
                         <option value="Not Started" className="bg-white">Not Started</option>
                         <option value="Done" className="bg-white">Done</option>
@@ -268,7 +268,7 @@ export default function MonthlyPlanSlugPage() {
                       </select>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className={`font-semibold text-base ${plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-stone-400 line-through' : 'text-stone-100'}`}>
+                      <h4 className={`font-semibold text-base ${plan.status === 'Done' || plan.status === 'Missed' || plan.status === 'Failed' ? 'text-stone-400 line-through' : 'text-stone-800'}`}>
                         {plan.title}
                       </h4>
                       {plan.description && (

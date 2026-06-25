@@ -402,7 +402,7 @@ export default function DailyPlanDatePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-stone-200 mb-2">No tasks for this day</h3>
+                <h3 className="text-lg font-semibold text-stone-600 mb-2">No tasks for this day</h3>
                 <p className="text-stone-400 mb-4">Add a new task to get started</p>
                 <button
                   onClick={openAddModal}
@@ -473,7 +473,7 @@ export default function DailyPlanDatePage() {
                               <select
                                 value={plan.status}
                                 onChange={(e) => updatePlanStatus(plan.id, e.target.value)}
-                                className="px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-stone-100 text-sm font-medium cursor-pointer bg-stone-100"
+                                className="px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-stone-700 text-sm font-medium cursor-pointer bg-stone-100"
                               >
                                 <option value="Not Started" className="bg-white">Not Started</option>
                                 <option value="Done" className="bg-white">Done</option>

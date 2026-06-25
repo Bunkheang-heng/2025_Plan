@@ -47,10 +47,10 @@ type SetupEntry = {
 const SETUP_TYPES: { value: SetupType; label: string; icon: React.ReactNode; color: string }[] = [
   { value: 'long', label: 'Long', icon: <FaArrowUp />, color: 'from-green-500 to-green-600' },
   { value: 'short', label: 'Short', icon: <FaArrowDown />, color: 'from-red-500 to-red-600' },
-  { value: 'breakout', label: 'Breakout', icon: <FaRocket />, color: 'from-blue-500 to-blue-600' },
-  { value: 'reversal', label: 'Reversal', icon: <FaSyncAlt />, color: 'from-blue-500 to-blue-600' },
-  { value: 'scalp', label: 'Scalp', icon: <FaBolt />, color: 'from-blue-500 to-blue-600' },
-  { value: 'swing', label: 'Swing', icon: <FaWater />, color: 'from-blue-500 to-blue-600' },
+  { value: 'breakout', label: 'Breakout', icon: <FaRocket />, color: 'from-emerald-500 to-emerald-600' },
+  { value: 'reversal', label: 'Reversal', icon: <FaSyncAlt />, color: 'from-emerald-500 to-emerald-600' },
+  { value: 'scalp', label: 'Scalp', icon: <FaBolt />, color: 'from-emerald-500 to-emerald-600' },
+  { value: 'swing', label: 'Swing', icon: <FaWater />, color: 'from-emerald-500 to-emerald-600' },
   { value: 'other', label: 'Other', icon: <FaChartBar />, color: 'from-stone-500 to-stone-600' },
 ]
 
@@ -241,8 +241,8 @@ export default function SetupPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 lg:pt-28">
         {/* Hero Header */}
         <Card className="relative overflow-hidden !rounded-3xl !bg-white !border-stone-200 !p-8 mb-8">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-500/10 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
           
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">

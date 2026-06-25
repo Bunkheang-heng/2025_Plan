@@ -133,7 +133,7 @@ export default function SelfPunishmentDetailPage() {
         </div>
 
         <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-stone-200 p-6">
+          <div className="bg-stone-50 border-b border-stone-200 p-6">
             <div className="text-xs text-emerald-600/90 font-semibold mb-1">{dateLabel(entry.date)}</div>
             <h1 className="text-2xl lg:text-3xl font-bold text-stone-900">Self Punishment</h1>
             <p className="text-sm text-stone-400 mt-1">Created: {new Date(entry.createdAt).toLocaleString()}</p>

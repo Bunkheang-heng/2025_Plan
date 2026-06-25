@@ -332,7 +332,7 @@ export default function CoupleSavingPage() {
           <div className="mb-8 flex items-center justify-center gap-6 lg:gap-12 flex-wrap">
             {/* Bunkheang */}
             <div className="relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/30 to-blue-600/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/30 to-emerald-600/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative">
                 <div className="absolute -top-2 -left-2 w-6 h-6 bg-emerald-50 rounded-full blur-sm animate-pulse"></div>
                 <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-emerald-500/50  ring-4 ring-stone-200">
@@ -363,7 +363,7 @@ export default function CoupleSavingPage() {
 
             {/* Monika */}
             <div className="relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-blue-600/30 to-blue-500/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-2 bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative">
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500/20 rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.2s' }}></div>
                 <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-red-500/50 shadow-red-500/30 ring-4 ring-red-500/20">
@@ -408,7 +408,7 @@ export default function CoupleSavingPage() {
               label: 'This Month',
               value: `$${monthStats.totalMonthSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               icon: FaDollarSign,
-              gradient: 'from-blue-500 to-blue-600',
+              gradient: 'from-emerald-500 to-emerald-600',
               color: 'text-emerald-600',
               isMain: true
             },
@@ -416,21 +416,21 @@ export default function CoupleSavingPage() {
               label: 'Days Saved',
               value: monthStats.daysWithSavings.toString(),
               icon: FaChartLine,
-              gradient: 'from-blue-500 to-blue-600',
+              gradient: 'from-emerald-500 to-emerald-600',
               color: 'text-emerald-600'
             },
             {
               label: 'Best Day',
               value: `$${monthStats.bestDay.toFixed(0)}`,
               icon: FaDollarSign,
-              gradient: 'from-blue-500 to-blue-600',
+              gradient: 'from-emerald-500 to-emerald-600',
               color: 'text-emerald-600'
             },
             {
               label: 'Avg/Day',
               value: `$${monthStats.averagePerDay.toFixed(0)}`,
               icon: FaChartLine,
-              gradient: 'from-blue-500 to-blue-600',
+              gradient: 'from-emerald-500 to-emerald-600',
               color: 'text-emerald-600'
             }
           ].map((stat, index) => {

@@ -4,7 +4,7 @@ export const getPriorityStyle = (priority: string = 'medium') => {
     case 'high':
       return 'bg-red-50 text-red-700 border border-red-200'
     case 'medium':
-      return 'bg-blue-50 text-blue-700 border border-blue-200'
+      return 'bg-stone-50 text-stone-700 border border-stone-200'
     case 'low':
       return 'bg-green-50 text-green-700 border border-green-200'
     default:

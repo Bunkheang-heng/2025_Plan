@@ -223,7 +223,7 @@ function SelfPunishmentPageContent() {
         </div>
 
         <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500/20 to-blue-500/20 border-b border-stone-200 p-4">
+          <div className="bg-stone-50 border-b border-stone-200 p-4">
             <h2 className="text-lg font-bold text-stone-900">Entries</h2>
             <p className="text-sm text-stone-400">{state.entries.length} record(s)</p>
           </div>
