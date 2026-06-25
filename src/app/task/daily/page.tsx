@@ -204,115 +204,83 @@ export default function DailyPlans() {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse"></div>
-            Daily Mission Planning
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
-            <span>Daily Plans Calendar</span>
-            <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+    <div className="h-screen flex flex-col bg-[#fafaf9]">
+
+      {/* Compact header */}
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-white">
+        <h1 className="text-base font-bold text-stone-900">Daily Tasks</h1>
+        <div className="flex items-center gap-3">
+          <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-stone-100 rounded-lg transition-colors">
+            <svg className="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </h1>
-          <p className="text-xl text-stone-600 font-medium">
-            Click on a day to view and manage your daily tasks
-          </p>
-          {/* ...existing code... */}
-          <div className="flex items-center justify-center gap-4 mt-8 mb-4">
-            <button
-              onClick={() => changeMonth(-1)}
-              className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
-            >
-              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="text-2xl font-bold text-stone-900">{monthName}</h2>
-            <button
-              onClick={() => changeMonth(1)}
-              className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
-            >
-              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="p-6">
-            {/* Day Headers */}
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-emerald-600 font-bold text-sm py-2">
-                  {day}
-                </div>
-              ))}
-            </div>
-            
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-2">
-              {/* Empty cells for days before month starts */}
-              {Array.from({ length: startingDayOfWeek }).map((_, index) => (
-                <div key={`empty-${index}`} className="aspect-square" />
-              ))}
-
-              {/* Actual days */}
-              {Array.from({ length: daysInMonth }).map((_, index) => {
-                const day = index + 1
-                const dateStr = toDateStr(year, month, day)
-                const dayData = state.monthData[dateStr]
-                const isToday = dateStr === new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
-                const hasPlans = dayData && dayData.totalTasks > 0
-                const allCompleted = dayData && dayData.totalTasks > 0 && dayData.completedTasks === dayData.totalTasks
-
-                return (
-                  <button
-                    key={day}
-                    onClick={() => handleDateClick(day)}
-                    className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                      isToday 
-                        ? 'border-emerald-400 bg-emerald-50' 
-                        : hasPlans
-                        ? allCompleted
-                          ? 'border-green-300 bg-green-50 hover:bg-green-100'
-                          : 'border-emerald-500/50 bg-emerald-600/10 hover:bg-emerald-50'
-                        : 'border-stone-200 bg-stone-100 hover:bg-stone-100'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className={`text-sm font-bold mb-1 ${
-                        isToday ? 'text-emerald-600' : 'text-stone-600'
-                      }`}>
-                        {day}
-                      </div>
-                      {hasPlans && (
-                        <>
-                          <div className={`text-xs font-bold ${
-                            allCompleted ? 'text-green-600' : 'text-emerald-600'
-                          }`}>
-                            {dayData.completedTasks}/{dayData.totalTasks}
-              </div>
-                          {allCompleted && (
-                            <div className="mt-1">
-                              <svg className="w-3 h-3 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-              </div>
-                          )}
-                        </>
-                      )}
-              </div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+          </button>
+          <span className="text-sm font-semibold text-stone-900 min-w-[140px] text-center">{monthName}</span>
+          <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-stone-100 rounded-lg transition-colors">
+            <svg className="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Calendar — fills remaining height */}
+      <div className="flex-1 flex flex-col p-4 min-h-0">
+        {/* Day headers */}
+        <div className="grid grid-cols-7 mb-2">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="text-center text-xs font-semibold text-stone-400 uppercase tracking-wide py-2">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="flex-1 grid grid-cols-7 gap-1.5" style={{ gridAutoRows: '1fr' }}>
+          {Array.from({ length: startingDayOfWeek }).map((_, i) => (
+            <div key={`empty-${i}`} />
+          ))}
+          {Array.from({ length: daysInMonth }).map((_, index) => {
+            const day = index + 1
+            const dateStr = toDateStr(year, month, day)
+            const dayData = state.monthData[dateStr]
+            const isToday = dateStr === new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
+            const hasPlans = dayData && dayData.totalTasks > 0
+            const allCompleted = dayData && dayData.totalTasks > 0 && dayData.completedTasks === dayData.totalTasks
+
+            return (
+              <button
+                key={day}
+                onClick={() => handleDateClick(day)}
+                className={`flex flex-col items-center justify-center rounded-xl border transition-colors duration-150 cursor-pointer ${
+                  isToday
+                    ? 'border-emerald-400 bg-emerald-50'
+                    : hasPlans
+                    ? allCompleted
+                      ? 'border-green-300 bg-green-50 hover:bg-green-100'
+                      : 'border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50'
+                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                }`}
+              >
+                <span className={`text-sm font-bold ${isToday ? 'text-emerald-600' : 'text-stone-700'}`}>
+                  {day}
+                </span>
+                {hasPlans && (
+                  <span className={`text-xs mt-0.5 font-medium ${allCompleted ? 'text-green-600' : 'text-emerald-600'}`}>
+                    {dayData.completedTasks}/{dayData.totalTasks}
+                  </span>
+                )}
+                {allCompleted && (
+                  <svg className="w-3 h-3 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
     </div>
   )
 } 

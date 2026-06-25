@@ -1,0 +1,212 @@
+<h2>Pick your layout</h2>
+<p class="subtitle">All three use your chosen Emerald accent. Pick the overall structure that feels best.</p>
+
+<div class="cards" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+  <!-- Option A: Clean Minimal (icon-only sidebar) -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc; padding:16px; border-bottom:1px solid #d1fae5;">
+      <div style="display:flex; gap:8px; height:210px;">
+        <!-- Icon-only sidebar -->
+        <div style="width:44px; background:#fff; border:1px solid #d1fae5; border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div style="width:28px; height:28px; background:#059669; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+            <div style="width:14px; height:14px; background:#fff; border-radius:3px; opacity:0.9;"></div>
+          </div>
+          <div style="height:1px; background:#d1fae5; width:80%; margin:2px 0;"></div>
+          <div style="width:28px; height:28px; background:#ecfdf5; border-radius:7px;"></div>
+          <div style="width:28px; height:28px; background:#f8fafc; border-radius:7px;"></div>
+          <div style="width:28px; height:28px; background:#f8fafc; border-radius:7px;"></div>
+          <div style="width:28px; height:28px; background:#f8fafc; border-radius:7px;"></div>
+          <div style="margin-top:auto; width:28px; height:28px; background:#f8fafc; border-radius:7px;"></div>
+        </div>
+        <!-- Main content -->
+        <div style="flex:1; display:flex; flex-direction:column; gap:7px;">
+          <div style="background:#fff; border:1px solid #d1fae5; border-radius:8px; padding:10px;">
+            <div style="font-size:8px; color:#6b7280; margin-bottom:2px;">Good Morning</div>
+            <div style="font-size:13px; font-weight:700; color:#064e3b;">Dashboard</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <div style="background:#fff; border:1px solid #d1fae5; border-radius:8px; padding:8px;">
+              <div style="font-size:7px; color:#6b7280;">Daily Tasks</div>
+              <div style="font-size:16px; font-weight:700; color:#059669;">4/6</div>
+            </div>
+            <div style="background:#fff; border:1px solid #d1fae5; border-radius:8px; padding:8px;">
+              <div style="font-size:7px; color:#6b7280;">This Week</div>
+              <div style="font-size:16px; font-weight:700; color:#064e3b;">2/8</div>
+            </div>
+          </div>
+          <div style="background:#fff; border:1px solid #d1fae5; border-radius:8px; padding:8px; flex:1;">
+            <div style="font-size:7px; color:#6b7280; margin-bottom:6px;">Quick Access</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
+              <div style="background:#ecfdf5; border-radius:5px; padding:5px; text-align:center;">
+                <div style="font-size:6px; color:#059669; font-weight:600;">Daily</div>
+              </div>
+              <div style="background:#f8fafc; border-radius:5px; padding:5px; text-align:center;">
+                <div style="font-size:6px; color:#6b7280;">Trading</div>
+              </div>
+              <div style="background:#f8fafc; border-radius:5px; padding:5px; text-align:center;">
+                <div style="font-size:6px; color:#6b7280;">Chat</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#059669; border-radius:7px; padding:7px; text-align:center;">
+            <div style="font-size:8px; color:#fff; font-weight:600;">P&L Today: <span style="color:#a7f3d0;">+$42.50</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Compact (Icon sidebar)</h3>
+      <p>Narrow icon-only sidebar saves space. More room for content. You hover/click icons to see labels. Best for focus-heavy workflows. Clean like Figma or VS Code.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Full sidebar, warm tones -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f0fdf4; padding:16px; border-bottom:1px solid #bbf7d0;">
+      <div style="display:flex; gap:8px; height:210px;">
+        <!-- Full text sidebar -->
+        <div style="width:95px; background:#fff; border:1px solid #bbf7d0; border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:3px;">
+          <div style="display:flex; align-items:center; gap:5px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #d1fae5;">
+            <div style="width:20px; height:20px; background:#059669; border-radius:5px;"></div>
+            <div style="font-size:7px; font-weight:700; color:#059669;">Super Asst.</div>
+          </div>
+          <div style="background:#059669; border-radius:5px; padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:#fff; border-radius:2px; opacity:0.8;"></div>
+            <div style="font-size:7px; color:#fff; font-weight:600;">Dashboard</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:#d1fae5; border-radius:2px;"></div>
+            <div style="font-size:7px; color:#374151;">Tasks</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:#d1fae5; border-radius:2px;"></div>
+            <div style="font-size:7px; color:#374151;">Trading</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:#d1fae5; border-radius:2px;"></div>
+            <div style="font-size:7px; color:#374151;">Saving</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:#d1fae5; border-radius:2px;"></div>
+            <div style="font-size:7px; color:#374151;">AI Chat</div>
+          </div>
+          <div style="margin-top:auto; padding:4px 7px;">
+            <div style="font-size:7px; color:#9ca3af;">Sign Out</div>
+          </div>
+        </div>
+        <!-- Main -->
+        <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+          <div style="background:#fff; border:1px solid #bbf7d0; border-radius:8px; padding:9px;">
+            <div style="font-size:8px; color:#6b7280;">Wednesday · June 24</div>
+            <div style="font-size:12px; font-weight:700; color:#064e3b;">Good Morning, Commander</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
+            <div style="background:#fff; border:1px solid #bbf7d0; border-radius:7px; padding:7px;">
+              <div style="font-size:7px; color:#6b7280;">Daily</div>
+              <div style="font-size:14px; font-weight:700; color:#059669;">4/6</div>
+            </div>
+            <div style="background:#fff; border:1px solid #bbf7d0; border-radius:7px; padding:7px;">
+              <div style="font-size:7px; color:#6b7280;">Weekly</div>
+              <div style="font-size:14px; font-weight:700; color:#064e3b;">2/8</div>
+            </div>
+            <div style="background:#fff; border:1px solid #bbf7d0; border-radius:7px; padding:7px;">
+              <div style="font-size:7px; color:#6b7280;">P&L</div>
+              <div style="font-size:11px; font-weight:700; color:#059669;">+$42.50</div>
+            </div>
+          </div>
+          <div style="background:#fff; border:1px solid #bbf7d0; border-radius:7px; padding:8px; flex:1;">
+            <div style="font-size:7px; color:#6b7280; font-weight:600; margin-bottom:5px;">UPCOMING TASKS</div>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <div style="display:flex; align-items:center; gap:4px; padding:3px 0; border-bottom:1px solid #f0fdf4;">
+                <div style="width:6px; height:6px; border-radius:50%; border:1px solid #059669;"></div>
+                <div style="font-size:7px; color:#374151;">Morning workout</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:4px; padding:3px 0;">
+                <div style="width:6px; height:6px; border-radius:50%; border:1px solid #d1fae5;"></div>
+                <div style="font-size:7px; color:#374151;">Review trading plan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Full Sidebar (current style)</h3>
+      <p>Wide sidebar with icon + text labels. Easy to navigate at a glance. Familiar, comfortable. Similar to your current layout but fully cleaned up and consistent.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Dark sidebar -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f1f5f9; padding:16px; border-bottom:1px solid #d1fae5;">
+      <div style="display:flex; gap:8px; height:210px;">
+        <!-- Dark sidebar -->
+        <div style="width:95px; background:#064e3b; border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:3px;">
+          <div style="display:flex; align-items:center; gap:5px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1);">
+            <div style="width:20px; height:20px; background:#059669; border-radius:5px;"></div>
+            <div style="font-size:7px; font-weight:700; color:#a7f3d0;">Super Asst.</div>
+          </div>
+          <div style="background:#059669; border-radius:5px; padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:#fff; border-radius:2px; opacity:0.9;"></div>
+            <div style="font-size:7px; color:#fff; font-weight:600;">Dashboard</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:rgba(255,255,255,0.15); border-radius:2px;"></div>
+            <div style="font-size:7px; color:#6ee7b7;">Tasks</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:rgba(255,255,255,0.15); border-radius:2px;"></div>
+            <div style="font-size:7px; color:#6ee7b7;">Trading</div>
+          </div>
+          <div style="padding:4px 7px; display:flex; align-items:center; gap:4px;">
+            <div style="width:8px; height:8px; background:rgba(255,255,255,0.15); border-radius:2px;"></div>
+            <div style="font-size:7px; color:#6ee7b7;">AI Chat</div>
+          </div>
+          <div style="margin-top:auto; padding:4px 7px;">
+            <div style="font-size:7px; color:#34d399;">Sign Out</div>
+          </div>
+        </div>
+        <!-- Main -->
+        <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+          <div style="background:#fff; border:1px solid #d1fae5; border-radius:8px; padding:9px;">
+            <div style="font-size:8px; color:#6b7280;">Wednesday · June 24</div>
+            <div style="font-size:12px; font-weight:700; color:#064e3b;">Good Morning, Commander</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
+            <div style="background:#fff; border:1px solid #d1fae5; border-radius:7px; padding:7px;">
+              <div style="font-size:7px; color:#6b7280;">Daily</div>
+              <div style="font-size:14px; font-weight:700; color:#059669;">4/6</div>
+            </div>
+            <div style="background:#fff; border:1px solid #d1fae5; border-radius:7px; padding:7px;">
+              <div style="font-size:7px; color:#6b7280;">Weekly</div>
+              <div style="font-size:14px; font-weight:700; color:#064e3b;">2/8</div>
+            </div>
+            <div style="background:#fff; border:1px solid #d1fae5; border-radius:7px; padding:7px;">
+              <div style="font-size:7px; color:#6b7280;">P&L</div>
+              <div style="font-size:11px; font-weight:700; color:#059669;">+$42.50</div>
+            </div>
+          </div>
+          <div style="background:#fff; border:1px solid #d1fae5; border-radius:7px; padding:8px; flex:1;">
+            <div style="font-size:7px; color:#6b7280; font-weight:600; margin-bottom:5px;">UPCOMING TASKS</div>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <div style="display:flex; align-items:center; gap:4px; padding:3px 0; border-bottom:1px solid #f0fdf4;">
+                <div style="width:6px; height:6px; border-radius:50%; border:1px solid #059669;"></div>
+                <div style="font-size:7px; color:#374151;">Morning workout</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:4px; padding:3px 0;">
+                <div style="width:6px; height:6px; border-radius:50%; border:1px solid #d1fae5;"></div>
+                <div style="font-size:7px; color:#374151;">Review trading plan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Dark Sidebar + Light Content</h3>
+      <p>Deep forest green sidebar, crisp white content area. High contrast navigation, premium feel. The emerald accent really pops against the dark background. Very distinctive.</p>
+    </div>
+  </div>
+
+</div>

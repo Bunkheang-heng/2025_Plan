@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Assistent — Full Design Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0ede8; color: #1c1917; }
+
+  /* Design tokens */
+  :root {
+    --bg: #fafaf9;
+    --card: #ffffff;
+    --border: #e7e5e4;
+    --border-light: #f0ede8;
+    --text-primary: #1c1917;
+    --text-secondary: #78716c;
+    --text-muted: #a8a29e;
+    --accent: #059669;
+    --accent-hover: #047857;
+    --accent-light: #ecfdf5;
+    --accent-border: #d1fae5;
+    --profit: #059669;
+    --loss: #dc2626;
+    --sidebar-w: 56px;
+  }
+
+  .preview-label {
+    font-size: 11px; font-weight: 700; color: #6b7280; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 10px 16px 6px; background: #e5e7eb;
+    border-bottom: 1px solid #d1d5db;
+  }
+  .preview-wrap {
+    background: #f0ede8; padding: 20px; display: flex; flex-direction: column; gap: 24px;
+  }
+
+  /* ---- SHARED LAYOUT SHELL ---- */
+  .app-shell {
+    display: flex; height: 340px; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--bg); box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+
+  /* ---- SIDEBAR ---- */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--card); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 2px; flex-shrink: 0;
+  }
+  .sidebar-logo {
+    width: 34px; height: 34px; background: var(--accent); border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+  }
+  .sidebar-logo svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .sidebar-divider { height: 1px; background: var(--border); width: 70%; margin: 4px 0; }
+  .nav-item {
+    width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .nav-item svg { width: 18px; height: 18px; stroke: var(--text-muted); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item.active { background: var(--accent); }
+  .nav-item.active svg { stroke: white; }
+  .nav-item:not(.active):hover { background: var(--accent-light); }
+  .nav-item:not(.active):hover svg { stroke: var(--accent); }
+  .sidebar-spacer { flex: 1; }
+  .nav-item.logout svg { stroke: #a8a29e; }
+
+  /* ---- PAGE CONTENT ---- */
+  .page { flex: 1; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+  .page-inner { padding: 20px; overflow: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  }
+  .card.no-pad { padding: 0; }
+
+  /* ---- TYPOGRAPHY ---- */
+  .page-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .page-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .green { color: var(--profit); }
+  .red { color: var(--loss); }
+  .primary { color: var(--text-primary); }
+
+  /* ---- BADGE ---- */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .badge.green { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
+  .badge.gray { background: #f5f5f4; color: var(--text-secondary); border: 1px solid var(--border); }
+  .badge.red { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* ---- PROGRESS BAR ---- */
+  .progress-track { height: 5px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 5px; background: var(--accent); border-radius: 4px; }
+
+  /* ---- BUTTON ---- */
+  .btn-primary { background: var(--accent); color: white; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; }
+
+  /* ---- INPUT ---- */
+  .input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px; color: var(--text-primary); outline: none; }
+  .input:focus { border-color: var(--accent); }
+  .input-label { font-size: 10px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ---- TASK ITEM ---- */
+  .task-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border-light); }
+  .task-item:last-child { border-bottom: none; }
+  .task-check { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; }
+  .task-check.done { background: var(--accent); border-color: var(--accent); }
+  .task-title { font-size: 12px; color: var(--text-primary); flex: 1; }
+  .task-title.done { color: var(--text-muted); text-decoration: line-through; }
+  .priority-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .priority-dot.high { background: #dc2626; }
+  .priority-dot.med { background: #d97706; }
+  .priority-dot.low { background: var(--accent); }
+
+  /* STAT ROW */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+
+  /* SECTION TABS */
+  .tabs { display: flex; gap: 2px; background: var(--bg); border-radius: 8px; padding: 3px; border: 1px solid var(--border); width: fit-content; margin-bottom: 12px; }
+  .tab { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+  .tab.active { background: var(--card); color: var(--text-primary); font-weight: 600; border: 1px solid var(--border); }
+
+  /* TOOLTIP */
+  .tooltip-demo { position: relative; display: inline-block; }
+  .tooltip { position: absolute; left: 44px; top: 50%; transform: translateY(-50%); background: var(--text-primary); color: white; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 10; }
+  .tooltip::before { content: ''; position: absolute; right: 100%; top: 50%; transform: translateY(-50%); border: 4px solid transparent; border-right-color: var(--text-primary); }
+
+  /* LOGIN */
+  .login-wrap { display: flex; align-items: center; justify-content: center; height: 340px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); }
+  .login-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 260px; }
+
+  /* NAV TOOLTIP DEMO */
+  .nav-demo { display: flex; gap: 20px; align-items: flex-start; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .nav-demo-sidebar { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .nav-demo-notes { font-size: 11px; color: var(--text-secondary); flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .nav-demo-notes strong { color: var(--text-primary); font-size: 12px; }
+  .color-chip { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+
+  /* Selection overlay */
+  .selection-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1917; color: white; padding: 12px 20px; font-size: 13px; text-align: center; font-weight: 500; z-index: 100; }
+  .sel-btn { background: var(--accent); color: white; border: none; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: 12px; }
+</style>
+</head>
+<body>
+
+<div class="preview-wrap">
+
+  <div style="background: #1c1917; color: #a7f3d0; padding: 12px 20px; border-radius: 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: between;">
+    <span>🎨 Design Preview — Emerald · Compact Sidebar · Warm White — <span style="color:#6ee7b7;">Review all 4 screens below, then reply in terminal to approve or request changes.</span></span>
+  </div>
+
+  <!-- SCREEN 1: DASHBOARD -->
+  <div>
+    <div class="preview-label">Screen 1 — Dashboard (Home)</div>
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div class="sidebar-divider"></div>
+        <!-- Dashboard active -->
+        <div class="nav-item active" title="Dashboard">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <!-- Tasks -->
+        <div class="nav-item" title="Tasks">
+          <svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <!-- Trading -->
+        <div class="nav-item" title="Trading">
+          <svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <!-- Saving -->
+        <div class="nav-item" title="Saving">
+          <svg viewBox="0 0 24 24"><path d="M12 21C12 21 4 13.5 4 8.7A5 5 0 0112 4a5 5 0 018 4.7C20 13.5 12 21 12 21z"/></svg>
+        </div>
+        <!-- Chat -->
+        <div class="nav-item" title="AI Chat">
+          <svg viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.97 9.97 0 01-4-.8L3 20l1.2-4.2A7.97 7.97 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        </div>
+        <!-- Projects -->
+        <div class="nav-item" title="Projects">
+          <svg viewBox="0 0 24 24"><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3 7h18a1 1 0 011 1v11a2 2 0 01-2 2H4a2 2 0 01-2-2V8a1 1 0 011-1z"/></svg>
+        </div>
+        <!-- Settings -->
+        <div class="nav-item" title="Settings">
+          <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="sidebar-spacer"></div>
+        <div class="nav-item logout" title="Sign Out">
+          <svg viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </div>
+      </div>
+      <!-- Page content -->
+      <div class="page">
+        <div class="page-inner">
+          <!-- Header -->
+          <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div>
+              <div class="page-title">Good Morning, Commander</div>
+              <div class="page-subtitle">Wednesday, June 24 · 08:42 AM</div>
+            </div>
+            <div class="badge green"><span class="badge-dot"></span>System Online</div>
+          </div>
+          <!-- Stats -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Overall Progress</div>
+              <div class="stat-value primary">65%</div>
+              <div class="progress-track" style="margin-top:8px;"><div class="progress-fill" style="width:65%;"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Daily Tasks</div>
+              <div class="stat-value green">4/6</div>
+              <div class="progress-track" style="margin-top:8px;"><div class="progress-fill" style="width:66%;"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">P&L Today</div>
+              <div class="stat-value green">+$42.50</div>
+              <div style="margin-top:4px; font-size:10px; color: var(--text-muted);">Win rate 72%</div>
+            </div>
+          </div>
+          <!-- Quick access -->
+          <div>
+            <div class="section-label">Quick Access</div>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+              <div class="card" style="padding:10px 12px; cursor:pointer; border-color: var(--accent-border); background: var(--accent-light);">
+                <div style="font-size:11px; font-weight:600; color: var(--accent);">Daily Tasks →</div>
+                <div style="font-size:10px; color: var(--accent); opacity:0.7; margin-top:2px;">4 remaining</div>
+              </div>
+              <div class="card" style="padding:10px 12px; cursor:pointer;">
+                <div style="font-size:11px; font-weight:600; color: var(--text-primary);">Trading P&L →</div>
+                <div style="font-size:10px; color: var(--text-muted); margin-top:2px;">View accounts</div>
+              </div>
+              <div class="card" style="padding:10px 12px; cursor:pointer;">
+                <div style="font-size:11px; font-weight:600; color: var(--text-primary);">AI Chat →</div>
+                <div style="font-size:10px; color: var(--text-muted); margin-top:2px;">Chat with Super Asst.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: TASK PAGE -->
+  <div>
+    <div class="preview-label">Screen 2 — Daily Tasks Page</div>
+    <div class="app-shell">
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 21C12 21 4 13.5 4 8.7A5 5 0 0112 4a5 5 0 018 4.7C20 13.5 12 21 12 21z"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.97 9.97 0 01-4-.8L3 20l1.2-4.2A7.97 7.97 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3 7h18a1 1 0 011 1v11a2 2 0 01-2 2H4a2 2 0 01-2-2V8a1 1 0 011-1z"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="sidebar-spacer"></div>
+        <div class="nav-item logout"><svg viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
+      </div>
+      <div class="page">
+        <div class="page-inner">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div class="page-title">Daily Tasks</div>
+              <div class="page-subtitle">Tuesday, June 24, 2025</div>
+            </div>
+            <button class="btn-primary">+ Add Task</button>
+          </div>
+          <div class="tabs">
+            <div class="tab active">Today</div>
+            <div class="tab">Calendar</div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+            <div class="section-label" style="margin:0;">Tasks — 4 of 6 done</div>
+            <div class="progress-track" style="width:80px;"><div class="progress-fill" style="width:66%;"></div></div>
+          </div>
+          <div class="card no-pad" style="flex:1; overflow:hidden;">
+            <div class="task-item">
+              <div class="task-check done"></div>
+              <div class="task-title done">Morning workout</div>
+              <div class="priority-dot low"></div>
+            </div>
+            <div class="task-item">
+              <div class="task-check done"></div>
+              <div class="task-title done">Review gold market open</div>
+              <div class="priority-dot high"></div>
+            </div>
+            <div class="task-item">
+              <div class="task-check done"></div>
+              <div class="task-title done">Read 30 minutes</div>
+              <div class="priority-dot med"></div>
+            </div>
+            <div class="task-item">
+              <div class="task-check done"></div>
+              <div class="task-title done">Update trading journal</div>
+              <div class="priority-dot low"></div>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <div class="task-title">Review weekly plan</div>
+              <div class="priority-dot med"></div>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <div class="task-title">Evening reflection</div>
+              <div class="priority-dot low"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: LOGIN -->
+  <div>
+    <div class="preview-label">Screen 3 — Login Page</div>
+    <div class="login-wrap">
+      <div class="login-card">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="width:44px; height:44px; background: var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; margin: 0 auto 12px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div style="font-size:18px; font-weight:700; color: var(--text-primary);">Super Assistent</div>
+          <div style="font-size:12px; color: var(--text-secondary); margin-top:3px;">Sign in to continue</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <div class="input-label">Email</div>
+            <input class="input" placeholder="your@email.com" style="pointer-events:none;">
+          </div>
+          <div>
+            <div class="input-label">Password</div>
+            <input type="password" class="input" placeholder="••••••••" style="pointer-events:none;">
+          </div>
+          <button class="btn-primary" style="width:100%; padding:9px; font-size:13px; border-radius:9px; margin-top:4px;">Sign In</button>
+        </div>
+        <div style="text-align:center; margin-top:14px; font-size:10px; color: var(--text-muted);">Contact admin to create an account</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: DESIGN TOKENS SUMMARY -->
+  <div>
+    <div class="preview-label">Design System Summary</div>
+    <div class="card" style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+      <div>
+        <div class="section-label">Colors</div>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:11px;">
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#059669;border-radius:4px;"></div><span><b>Accent</b> #059669 emerald-600</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#fafaf9;border:1px solid #e7e5e4;border-radius:4px;"></div><span><b>Page bg</b> #fafaf9 warm white</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#ffffff;border:1px solid #e7e5e4;border-radius:4px;"></div><span><b>Card</b> #ffffff white</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#e7e5e4;border-radius:4px;"></div><span><b>Border</b> #e7e5e4 stone-200</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#1c1917;border-radius:4px;"></div><span><b>Text</b> #1c1917 stone-900</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#16a34a;border-radius:4px;"></div><span><b>Profit</b> #16a34a green-600</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><div style="width:18px;height:18px;background:#dc2626;border-radius:4px;"></div><span><b>Loss</b> #dc2626 red-600</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">Components</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-primary" style="width:fit-content;">Primary button</button>
+          <button class="btn-ghost" style="width:fit-content;">Ghost button</button>
+          <div style="display:flex; gap:6px;">
+            <span class="badge green"><span class="badge-dot"></span>Active</span>
+            <span class="badge gray">Neutral</span>
+            <span class="badge red">Loss</span>
+          </div>
+          <input class="input" placeholder="Text input field" style="pointer-events:none;">
+          <div class="progress-track" style="width:140px;"><div class="progress-fill" style="width:70%;"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">Sidebar Behaviour</div>
+        <div style="font-size:11px; color: var(--text-secondary); line-height:1.6;">
+          <p>• <b>56px wide</b> — icons only</p>
+          <p>• <b>Tooltip on hover</b> — shows page name</p>
+          <p>• <b>Active icon</b> — emerald fill, white icon</p>
+          <p>• <b>Hover</b> — emerald-50 bg, emerald icon</p>
+          <p>• <b>No shadow</b> — just a right border</p>
+          <p style="margin-top:8px;">• <b>All pages</b> — same bg, card, border tokens</p>
+          <p>• <b>No gradients</b>, no glow effects</p>
+          <p>• <b>Rounded-xl</b> (12px) cards everywhere</p>
+          <p>• <b>shadow-sm only</b> on login card</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="selection-bar">
+  This is the full design proposal. Reply in terminal — <b>approve</b> to build it, or describe any changes you want.
+</div>
+
+</body>
+</html>

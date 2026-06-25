@@ -1,6 +1,5 @@
 'use client'
 import React from 'react'
-import { Icon, Badge } from '../index'
 
 interface ChatMessageProps {
   message: string
@@ -86,135 +85,58 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   planReferences = []
 }) => {
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 px-4 group`}>
-      <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start ${isUser ? 'space-x-reverse space-x-3' : 'space-x-3'} max-w-3xl w-full`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`flex items-end gap-2.5 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+
         {/* Avatar */}
-        <div className={`flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all duration-300 relative overflow-hidden ${
-          isUser 
-            ? 'bg-emerald-600 border-stone-200 text-white hover:scale-105 hover:rotate-3'
-            : 'bg-white border-stone-200 text-stone-900 hover:scale-105 hover:-rotate-3'
+        <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
+          isUser ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-600 border border-stone-200'
         }`}>
           {isUser ? (
-            <div className="relative z-10">
-              <Icon name="user" size="md" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-            </div>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           ) : (
-            <div className="relative z-10">
-              <span className="text-2xl font-black">J</span>
-              {/* Arc reactor mini glow */}
-              <div className="absolute inset-0 rounded-full bg-emerald-300 animate-pulse opacity-50 blur-sm"></div>
-            </div>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           )}
         </div>
 
-        {/* Message Content */}
-        <div className={`flex-1 ${isUser ? '' : ''}`}>
-          <div className={`relative rounded-2xl px-6 py-5 border-2 backdrop-blur-sm transition-all duration-300 group-hover:scale-[1.01] ${
-            isUser 
-              ? 'bg-emerald-600 border-stone-200 text-white overflow-hidden'
-              : 'bg-white border-stone-200 text-stone-900 hover:border-emerald-500'
-          }`}>
-            {/* Animated gradient overlay for user messages */}
-            {isUser && (
-              <div className="absolute inset-0 bg-white/10 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            )}
-            
-            {/* Scan line effect for AI messages */}
-            {!isUser && (
-              <div className="absolute inset-0 bg-stone-50 h-full transform -translate-y-full group-hover:translate-y-full transition-transform duration-1000 ease-in-out"></div>
-            )}
-            {isLoading ? (
-              <div className="flex items-center space-x-4 relative z-10">
-                <div className="flex space-x-1.5">
-                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                </div>
-                <span className="text-sm text-emerald-600 font-semibold animate-pulse flex items-center space-x-2">
-                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>Super Assistent is analyzing...</span>
-                </span>
+        {/* Bubble */}
+        <div className={`rounded-2xl px-4 py-3 ${
+          isUser
+            ? 'bg-emerald-600 text-white rounded-br-sm'
+            : 'bg-white border border-stone-200 text-stone-900 rounded-bl-sm'
+        }`}>
+          {isLoading ? (
+            <div className="flex items-center gap-2 py-0.5">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
               </div>
-            ) : (
-              <div className="space-y-4 relative z-10">
-                <div className={`leading-relaxed ${isUser ? 'font-medium' : ''}`}>
-                  {isUser ? (
-                    <div className="space-y-3">
-                      <p className="text-white text-base font-medium tracking-wide leading-relaxed">
-                        {message}
-                      </p>
-                      <div className="flex items-center justify-end space-x-1 text-xs text-white/80">
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        <span className="ml-1 font-medium">Sent</span>
-                      </div>
-                    </div>
-                  ) : (
-                    formatMessage(message)
-                  )}
+              <span className="text-xs text-stone-400">Thinking...</span>
+            </div>
+          ) : (
+            <div>
+              {isUser ? (
+                <p className="text-sm leading-relaxed">{message}</p>
+              ) : (
+                formatMessage(message)
+              )}
+
+              {/* Plan References */}
+              {planReferences.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-stone-100 flex flex-wrap gap-1.5">
+                  {planReferences.map((plan) => (
+                    <span
+                      key={plan.id}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-xs font-medium"
+                    >
+                      {plan.type === 'daily' ? 'Daily' : plan.type === 'weekly' ? 'Weekly' : 'Monthly'} · {plan.title}
+                    </span>
+                  ))}
                 </div>
-                
-                {/* Plan References */}
-                {planReferences.length > 0 && (
-                  <div className="space-y-3 pt-3 border-t border-stone-200">
-                    <p className="text-xs text-emerald-600 font-bold flex items-center space-x-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>REFERENCED PLANS:</span>
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {planReferences.map((plan) => (
-                        <Badge 
-                          key={plan.id}
-                          variant="default"
-                          size="sm"
-                          className={`transition-all duration-200 hover:scale-105 cursor-pointer ${
-                            isUser
-                              ? 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
-                              : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
-                          }`}
-                        >
-                          {plan.type === 'daily' && '📅'} 
-                          {plan.type === 'weekly' && '📊'} 
-                          {plan.type === 'monthly' && '🎯'} 
-                          {plan.title}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          {/* Timestamp */}
-          <div className={`mt-3 text-xs font-medium transition-all duration-300 opacity-60 group-hover:opacity-100 ${isUser ? 'text-right text-emerald-600' : 'text-left text-emerald-600'}`}>
-            <span className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-all duration-200 ${
-              isUser
-                ? 'bg-stone-100 text-stone-600 border-stone-200'
-                : 'bg-stone-100 text-stone-600 border-stone-200'
-            }`}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="font-semibold">
-                {timestamp.toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  timeZone: 'Asia/Phnom_Penh'
-                })}
-              </span>
-            </span>
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

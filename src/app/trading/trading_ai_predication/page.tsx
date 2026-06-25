@@ -42,12 +42,24 @@ export default function TradingAIPredication() {
     }
   }, [])
 
-  const trendColor = useMemo(() => {
+  const trendStyle = useMemo(() => {
     const t = payload?.prediction?.trend
-    if (t === 'UP') return 'from-green-500 to-green-600'
-    if (t === 'DOWN') return 'from-red-500 to-red-600'
-    return 'from-emerald-500 to-emerald-600'
+    if (t === 'UP') return { bg: 'bg-green-600', text: 'text-white', label: 'BULLISH' }
+    if (t === 'DOWN') return { bg: 'bg-red-600', text: 'text-white', label: 'BEARISH' }
+    return { bg: 'bg-stone-500', text: 'text-white', label: 'SIDEWAYS' }
   }, [payload?.prediction?.trend])
+
+  const ListItems = ({ items, dot }: { items: string[]; dot: string }) =>
+    items?.length ? (
+      <ul className="space-y-2">
+        {items.map((x, i) => (
+          <li key={i} className="flex gap-2 text-sm text-stone-600">
+            <span className={`${dot} mt-0.5 flex-shrink-0`}>•</span>
+            <span>{x}</span>
+          </li>
+        ))}
+      </ul>
+    ) : <p className="text-sm text-stone-400">None.</p>
 
   const runAgain = async () => {
     setIsRunning(true)
@@ -92,120 +104,101 @@ export default function TradingAIPredication() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12 py-8">
+      <div className="max-w-4xl mx-auto px-5 py-8 space-y-5">
+
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
-            AI Forecast
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-stone-900">Gold Trend Prediction</h1>
+            <p className="text-sm text-stone-400 mt-0.5">Today's AI forecast</p>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-3">
-            Gold Trend Prediction (Today)
-          </h1>
-          <p className="text-stone-600">
-            Based on the latest news from your News page.
-          </p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={runAgain}
+            disabled={isRunning}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+          >
+            {isRunning ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Run Analysis
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {error}
+          </div>
+        )}
+
+        {!payload ? (
+          <div className="bg-white border border-stone-200 rounded-xl px-5 py-16 text-center">
+            <p className="text-stone-900 font-semibold mb-1">No prediction yet</p>
+            <p className="text-sm text-stone-400 mb-5">Click "Run Analysis" to generate today's gold trend prediction.</p>
             <button
               onClick={runAgain}
               disabled={isRunning}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all disabled:opacity-50"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
             >
-              {isRunning ? 'Analyzing...' : 'Analyze Latest News Again'}
+              {isRunning ? 'Analyzing...' : 'Run Analysis'}
             </button>
-            <button
-              onClick={() => router.push('/trading/trading_news')}
-              className="px-6 py-3 bg-white/60 border border-stone-200 text-stone-900 font-bold rounded-xl hover:bg-stone-100/60 transition-all"
-            >
-              Back to News
-            </button>
-          </div>
-          {error && (
-            <p className="text-sm text-red-600 mt-3">{error}</p>
-          )}
-        </div>
-
-        {!payload ? (
-          <div className="bg-white/30 border border-stone-200 rounded-2xl p-10 text-center">
-            <h2 className="text-2xl font-bold text-stone-900 mb-2">No prediction yet</h2>
-            <p className="text-stone-400 mb-6">
-              Go to the News page and click <b>AI Predict Today Trend</b>, or click “Analyze Latest News Again” above.
-            </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Main Result */}
-            <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden ">
-              <div className="p-6 border-b border-stone-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p className="text-stone-400 text-sm">Prediction</p>
-                  <div className={`inline-flex items-center px-4 py-2 rounded-xl bg-gradient-to-r ${trendColor} text-stone-900 font-extrabold text-2xl`}>
-                    {payload.prediction.trend}
+          <div className="space-y-4">
+
+            {/* Main result card */}
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 border-b border-stone-100">
+                <div className="flex items-center gap-4">
+                  <span className={`px-4 py-2 rounded-lg text-base font-bold ${trendStyle.bg} ${trendStyle.text}`}>
+                    {trendStyle.label}
+                  </span>
+                  <div>
+                    <p className="text-xs text-stone-400">Confidence</p>
+                    <p className="text-2xl font-bold text-stone-900">{payload.prediction.confidence}%</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-stone-400 text-sm">Confidence</p>
-                  <p className="text-stone-900 font-extrabold text-3xl">{payload.prediction.confidence}%</p>
-                  <p className="text-stone-400 text-xs mt-1">
-                    Sources used: {payload.prediction.sourcesUsed} • Generated: {new Date(payload.generatedAt).toLocaleString()}
-                  </p>
-                </div>
+                <p className="text-xs text-stone-400 sm:text-right">
+                  {payload.prediction.sourcesUsed} sources · {new Date(payload.generatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </p>
               </div>
-              <div className="p-6">
-                <p className="text-stone-700 font-semibold mb-3">Summary</p>
-                <p className="text-stone-600 leading-relaxed">{payload.prediction.summary}</p>
+              <div className="p-5">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Summary</p>
+                <p className="text-sm text-stone-700 leading-relaxed">{payload.prediction.summary}</p>
               </div>
             </div>
 
             {/* Details grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/30 border border-stone-200 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-stone-900 mb-3">Rationale</h3>
-                <ul className="space-y-2 text-stone-600 text-sm">
-                  {payload.prediction.rationale?.length ? payload.prediction.rationale.map((x, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-emerald-600">•</span>
-                      <span>{x}</span>
-                    </li>
-                  )) : <li className="text-stone-400">No details.</li>}
-                </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white border border-stone-200 rounded-xl p-5">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">Rationale</p>
+                <ListItems items={payload.prediction.rationale} dot="text-emerald-600" />
               </div>
 
-              <div className="bg-white/30 border border-stone-200 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-stone-900 mb-3">Key Watch Items</h3>
-                <ul className="space-y-2 text-stone-600 text-sm">
-                  {payload.prediction.keyWatchItems?.length ? payload.prediction.keyWatchItems.map((x, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-emerald-600">•</span>
-                      <span>{x}</span>
-                    </li>
-                  )) : <li className="text-stone-400">No items.</li>}
-                </ul>
+              <div className="bg-white border border-stone-200 rounded-xl p-5">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">Key Watch Items</p>
+                <ListItems items={payload.prediction.keyWatchItems} dot="text-emerald-600" />
               </div>
 
-              <div className="bg-white/30 border border-stone-200 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-stone-900 mb-3">Bullish Drivers</h3>
-                <ul className="space-y-2 text-stone-600 text-sm">
-                  {payload.prediction.bullishDrivers?.length ? payload.prediction.bullishDrivers.map((x, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-green-600">•</span>
-                      <span>{x}</span>
-                    </li>
-                  )) : <li className="text-stone-400">None.</li>}
-                </ul>
+              <div className="bg-white border border-stone-200 rounded-xl p-5">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">Bullish Drivers</p>
+                <ListItems items={payload.prediction.bullishDrivers} dot="text-green-600" />
               </div>
 
-              <div className="bg-white/30 border border-stone-200 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-stone-900 mb-3">Bearish Drivers</h3>
-                <ul className="space-y-2 text-stone-600 text-sm">
-                  {payload.prediction.bearishDrivers?.length ? payload.prediction.bearishDrivers.map((x, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-red-600">•</span>
-                      <span>{x}</span>
-                    </li>
-                  )) : <li className="text-stone-400">None.</li>}
-                </ul>
+              <div className="bg-white border border-stone-200 rounded-xl p-5">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">Bearish Drivers</p>
+                <ListItems items={payload.prediction.bearishDrivers} dot="text-red-600" />
               </div>
             </div>
+
           </div>
         )}
       </div>

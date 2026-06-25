@@ -177,46 +177,41 @@ export default function MyRulePage() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="w-full px-6 lg:px-8 py-12 py-8">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse" />
-            My Rule
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4">
-            Rule For Myself In Trading
-          </h1>
-          <p className="text-lg text-stone-600 font-medium">Author: Heng Bunkheang</p>
+      <div className="px-5 py-8 space-y-5">
+
+        {/* Header */}
+        <div>
+          <h1 className="text-xl font-bold text-stone-900">Trading Rules</h1>
+          <p className="text-sm text-stone-400 mt-0.5">{categories.reduce((n, c) => n + c.rules.length, 0)} rules across {categories.length} categories</p>
         </div>
 
-        <div className="space-y-6">
+        {/* Categories */}
+        <div className="space-y-4">
           {categories.map((category) => (
-            <div
-              key={category.id}
-              className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-black/20"
-            >
-              <div className="bg-emerald-50 border-b border-stone-200 px-5 py-4">
-                <h2 className="text-lg font-bold text-stone-900">
-                  {category.id}. {category.category}
-                </h2>
+            <div key={category.id} className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-3 px-5 py-3.5 border-b border-stone-100">
+                <span className="w-5 h-5 flex items-center justify-center bg-emerald-50 text-emerald-700 text-xs font-bold rounded-md flex-shrink-0">
+                  {category.id}
+                </span>
+                <h2 className="text-sm font-semibold text-stone-900">{category.category}</h2>
+                <span className="ml-auto text-xs text-stone-400">{category.rules.length}</span>
               </div>
-              <div className="p-5">
-                <div className="space-y-3">
-                  {category.rules
-                    .sort((a, b) => a.rule_number - b.rule_number)
-                    .map((item) => (
-                      <div key={item.rule_number} className="flex items-start gap-3 p-3 bg-stone-100/50 rounded-xl border border-stone-200/70">
-                        <span className="mt-0.5 inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold">
-                          {item.rule_number}
-                        </span>
-                        <p className="text-sm text-stone-600 leading-relaxed">{item.rule}</p>
-                      </div>
-                    ))}
-                </div>
+              <div className="divide-y divide-stone-100">
+                {category.rules
+                  .sort((a, b) => a.rule_number - b.rule_number)
+                  .map((item) => (
+                    <div key={item.rule_number} className="flex items-start gap-3 px-5 py-3">
+                      <span className="mt-0.5 text-xs font-bold text-stone-300 w-5 flex-shrink-0 text-right">
+                        {item.rule_number}
+                      </span>
+                      <p className="text-sm text-stone-700 leading-relaxed">{item.rule}</p>
+                    </div>
+                  ))}
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   )

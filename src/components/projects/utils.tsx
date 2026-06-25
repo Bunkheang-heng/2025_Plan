@@ -3,31 +3,21 @@ import { ProjectType, ProjectStatus, FeatureStatus } from './types'
 
 export const getStatusColor = (status: ProjectStatus): string => {
   switch (status) {
-    case 'planning':
-      return 'bg-stone-500/20 text-stone-500 border-stone-400/50'
-    case 'in-progress':
-      return 'bg-emerald-500/20 text-emerald-600 border-emerald-400/50'
-    case 'testing':
-      return 'bg-emerald-500/20 text-emerald-600 border-emerald-400/50'
-    case 'completed':
-      return 'bg-green-500/20 text-green-600 border-green-400/50'
-    case 'on-hold':
-      return 'bg-red-500/20 text-red-600 border-red-400/50'
-    default:
-      return 'bg-stone-500/20 text-stone-500 border-stone-400/50'
+    case 'planning':    return 'bg-stone-100 text-stone-600 border-stone-200'
+    case 'in-progress': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    case 'testing':     return 'bg-amber-50 text-amber-700 border-amber-200'
+    case 'completed':   return 'bg-green-50 text-green-700 border-green-200'
+    case 'on-hold':     return 'bg-red-50 text-red-600 border-red-200'
+    default:            return 'bg-stone-100 text-stone-600 border-stone-200'
   }
 }
 
 export const getFeatureStatusColor = (status: FeatureStatus): string => {
   switch (status) {
-    case 'done':
-      return 'bg-green-500/20 text-green-600 border-green-400/50'
-    case 'in-progress':
-      return 'bg-emerald-500/20 text-emerald-600 border-emerald-400/50'
-    case 'next':
-      return 'bg-stone-500/20 text-stone-500 border-stone-400/50'
-    default:
-      return 'bg-stone-500/20 text-stone-500 border-stone-400/50'
+    case 'done':        return 'bg-green-50 text-green-700 border-green-200'
+    case 'in-progress': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    case 'next':        return 'bg-stone-100 text-stone-500 border-stone-200'
+    default:            return 'bg-stone-100 text-stone-500 border-stone-200'
   }
 }
 

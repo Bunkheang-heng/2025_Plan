@@ -26,10 +26,10 @@ const STATUS_OPTIONS: { value: LessonStatus; label: string }[] = [
   { value: 'finished', label: 'Finished' },
 ]
 
-const statusStyle = (s: LessonStatus) => {
-  if (s === 'finished') return 'bg-green-500/15 border-green-500/30 text-green-600'
-  if (s === 'in_progress') return 'bg-emerald-600/15 border-stone-200 text-emerald-600'
-  return 'bg-stone-200/50 border-stone-600 text-stone-400'
+const statusBadgeClass = (s: LessonStatus) => {
+  if (s === 'finished') return 'bg-green-50 border-green-200 text-green-700'
+  if (s === 'in_progress') return 'bg-emerald-50 border-emerald-200 text-emerald-700'
+  return 'bg-stone-100 border-stone-200 text-stone-500'
 }
 
 type Lesson = {
@@ -226,177 +226,122 @@ export default function TradingLessonsPage() {
     return <Loading />
   }
 
+  const inputClass = 'w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors'
+
+  const counts = {
+    total: lessons.length,
+    finished: lessons.filter(l => l.status === 'finished').length,
+    inProgress: lessons.filter(l => l.status === 'in_progress').length,
+  }
+
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="w-full px-6 lg:px-8 py-12 py-8">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse" />
-            Trading Lessons
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4">
-            Lessons Learned
-          </h1>
-          <p className="text-lg text-stone-600 font-medium max-w-2xl mx-auto">
-            Document your trading lessons, resources, and insights to accelerate your growth.
-          </p>
-        </div>
+      <div className="px-5 py-8 space-y-5">
 
-        {/* Add Button */}
-        <div className="flex justify-center mb-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-stone-900">Lessons Learned</h1>
+            <p className="text-sm text-stone-400 mt-0.5">
+              {counts.finished}/{counts.total} completed · {counts.inProgress} in progress
+            </p>
+          </div>
           <button
             type="button"
-            onClick={() => {
-              setForm({ title: '', description: '', url: '', status: 'not_started' })
-              setShowAddForm(true)
-            }}
-            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm  transition-all"
+            onClick={() => { setForm({ title: '', description: '', url: '', status: 'not_started' }); setShowAddForm(true) }}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors"
           >
-            + Add Lesson
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Lesson
           </button>
         </div>
 
-        {/* Lessons Table */}
+        {/* Table */}
         {lessons.length === 0 ? (
-          <div className="bg-white border border-stone-200 rounded-2xl px-5 py-16 text-center shadow-black/20">
-            <p className="text-stone-400 text-sm">No lessons yet. Start documenting what you learn from each trade.</p>
+          <div className="bg-white border border-stone-200 rounded-xl px-5 py-16 text-center">
+            <p className="text-sm text-stone-400">No lessons yet. Start documenting what you learn from each trade.</p>
+            <button
+              type="button"
+              onClick={() => { setForm({ title: '', description: '', url: '', status: 'not_started' }); setShowAddForm(true) }}
+              className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              Add your first lesson
+            </button>
           </div>
         ) : (
-          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-black/20">
-            {/* Table Header */}
-            <div className="hidden sm:grid sm:grid-cols-12 gap-4 px-5 py-3 bg-stone-100/80 border-b border-stone-200 text-[11px] text-stone-400 uppercase tracking-wider font-bold">
-              <div className="col-span-1">#</div>
-              <div className="col-span-3">Title</div>
-              <div className="col-span-4">Description</div>
-              <div className="col-span-1">Status</div>
-              <div className="col-span-3 text-right">Actions</div>
+          <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+            {/* Table header */}
+            <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200">
+              <div className="col-span-1 text-xs font-semibold text-stone-400 uppercase tracking-wide">#</div>
+              <div className="col-span-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">Title</div>
+              <div className="col-span-3 text-xs font-semibold text-stone-400 uppercase tracking-wide hidden md:block">Description</div>
+              <div className="col-span-2 text-xs font-semibold text-stone-400 uppercase tracking-wide">Status</div>
+              <div className="col-span-2 text-xs font-semibold text-stone-400 uppercase tracking-wide text-right">Actions</div>
             </div>
 
-            {/* Table Rows */}
-            <div className="divide-y divide-stone-200">
-              {lessons.map((lesson, idx) => {
-                const isEditing = editingId === lesson.id
-
-                if (isEditing) {
-                  return (
-                    <div key={lesson.id} className="px-5 py-4 bg-stone-100/60 space-y-3">
-                      <input
-                        type="text"
-                        value={editForm.title}
-                        onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                        placeholder="Title"
-                        disabled={isSaving}
-                      />
-                      <textarea
-                        value={editForm.description}
-                        onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
-                        rows={2}
-                        placeholder="Description"
-                        disabled={isSaving}
-                      />
-                      <input
-                        type="url"
-                        value={editForm.url}
-                        onChange={(e) => setEditForm((p) => ({ ...p, url: e.target.value }))}
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                        placeholder="URL (optional)"
-                        disabled={isSaving}
-                      />
-                      <select
-                        value={editForm.status}
-                        onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value as LessonStatus }))}
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                        disabled={isSaving}
-                      >
-                        {STATUS_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>{o.label}</option>
-                        ))}
-                      </select>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEditSave(lesson.id)}
-                          disabled={isSaving || !editForm.title.trim()}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 transition-colors"
-                        >
-                          {isSaving ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEditing}
-                          disabled={isSaving}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-200 hover:bg-stone-600 text-stone-900 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+            <div className="divide-y divide-stone-100">
+              {lessons.map((lesson, idx) => (
+                  <div key={lesson.id} className="grid grid-cols-12 gap-4 px-5 py-3.5 items-center hover:bg-stone-50 transition-colors group">
+                    <div className="col-span-1 text-xs text-stone-400 font-mono">{idx + 1}</div>
+                    <div className="col-span-4">
+                      <p className="text-sm font-semibold text-stone-900 leading-snug">{lesson.title}</p>
                     </div>
-                  )
-                }
-
-                return (
-                  <div
-                    key={lesson.id}
-                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 hover:bg-stone-100/40 transition-colors items-center"
-                  >
-                    <div className="hidden sm:block col-span-1 text-xs text-stone-400 font-mono">
-                      {idx + 1}
-                    </div>
-                    <div className="col-span-1 sm:col-span-3">
-                      <p className="text-sm font-semibold text-stone-900">{lesson.title}</p>
-                    </div>
-                    <div className="col-span-1 sm:col-span-4">
-                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-2">
-                        {lesson.description || <span className="text-stone-400 italic">No description</span>}
+                    <div className="col-span-3 hidden md:block">
+                      <p className="text-xs text-stone-500 leading-relaxed line-clamp-2">
+                        {lesson.description || <span className="text-stone-300 italic">—</span>}
                       </p>
                     </div>
-                    <div className="col-span-1 sm:col-span-1">
+                    <div className="col-span-2">
                       <select
                         value={lesson.status}
                         onChange={(e) => handleStatusChange(lesson.id, e.target.value as LessonStatus)}
-                        className={`px-1.5 py-1 rounded-lg text-[10px] font-bold border bg-transparent cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500/50 ${statusStyle(lesson.status)}`}
+                        className={`text-xs font-medium border rounded-md px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/20 bg-transparent ${statusBadgeClass(lesson.status)}`}
                       >
                         {STATUS_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value} className="bg-white text-stone-900">{o.label}</option>
                         ))}
                       </select>
                     </div>
-                    <div className="col-span-1 sm:col-span-3 flex items-center gap-2 sm:justify-end flex-wrap">
+                    <div className="col-span-2 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {lesson.url && (
                         <a
                           href={lesson.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-3 py-1 text-[11px] rounded-full border border-green-500/40 text-green-600 hover:bg-green-500/10 transition-colors"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          title="Open link"
                         >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
-                          View
                         </a>
                       )}
                       <button
                         type="button"
                         onClick={() => startEditing(lesson)}
-                        className="px-3 py-1 text-[11px] rounded-full border border-stone-200 text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+                        title="Edit"
                       >
-                        Edit
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(lesson.id)}
                         disabled={deletingId === lesson.id}
-                        className="px-3 py-1 text-[11px] rounded-full border border-red-500/40 text-red-600 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                        title="Delete"
                       >
-                        {deletingId === lesson.id ? 'Removing...' : 'Remove'}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                     </div>
                   </div>
-                )
-              })}
+              ))}
             </div>
           </div>
         )}
@@ -405,92 +350,181 @@ export default function TradingLessonsPage() {
       {/* Add Lesson Modal */}
       {showAddForm && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50"
           onClick={() => { if (!isSaving) setShowAddForm(false) }}
         >
           <div
-            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6"
+            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-stone-900">Add Lesson</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-stone-900">Add Lesson</h2>
               <button
                 onClick={() => { if (!isSaving) setShowAddForm(false) }}
-                className="p-2 hover:bg-stone-100/50 rounded-lg transition-colors text-stone-400"
+                className="p-1.5 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <form onSubmit={handleAdd} className="space-y-4">
+            <form onSubmit={handleAdd} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1.5">Title *</label>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Title *</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
                   placeholder="e.g. Always wait for confirmation candle"
-                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className={inputClass}
                   required
                   disabled={isSaving}
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1.5">Description</label>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Description</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                   placeholder="Explain the lesson in detail..."
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
+                  className={`${inputClass} resize-none`}
                   disabled={isSaving}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1.5">URL (optional)</label>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">URL (optional)</label>
                 <input
                   type="url"
                   value={form.url}
                   onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))}
-                  placeholder="https://youtube.com/... or any resource link"
-                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  placeholder="https://youtube.com/..."
+                  className={inputClass}
                   disabled={isSaving}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1.5">Status</label>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Status</label>
                 <select
                   value={form.status}
                   onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as LessonStatus }))}
-                  className="w-full px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className={inputClass}
                   disabled={isSaving}
                 >
-                  {STATUS_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
+                  {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   disabled={isSaving}
-                  className="flex-1 px-4 py-3 bg-stone-200 hover:bg-stone-600 text-stone-900 font-medium rounded-xl transition-colors"
+                  className="flex-1 py-2 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 font-semibold rounded-xl transition-colors"
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   {isSaving ? 'Saving...' : 'Save Lesson'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Lesson Modal */}
+      {editingId && (
+        <div
+          className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => { if (!isSaving) cancelEditing() }}
+        >
+          <div
+            className="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-stone-900">Edit Lesson</h2>
+              <button
+                onClick={() => { if (!isSaving) cancelEditing() }}
+                className="p-1.5 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Title *</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
+                  className={inputClass}
+                  placeholder="Title"
+                  disabled={isSaving}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Description</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                  className={`${inputClass} resize-none`}
+                  rows={3}
+                  placeholder="Explain the lesson in detail..."
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">URL (optional)</label>
+                <input
+                  type="url"
+                  value={editForm.url}
+                  onChange={(e) => setEditForm((p) => ({ ...p, url: e.target.value }))}
+                  className={inputClass}
+                  placeholder="https://youtube.com/..."
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value as LessonStatus }))}
+                  className={inputClass}
+                  disabled={isSaving}
+                >
+                  {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  disabled={isSaving}
+                  className="flex-1 py-2 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleEditSave(editingId)}
+                  disabled={isSaving || !editForm.title.trim()}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
+                >
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

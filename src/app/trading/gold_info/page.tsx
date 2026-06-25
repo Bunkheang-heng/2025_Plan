@@ -20,16 +20,6 @@ interface TechnicalLevel {
   strength: 'strong' | 'moderate' | 'weak'
 }
 
-interface EconomicEvent {
-  title: string
-  country: string
-  date: string
-  time: string
-  impact: 'High' | 'Medium' | 'Low'
-  forecast?: string
-  previous?: string
-  status: 'upcoming' | 'released'
-}
 
 export default function GoldMarketInfo() {
   const router = useRouter()
@@ -37,8 +27,6 @@ export default function GoldMarketInfo() {
   const [isFetching, setIsFetching] = useState(false)
   const [dataSource, setDataSource] = useState<string>('Initializing...')
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
-  const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([])
-  const [isFetchingEvents, setIsFetchingEvents] = useState(false)
 
   // Real-time market data
   const [marketData, setMarketData] = useState<MarketData>({
@@ -96,69 +84,14 @@ export default function GoldMarketInfo() {
   ]
 
   const keyFacts = [
-    { icon: '🏆', title: 'Safe Haven Asset', description: 'Gold is considered a safe haven during economic uncertainty' },
-    { icon: '💵', title: 'USD Correlation', description: 'Typically moves inversely to the US Dollar strength' },
-    { icon: '📈', title: 'Inflation Hedge', description: 'Historically used as protection against inflation' },
-    { icon: '🌍', title: 'Global Demand', description: 'Affected by jewelry, technology, and central bank reserves' },
-    { icon: '⚡', title: 'Volatility', description: 'Average daily range of 0.5-1.5% in normal conditions' },
-    { icon: '🎯', title: 'Liquidity', description: 'One of the most liquid markets with 24/5 trading' },
+    { title: 'Safe Haven Asset', description: 'Gold is considered a safe haven during economic uncertainty' },
+    { title: 'USD Correlation', description: 'Typically moves inversely to the US Dollar strength' },
+    { title: 'Inflation Hedge', description: 'Historically used as protection against inflation' },
+    { title: 'Global Demand', description: 'Affected by jewelry, technology, and central bank reserves' },
+    { title: 'Volatility', description: 'Average daily range of 0.5-1.5% in normal conditions' },
+    { title: 'Liquidity', description: 'One of the most liquid markets with 24/5 trading' },
   ]
 
-  const toDayKey = (value: string) => {
-    const parsed = new Date(value)
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
-    }
-    const raw = (value || '').trim()
-    return raw.length >= 10 ? raw.slice(0, 10) : raw
-  }
-
-  const extractEventTime = (value: string) => {
-    if (!value) return '-'
-    const parsed = new Date(value)
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'Asia/Phnom_Penh',
-      })
-    }
-    const matches = value.match(/\b\d{1,2}:\d{2}\b/)
-    return matches?.[0] || value
-  }
-
-  const fetchEconomicEvents = async () => {
-    try {
-      setIsFetchingEvents(true)
-      const response = await fetch('/api/economic-calendar?force=1', { cache: 'no-store' })
-      if (!response.ok) {
-        throw new Error(`Failed to fetch economic calendar (${response.status})`)
-      }
-      const payload = await response.json()
-      const list = Array.isArray(payload) ? payload : []
-
-      const mapped: EconomicEvent[] = list.map((event: any) => ({
-        title: event.title || 'Unknown Event',
-        country: event.country || 'N/A',
-        date: event.date || '',
-        time: extractEventTime(event.date || ''),
-        impact: (event.impact === 'High' || event.impact === 'Medium' || event.impact === 'Low')
-          ? event.impact
-          : 'Low',
-        forecast: event.forecast || '',
-        previous: event.previous || '',
-        status: event.actual ? 'released' : 'upcoming',
-      }))
-
-      setEconomicEvents(mapped)
-    } catch (error) {
-      console.error('Error fetching economic events:', error)
-      setEconomicEvents([])
-    } finally {
-      setIsFetchingEvents(false)
-    }
-  }
 
   useEffect(() => {
     // Temporarily disable auth check for demo
@@ -166,23 +99,10 @@ export default function GoldMarketInfo() {
     
     // Fetch initial data
     fetchGoldPrice()
-    fetchEconomicEvents()
-    
-    // Auto-refresh price every 60 seconds
-    const priceInterval = setInterval(() => {
-      fetchGoldPrice()
-    }, 60000) // 60000ms = 1 minute
 
-    // Auto-refresh calendar every 5 minutes
-    const calendarInterval = setInterval(() => {
-      fetchEconomicEvents()
-    }, 5 * 60 * 1000)
-    
-    // Cleanup intervals on unmount
-    return () => {
-      clearInterval(priceInterval)
-      clearInterval(calendarInterval)
-    }
+    // Auto-refresh price every 60 seconds
+    const priceInterval = setInterval(fetchGoldPrice, 60000)
+    return () => clearInterval(priceInterval)
     
     // const unsubscribe = auth.onAuthStateChanged((user) => {
     //   if (!user) {
@@ -200,390 +120,201 @@ export default function GoldMarketInfo() {
   }
 
   const isPositive = marketData.change24h >= 0
-  const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Phnom_Penh' })
-  const todaysEconomicEvents = economicEvents
-    .filter((event) => toDayKey(event.date) === todayDate)
-    .sort((a, b) => a.time.localeCompare(b.time))
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8">
+      <div className="max-w-7xl mx-auto px-5 py-8 space-y-5">
         
         {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
-          <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
-            <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold">
-              <div className={`w-2 h-2 rounded-full mr-2 ${isFetching ? 'bg-emerald-600 animate-pulse' : 'bg-emerald-600 animate-pulse'}`}></div>
-              {isFetching ? 'Updating...' : 'Live Market Data'}
-            </div>
-            <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-xs font-medium">
-              📡 {dataSource}
-            </div>
-            <button
-              onClick={fetchGoldPrice}
-              disabled={isFetching}
-              className="inline-flex items-center px-4 py-2 bg-stone-100 border border-green-500/30 rounded-full text-green-600 text-sm font-semibold hover:bg-stone-100/50 transition-all disabled:opacity-50"
-            >
-              <svg className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              {isFetching ? 'Refreshing...' : 'Refresh Now'}
-            </button>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-stone-900">Gold Market (XAU/USD)</h1>
+            <p className="text-xs text-stone-400 mt-0.5">
+              Updated {lastUpdate.toLocaleTimeString()} · auto-refresh 60s
+            </p>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
-            <span>Gold Market (XAU/USD)</span>
-            <svg className="w-10 h-10 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.736 6.979C9.208 6.193 9.696 6 10 6c.304 0 .792.193 1.264.979a1 1 0 001.715-1.029C12.279 4.784 11.232 4 10 4s-2.279.784-2.979 1.95c-.285.475-.507 1-.67 1.55H6a1 1 0 000 2h.013a9.358 9.358 0 000 1H6a1 1 0 100 2h.351c.163.55.385 1.075.67 1.55C7.721 15.216 8.768 16 10 16s2.279-.784 2.979-1.95a1 1 0 10-1.715-1.029c-.472.786-.96.979-1.264.979-.304 0-.792-.193-1.264-.979a4.265 4.265 0 01-.264-.521H10a1 1 0 100-2H8.017a7.36 7.36 0 010-1H10a1 1 0 100-2H8.472c.08-.185.167-.36.264-.521z" clipRule="evenodd" />
+          <button
+            onClick={fetchGoldPrice}
+            disabled={isFetching}
+            className="flex items-center gap-2 px-3 py-1.5 border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+          >
+            <svg className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-          </h1>
-          <p className="text-xl text-stone-600 font-medium">
-            Real-time forex market information and trading insights
-          </p>
-          <p className="text-sm text-stone-400 mt-2">
-            Last updated: {lastUpdate.toLocaleTimeString()} • Auto-refresh every 60 seconds
-          </p>
+            {isFetching ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
 
-        {/* Current Price Card */}
-        <div className="mb-8 bg-white border-2 border-stone-200 rounded-2xl overflow-hidden  animate-slide-up-1">
-          <div className="bg-emerald-50 border-b border-stone-200 p-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <div className="text-sm text-stone-400 mb-2">Current Price</div>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-5xl font-bold text-stone-900">${marketData.price.toFixed(2)}</span>
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${
-                    isPositive ? 'bg-green-500/20 text-green-600' : 'bg-red-500/20 text-red-600'
-                  }`}>
-                    <svg className={`w-5 h-5 ${isPositive ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    <span className="text-xl font-bold">{isPositive ? '+' : ''}{marketData.change24h.toFixed(2)}</span>
-                    <span className="text-lg">({isPositive ? '+' : ''}{marketData.changePercent24h.toFixed(2)}%)</span>
-                  </div>
-                </div>
+        {/* Price hero */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs text-stone-400 mb-1">Current Price</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-bold text-stone-900">${marketData.price.toFixed(2)}</span>
+                <span className={`inline-flex items-center gap-1 text-sm font-semibold px-2 py-0.5 rounded-md ${
+                  isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+                }`}>
+                  {isPositive ? '+' : ''}{marketData.change24h.toFixed(2)} ({isPositive ? '+' : ''}{marketData.changePercent24h.toFixed(2)}%)
+                </span>
               </div>
-              <div className="text-right">
-                <div className="text-xs text-stone-400 mb-1">Last Updated</div>
-                <div className="text-sm text-stone-600">{new Date(marketData.timestamp).toLocaleString()}</div>
-              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-stone-400">
+              <div className={`w-1.5 h-1.5 rounded-full ${isFetching ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500 animate-pulse'}`} />
+              {isFetching ? 'Updating...' : 'Live'}
             </div>
           </div>
-
-          {/* Price Stats */}
-          <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-stone-200/30 border border-stone-200 rounded-xl p-4">
-              <div className="text-xs text-stone-400 mb-1">Open</div>
-              <div className="text-xl font-bold text-emerald-600">${marketData.open.toFixed(2)}</div>
-            </div>
-            <div className="bg-stone-200/30 border border-stone-200 rounded-xl p-4">
-              <div className="text-xs text-stone-400 mb-1">24h High</div>
-              <div className="text-xl font-bold text-green-600">${marketData.high24h.toFixed(2)}</div>
-            </div>
-            <div className="bg-stone-200/30 border border-stone-200 rounded-xl p-4">
-              <div className="text-xs text-stone-400 mb-1">24h Low</div>
-              <div className="text-xl font-bold text-red-600">${marketData.low24h.toFixed(2)}</div>
-            </div>
-            <div className="bg-stone-200/30 border border-stone-200 rounded-xl p-4">
-              <div className="text-xs text-stone-400 mb-1">Volume</div>
-              <div className="text-xl font-bold text-emerald-600">{(marketData.volume / 1000).toFixed(0)}K</div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-5 border-t border-stone-100">
+            {[
+              { label: 'Open', value: `$${marketData.open.toFixed(2)}`, color: 'text-stone-900' },
+              { label: '24h High', value: `$${marketData.high24h.toFixed(2)}`, color: 'text-green-600' },
+              { label: '24h Low', value: `$${marketData.low24h.toFixed(2)}`, color: 'text-red-600' },
+              { label: 'Volume', value: `${(marketData.volume / 1000).toFixed(0)}K`, color: 'text-stone-900' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="bg-stone-50 rounded-lg p-3">
+                <p className="text-xs text-stone-400 mb-1">{label}</p>
+                <p className={`text-base font-bold ${color}`}>{value}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          
-          {/* Left Column - Technical Levels */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Technical Levels */}
-            <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden  animate-slide-up-2">
-              <div className="bg-emerald-50 border-b border-stone-200 p-6">
-                <h2 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
-                  <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  Support & Resistance Levels
-                </h2>
+        {/* Main grid */}
+        <div className="grid lg:grid-cols-3 gap-5">
+
+          {/* Left — Levels + Sessions */}
+          <div className="lg:col-span-2 space-y-5">
+
+            {/* Support & Resistance */}
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-stone-100">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Support &amp; Resistance</p>
               </div>
-              <div className="p-6 space-y-3">
+              <div className="divide-y divide-stone-100">
                 {technicalLevels.map((level, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-xl border-2 transition-all hover:scale-102 ${
-                      level.type === 'resistance'
-                        ? 'bg-red-500/10 border-red-500/30 hover:border-red-500/50'
-                        : 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          level.type === 'resistance' ? 'bg-red-500' : 'bg-green-500'
-                        }`}>
-                          <svg className="w-5 h-5 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {level.type === 'resistance' ? (
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                            ) : (
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            )}
-                          </svg>
-                        </div>
-                        <div>
-                          <div className={`text-lg font-bold ${
-                            level.type === 'resistance' ? 'text-red-600' : 'text-green-600'
-                          }`}>
-                            ${level.level.toFixed(2)}
-                          </div>
-                          <div className="text-xs text-stone-400 capitalize">{level.type}</div>
-                        </div>
-                      </div>
+                  <div key={index} className="flex items-center justify-between px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${level.type === 'resistance' ? 'bg-red-500' : 'bg-green-500'}`} />
                       <div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          level.strength === 'strong' ? 'bg-emerald-50 text-emerald-600' :
-                          level.strength === 'moderate' ? 'bg-emerald-50 text-emerald-600' :
-                          'bg-stone-500/20 text-stone-400'
-                        }`}>
-                          {level.strength}
-                        </span>
+                        <p className={`text-sm font-bold ${level.type === 'resistance' ? 'text-red-600' : 'text-green-600'}`}>
+                          ${level.level.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-stone-400 capitalize">{level.type}</p>
                       </div>
                     </div>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
+                      level.strength === 'strong' ? 'bg-emerald-50 text-emerald-700' :
+                      level.strength === 'moderate' ? 'bg-amber-50 text-amber-700' :
+                      'bg-stone-100 text-stone-500'
+                    }`}>
+                      {level.strength}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Market Sessions */}
-            <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden  animate-slide-up-3">
-              <div className="bg-emerald-50 border-b border-stone-200 p-6">
-                <h2 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
-                  <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Trading Sessions
-                </h2>
+            {/* Sessions */}
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-stone-100">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Trading Sessions</p>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="divide-y divide-stone-100">
                 {marketSessions.map((session, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      session.active
-                        ? 'bg-green-500/10 border-green-500/30 shadow-green-500/20'
-                        : 'bg-stone-200/30 border-stone-600/30'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-3 rounded-lg bg-gradient-to-br ${session.color}`}>
-                          <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold text-stone-900">{session.name} Session</div>
-                          <div className="text-sm text-stone-400">{session.time}</div>
-                        </div>
-                      </div>
-                      {session.active && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 rounded-full">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                          <span className="text-sm font-bold text-green-600">Active</span>
-                        </div>
-                      )}
+                  <div key={index} className="flex items-center justify-between px-5 py-3.5">
+                    <div>
+                      <p className="text-sm font-semibold text-stone-900">{session.name}</p>
+                      <p className="text-xs text-stone-400">{session.time}</p>
                     </div>
+                    {session.active ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-xs text-stone-400">Closed</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Key Facts */}
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-stone-100">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Key Facts</p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-0 divide-y divide-stone-100 md:divide-y-0">
+                {keyFacts.map((fact, index) => (
+                  <div key={index} className="p-4 border-b border-r border-stone-100 last:border-b-0">
+                    <p className="text-sm font-semibold text-stone-900 mb-1">{fact.title}</p>
+                    <p className="text-xs text-stone-500 leading-relaxed">{fact.description}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Right Column - Economic Events & Facts */}
-          <div className="space-y-8">
-            
-            {/* Economic Calendar */}
-            <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden  animate-slide-up-2">
-              <div className="bg-emerald-50 border-b border-stone-200 p-6">
-                <h2 className="text-xl font-bold text-stone-900 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Today&apos;s Events
-                </h2>
-              </div>
-              <div className="p-6">
-                <div className="flex justify-end mb-3">
-                  <button
-                    type="button"
-                    onClick={fetchEconomicEvents}
-                    disabled={isFetchingEvents}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg border border-stone-200 text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
-                  >
-                    {isFetchingEvents ? 'Refreshing...' : 'Refresh'}
-                  </button>
-                </div>
-                {todaysEconomicEvents.length === 0 ? (
-                  <div className="text-sm text-stone-400 text-center py-6">
-                    No economic events scheduled for today.
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-left border-b border-stone-200 text-stone-400">
-                          <th className="py-2 pr-3 font-semibold">Time</th>
-                          <th className="py-2 pr-3 font-semibold">Event</th>
-                          <th className="py-2 pr-3 font-semibold">Country</th>
-                          <th className="py-2 pr-3 font-semibold">Impact</th>
-                          <th className="py-2 font-semibold">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {todaysEconomicEvents.map((event, index) => (
-                          <tr key={index} className="border-b border-stone-200/80">
-                            <td className="py-3 pr-3 text-emerald-600 font-semibold whitespace-nowrap">{event.time}</td>
-                            <td className="py-3 pr-3 text-stone-900">{event.title}</td>
-                            <td className="py-3 pr-3 text-stone-600">{event.country}</td>
-                            <td className="py-3 pr-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                event.impact === 'High' ? 'bg-red-500/20 text-red-600' :
-                                event.impact === 'Medium' ? 'bg-emerald-50 text-emerald-600' :
-                                'bg-green-500/20 text-green-600'
-                              }`}>
-                                {event.impact}
-                              </span>
-                            </td>
-                            <td className="py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                event.status === 'released'
-                                  ? 'bg-emerald-50 text-emerald-600'
-                                  : 'bg-emerald-50 text-emerald-600'
-                              }`}>
-                                {event.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Right — Events + Metrics + Tips */}
+          <div className="space-y-5">
 
-            {/* Quick Stats */}
-            <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden  animate-slide-up-3">
-              <div className="bg-emerald-50 border-b border-stone-200 p-6">
-                <h2 className="text-xl font-bold text-stone-900 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Market Metrics
-                </h2>
+            {/* Market Metrics */}
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-stone-100">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Market Metrics</p>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="px-5 py-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-stone-400">24h Range</span>
-                  <span className="text-sm font-bold text-stone-900">
-                    ${marketData.low24h.toFixed(2)} - ${marketData.high24h.toFixed(2)}
-                  </span>
+                  <span className="text-xs text-stone-400">24h Range</span>
+                  <span className="text-xs font-semibold text-stone-900">${marketData.low24h.toFixed(2)} – ${marketData.high24h.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-stone-400">Range Size</span>
-                  <span className="text-sm font-bold text-emerald-600">
-                    ${(marketData.high24h - marketData.low24h).toFixed(2)}
-                  </span>
+                  <span className="text-xs text-stone-400">Range Size</span>
+                  <span className="text-xs font-semibold text-emerald-600">${(marketData.high24h - marketData.low24h).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-stone-400">From Open</span>
-                  <span className={`text-sm font-bold ${
-                    marketData.price > marketData.open ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {marketData.price > marketData.open ? '+' : ''}
-                    ${(marketData.price - marketData.open).toFixed(2)}
+                  <span className="text-xs text-stone-400">From Open</span>
+                  <span className={`text-xs font-semibold ${marketData.price > marketData.open ? 'text-green-600' : 'text-red-600'}`}>
+                    {marketData.price > marketData.open ? '+' : ''}${(marketData.price - marketData.open).toFixed(2)}
                   </span>
                 </div>
-                <div className="pt-4 border-t border-stone-200">
-                  <div className="text-xs text-stone-400 mb-2">Price Position</div>
-                  <div className="relative h-2 bg-stone-200 rounded-full overflow-hidden">
+                <div className="pt-3 border-t border-stone-100">
+                  <p className="text-xs text-stone-400 mb-1.5">Price Position (24h)</p>
+                  <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
                     <div
-                      className="absolute top-0 left-0 h-full bg-emerald-600 rounded-full"
-                      style={{
-                        width: `${((marketData.price - marketData.low24h) / (marketData.high24h - marketData.low24h)) * 100}%`
-                      }}
+                      className="h-full bg-emerald-600 rounded-full"
+                      style={{ width: `${((marketData.price - marketData.low24h) / (marketData.high24h - marketData.low24h)) * 100}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-xs text-stone-400 mt-1">
-                    <span>Low</span>
-                    <span>High</span>
+                  <div className="flex justify-between text-[10px] text-stone-400 mt-1">
+                    <span>Low ${marketData.low24h.toFixed(0)}</span>
+                    <span>High ${marketData.high24h.toFixed(0)}</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Key Facts Grid */}
-        <div className="mb-8">
-          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden  animate-slide-up-3">
-            <div className="bg-emerald-50 border-b border-stone-200 p-6">
-              <h2 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
-                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Essential Gold Trading Facts
-              </h2>
-            </div>
-            <div className="p-6 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {keyFacts.map((fact, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-stone-200/30 border border-stone-200 rounded-xl hover:border-stone-200 hover:scale-105 transition-all cursor-pointer"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="text-3xl mb-3">{fact.icon}</div>
-                  <h3 className="text-lg font-bold text-emerald-600 mb-2">{fact.title}</h3>
-                  <p className="text-sm text-stone-600">{fact.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Trading Tips */}
-        <div className="bg-stone-50 border border-stone-200 rounded-2xl p-6 animate-slide-up-3">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-emerald-600 rounded-lg">
-              <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-emerald-600 mb-3">Trading Tips</h3>
-              <ul className="space-y-2 text-stone-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 mt-1">•</span>
-                  <span>Monitor USD strength and Federal Reserve policy decisions</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 mt-1">•</span>
-                  <span>Watch for geopolitical events that may increase safe-haven demand</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 mt-1">•</span>
-                  <span>Pay attention to inflation data and real yields</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 mt-1">•</span>
-                  <span>European and US session overlap (13:00-17:00 GMT) offers highest liquidity</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-600 mt-1">•</span>
-                  <span>Use proper risk management - never risk more than 1-2% per trade</span>
-                </li>
+            {/* Trading Tips */}
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-stone-100">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Trading Tips</p>
+              </div>
+              <ul className="px-5 py-4 space-y-2">
+                {[
+                  'Monitor USD strength and Fed policy decisions',
+                  'Watch for geopolitical events that drive safe-haven demand',
+                  'Track inflation data and real yields',
+                  'European/US overlap (13:00-17:00 GMT) has highest liquidity',
+                  'Never risk more than 1-2% per trade',
+                ].map((tip, i) => (
+                  <li key={i} className="flex gap-2 text-xs text-stone-600">
+                    <span className="text-emerald-500 flex-shrink-0 mt-0.5">•</span>
+                    {tip}
+                  </li>
+                ))}
               </ul>
             </div>
+
           </div>
         </div>
 

@@ -213,6 +213,13 @@ function HomeContent({
       route: '/trading_news',
       icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z',
       stats: null,
+    },
+    {
+      title: 'Live Charts',
+      description: 'XAU/USD multi-timeframe',
+      route: '/trading/charts',
+      icon: 'M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z',
+      stats: null,
     }
   ]
 
@@ -222,7 +229,7 @@ function HomeContent({
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-5xl mx-auto px-5 py-8 space-y-8">
+      <div className="px-5 py-8 space-y-8">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

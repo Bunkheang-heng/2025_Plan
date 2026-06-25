@@ -78,178 +78,173 @@ export default function SetRolePage() {
     }
   }
 
+  const inputClass = 'w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors'
+  const labelClass = 'block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5'
+
   return (
     <RouteProtection>
       {currentUserRole !== 'admin' ? (
         <div className="min-h-screen bg-[#fafaf9] flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-            <p className="text-stone-400">Only administrators can access this page.</p>
+            <div className="w-12 h-12 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h1 className="text-lg font-bold text-stone-900 mb-1">Access Denied</h1>
+            <p className="text-sm text-stone-400">Only administrators can access this page.</p>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-[#fafaf9] p-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <button
-              onClick={() => router.push('/admin/create-account')}
-              className="mb-4 px-4 py-2 bg-emerald-600 text-black font-semibold rounded-lg hover:bg-emerald-700 transition-all"
-            >
-              Create New Account
-            </button>
-          </div>
-          <h1 className="text-3xl font-bold text-stone-900 mb-8">User Role Management</h1>
+        <div className="min-h-screen bg-[#fafaf9]">
+          <div className="max-w-2xl mx-auto px-5 py-8 space-y-5">
 
-        <div className="bg-stone-100 border border-stone-200 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-stone-900 mb-4">Set Role for User ID</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-600 mb-2">
-                User ID (from Firebase Auth)
-              </label>
-              <input
-                type="text"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                placeholder="Enter Firebase User UID"
-                className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-stone-600 mb-2">
-                Email (optional)
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
-                className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-stone-600 mb-2">
-                Name (optional)
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="User's name"
-                className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-stone-600 mb-2">
-                Role
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
-              >
-                <option value="admin">Admin (Full Access)</option>
-                <option value="restricted">Restricted (Couple Saving Only)</option>
-              </select>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={handleSetRole}
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-emerald-600 text-black font-bold rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Setting...' : 'Set Role'}
-              </button>
-              <button
-                onClick={handleGetRole}
-                disabled={loading}
-                className="px-6 py-3 bg-stone-200 text-stone-900 font-semibold rounded-lg hover:bg-stone-600 transition-all disabled:opacity-50"
-              >
-                Get Role
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {currentUser && (
-          <div className="bg-stone-100 border border-stone-200 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-stone-900 mb-4">Set Role for Current User</h2>
-            <p className="text-sm text-stone-400 mb-4">
-              Current User: {currentUser.email} ({currentUser.uid})
-            </p>
-            
-            <div className="space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
               <div>
-                <label className="block text-sm font-medium text-stone-600 mb-2">
-                  Name (optional)
-                </label>
+                <h1 className="text-xl font-bold text-stone-900">User Role Management</h1>
+                <p className="text-sm text-stone-400 mt-0.5">Assign roles to Firebase users</p>
+              </div>
+              <button
+                onClick={() => router.push('/admin/create-account')}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+                Create Account
+              </button>
+            </div>
+
+            {/* Feedback message */}
+            {message && (
+              <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm ${
+                message.includes('✅')
+                  ? 'bg-green-50 border-green-200 text-green-700'
+                  : 'bg-red-50 border-red-200 text-red-700'
+              }`}>
+                <span>{message.replace('✅ ', '').replace('❌ ', '')}</span>
+              </div>
+            )}
+
+            {/* Set role by UID */}
+            <div className="bg-white border border-stone-200 rounded-xl p-6 space-y-4">
+              <h2 className="text-sm font-semibold text-stone-900">Set role by User ID</h2>
+
+              <div>
+                <label className={labelClass}>User ID (Firebase UID)</label>
+                <input
+                  type="text"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  placeholder="Enter Firebase User UID"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Email (optional)</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="user@example.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Name (optional)</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="User's name"
-                  className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-600 mb-2">
-                  Role
-                </label>
+                <label className={labelClass}>Role</label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-4 py-2 bg-stone-200 border border-stone-600 rounded-lg text-stone-900 focus:outline-none focus:border-emerald-500"
+                  className={inputClass}
                 >
-                  <option value="admin">Admin (Full Access)</option>
-                  <option value="restricted">Restricted (Couple Saving Only)</option>
+                  <option value="admin">Admin — Full Access</option>
+                  <option value="restricted">Restricted — Couple Saving only</option>
                 </select>
               </div>
 
-              <button
-                onClick={handleSetCurrentUserRole}
-                disabled={loading}
-                className="w-full px-6 py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-600 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Setting...' : 'Set Current User Role'}
-              </button>
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={handleSetRole}
+                  disabled={loading || !userId.trim()}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Setting...' : 'Set Role'}
+                </button>
+                <button
+                  onClick={handleGetRole}
+                  disabled={loading || !userId.trim()}
+                  className="px-4 py-2 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Get Role
+                </button>
+              </div>
             </div>
-          </div>
-        )}
 
-        {message && (
-          <div className={`mt-4 p-4 rounded-lg ${
-            message.includes('✅') 
-              ? 'bg-green-500/20 border border-green-500/50 text-green-600' 
-              : 'bg-red-500/20 border border-red-500/50 text-red-600'
-          }`}>
-            {message}
-          </div>
-        )}
+            {/* Set role for current user */}
+            {currentUser && (
+              <div className="bg-white border border-stone-200 rounded-xl p-6 space-y-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-stone-900">Set role for current user</h2>
+                  <p className="text-xs text-stone-400 mt-0.5">{currentUser.email} · {currentUser.uid}</p>
+                </div>
 
-        <div className="mt-8 bg-white/30 border border-stone-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-stone-900 mb-4">Instructions</h3>
-          <ol className="list-decimal list-inside space-y-2 text-stone-600 text-sm">
-            <li>To set Monika's role as restricted:
-              <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
+                <div>
+                  <label className={labelClass}>Name (optional)</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="User's name"
+                    className={inputClass}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Role</label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as UserRole)}
+                    className={inputClass}
+                  >
+                    <option value="admin">Admin — Full Access</option>
+                    <option value="restricted">Restricted — Couple Saving only</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleSetCurrentUserRole}
+                  disabled={loading}
+                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
+                >
+                  {loading ? 'Setting...' : 'Set Current User Role'}
+                </button>
+              </div>
+            )}
+
+            {/* Instructions */}
+            <div className="bg-white border border-stone-200 rounded-xl p-6">
+              <h3 className="text-sm font-semibold text-stone-900 mb-3">How to set a user's role</h3>
+              <ol className="space-y-1.5 text-sm text-stone-500 list-decimal list-inside">
                 <li>Go to Firebase Console → Authentication</li>
-                <li>Find Monika's account by email</li>
-                <li>Copy her User UID</li>
-                <li>Enter the UID above and select "Restricted" role</li>
-                <li>Click "Set Role"</li>
-              </ul>
-            </li>
-            <li>Restricted users can only access the Couple Saving page</li>
-            <li>Admin users have full access to all pages</li>
-          </ol>
+                <li>Find the user by email and copy their UID</li>
+                <li>Paste the UID above, choose a role, and click Set Role</li>
+                <li>Restricted users can only access the Couple Saving page</li>
+                <li>Admin users have full access to all pages</li>
+              </ol>
+            </div>
+
+          </div>
         </div>
-      </div>
-    </div>
       )}
     </RouteProtection>
   )

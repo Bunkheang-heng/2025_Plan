@@ -1,10 +1,9 @@
 'use client'
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
-import { 
-  Loading, 
-  ChatMessage, 
+import {
+  Loading,
+  ChatMessage,
   ChatInput
 } from '@/components'
 import { auth } from '../../../firebase'
@@ -19,11 +18,6 @@ import {
   limit
 } from 'firebase/firestore'
 
-// Dynamically import heavy background component
-const AnimatedBackground = dynamic(() => import('@/components').then(mod => ({ default: mod.AnimatedBackground })), {
-  ssr: false,
-  loading: () => null
-})
 
 interface ChatMessageType {
   id: string
@@ -538,219 +532,71 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white relative overflow-hidden">
-      {/* Animated Background */}
-      <AnimatedBackground />
+    <div className="flex flex-col h-screen bg-[#fafaf9]">
 
-      {/* Header with Arc Reactor Design */}
-      <div className="border-b border-stone-200 bg-white backdrop-blur-sm px-4 py-6 relative z-10 ">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
-            {/* Super Assistent Identity */}
-            <div className="flex items-center space-x-4">
-              {/* Arc Reactor Icon */}
-              <div className="relative group">
-                <div className="w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center animate-arc-reactor border-2 border-stone-200">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center animate-inner-glow">
-                    <span className="text-black font-bold text-2xl">⚡</span>
-                  </div>
-                </div>
-                {/* Energy Rings */}
-                <div className="absolute inset-0 rounded-full border-2 border-stone-200 animate-energy-ring-1"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-stone-200 animate-energy-ring-2"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-stone-200 animate-energy-ring-3"></div>
-              </div>
-              
-              <div>
-                <h1 className="text-3xl font-bold text-emerald-600 animate-text-glow">
-                  Super Assistent
-                </h1>
-                <p className="text-sm text-stone-400 font-medium tracking-wide">Just A Rather Very Intelligent System</p>
-                <div className="flex items-center space-x-2 mt-1">
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                  <span className="text-xs text-green-600 font-semibold tracking-wider">ONLINE • READY</span>
-                </div>
-              </div>
+      {/* Header */}
+      <div className="flex-shrink-0 border-b border-stone-200 bg-white px-5 py-4">
+        <div className="w-full flex items-center justify-between gap-4">
+          {/* Identity */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
             </div>
-
-            {/* Stats Display */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <div className="bg-white backdrop-blur-sm border border-stone-200 rounded-xl px-4 py-3">
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <p className="text-xs text-stone-400 mb-1">Daily</p>
-                    <p className="text-lg font-bold text-emerald-600">{stats.daily.completed}/{stats.daily.total}</p>
-                  </div>
-                  <div className="w-px h-8 bg-stone-200"></div>
-                  <div className="text-center">
-                    <p className="text-xs text-stone-400 mb-1">Weekly</p>
-                    <p className="text-lg font-bold text-emerald-600">{stats.weekly.completed}/{stats.weekly.total}</p>
-                  </div>
-                  <div className="w-px h-8 bg-stone-200"></div>
-                  <div className="text-center">
-                    <p className="text-xs text-stone-400 mb-1">Monthly</p>
-                    <p className="text-lg font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</p>
-                  </div>
-                </div>
+            <div>
+              <h1 className="text-sm font-bold text-stone-900">Super Assistent</h1>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs text-stone-400">Online</span>
               </div>
             </div>
           </div>
 
-          {/* Mobile Stats */}
-          <div className="lg:hidden mt-4 bg-white backdrop-blur-sm border border-stone-200 rounded-xl p-3">
-            <div className="flex items-center justify-around">
-              <div className="text-center">
-                <p className="text-xs text-stone-400 mb-1">Daily</p>
-                <p className="text-sm font-bold text-emerald-600">{stats.daily.completed}/{stats.daily.total}</p>
-              </div>
-              <div className="w-px h-8 bg-stone-200"></div>
-              <div className="text-center">
-                <p className="text-xs text-stone-400 mb-1">Weekly</p>
-                <p className="text-sm font-bold text-emerald-600">{stats.weekly.completed}/{stats.weekly.total}</p>
-              </div>
-              <div className="w-px h-8 bg-stone-200"></div>
-              <div className="text-center">
-                <p className="text-xs text-stone-400 mb-1">Monthly</p>
-                <p className="text-sm font-bold text-green-600">{stats.monthly.completed}/{stats.monthly.total}</p>
-              </div>
+          {/* Stats */}
+          <div className="flex items-center gap-4">
+            <div className="text-center">
+              <p className="text-xs text-stone-400">Daily</p>
+              <p className="text-sm font-bold text-emerald-600">{stats.daily.completed}/{stats.daily.total}</p>
+            </div>
+            <div className="w-px h-6 bg-stone-200" />
+            <div className="text-center">
+              <p className="text-xs text-stone-400">Weekly</p>
+              <p className="text-sm font-bold text-stone-900">{stats.weekly.completed}/{stats.weekly.total}</p>
+            </div>
+            <div className="w-px h-6 bg-stone-200 hidden sm:block" />
+            <div className="text-center hidden sm:block">
+              <p className="text-xs text-stone-400">Monthly</p>
+              <p className="text-sm font-bold text-stone-900">{stats.monthly.completed}/{stats.monthly.total}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto py-8 relative z-10">
-        <div className="max-w-4xl mx-auto px-4 space-y-4">
-          {messages.map((message, index) => (
-            <div
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full px-5 py-6 space-y-4">
+          {messages.map((message) => (
+            <ChatMessage
               key={message.id}
-              className="animate-slide-in-up"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <ChatMessage
-                message={message.message}
-                isUser={message.isUser}
-                timestamp={message.timestamp}
-                isLoading={message.isLoading}
-                planReferences={message.planReferences}
-              />
-            </div>
+              message={message.message}
+              isUser={message.isUser}
+              timestamp={message.timestamp}
+              isLoading={message.isLoading}
+              planReferences={message.planReferences}
+            />
           ))}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Chat Input */}
-      <div className="border-t border-stone-200 bg-white backdrop-blur-sm  relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <ChatInput
-            onSendMessage={sendMessage}
-            isLoading={isSending}
-          />
+      {/* Input */}
+      <div className="flex-shrink-0 border-t border-stone-200 bg-white">
+        <div className="w-full">
+          <ChatInput onSendMessage={sendMessage} isLoading={isSending} />
         </div>
       </div>
 
-      {/* Custom Styles */}
-      <style jsx>{`
-        @keyframes arc-reactor {
-          0%, 100% { 
-            box-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 
-                        0 0 40px rgba(250, 204, 21, 0.6),
-                        0 0 60px rgba(250, 204, 21, 0.4);
-          }
-          50% { 
-            box-shadow: 0 0 30px rgba(250, 204, 21, 1), 
-                        0 0 60px rgba(250, 204, 21, 0.8),
-                        0 0 90px rgba(250, 204, 21, 0.6);
-          }
-        }
-
-        @keyframes inner-glow {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-        }
-
-        @keyframes energy-ring-1 {
-          0% { transform: scale(1); opacity: 0.6; }
-          50% { transform: scale(1.2); opacity: 0.3; }
-          100% { transform: scale(1.4); opacity: 0; }
-        }
-
-        @keyframes energy-ring-2 {
-          0% { transform: scale(1); opacity: 0.4; }
-          50% { transform: scale(1.3); opacity: 0.2; }
-          100% { transform: scale(1.6); opacity: 0; }
-        }
-
-        @keyframes energy-ring-3 {
-          0% { transform: scale(1); opacity: 0.2; }
-          50% { transform: scale(1.4); opacity: 0.1; }
-          100% { transform: scale(1.8); opacity: 0; }
-        }
-
-        @keyframes text-glow {
-          0%, 100% { text-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
-          50% { text-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.5); }
-        }
-
-        @keyframes slide-in-up {
-          0% { 
-            opacity: 0; 
-            transform: translateY(20px);
-          }
-          100% { 
-            opacity: 1; 
-            transform: translateY(0);
-          }
-        }
-
-        .animate-arc-reactor {
-          animation: arc-reactor 2s ease-in-out infinite;
-        }
-
-        .animate-inner-glow {
-          animation: inner-glow 2s ease-in-out infinite;
-        }
-
-        .animate-energy-ring-1 {
-          animation: energy-ring-1 3s ease-out infinite;
-        }
-
-        .animate-energy-ring-2 {
-          animation: energy-ring-2 3s ease-out infinite 0.5s;
-        }
-
-        .animate-energy-ring-3 {
-          animation: energy-ring-3 3s ease-out infinite 1s;
-        }
-
-        .animate-text-glow {
-          animation: text-glow 3s ease-in-out infinite;
-        }
-
-        .animate-slide-in-up {
-          animation: slide-in-up 0.5s ease-out forwards;
-          opacity: 0;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: rgba(28, 25, 23, 0.08);
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #059669;
-          border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: #059669;
-        }
-      `}</style>
     </div>
   )
 } 

@@ -41,6 +41,8 @@ export default function WorkingProjectDetailPage() {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState({ name: '', description: '', status: 'next' as FeatureStatus })
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dragOverColumn, setDragOverColumn] = useState<FeatureStatus | null>(null)
 
   const fetchProject = useCallback(async () => {
     const user = auth.currentUser
@@ -139,6 +141,19 @@ export default function WorkingProjectDetailPage() {
     await persistFeatures(nextFeatures)
   }
 
+  const handleDrop = async (targetStatus: FeatureStatus) => {
+    if (!draggedId) return
+    const feature = features.find(f => f.id === draggedId)
+    if (!feature || feature.status === targetStatus) {
+      setDraggedId(null)
+      setDragOverColumn(null)
+      return
+    }
+    setDraggedId(null)
+    setDragOverColumn(null)
+    await handleChangeStatus(draggedId, targetStatus)
+  }
+
   const startEditTask = (feature: Feature) => {
     setEditingTaskId(feature.id)
     setEditDraft({
@@ -161,60 +176,65 @@ export default function WorkingProjectDetailPage() {
     setEditingTaskId(null)
   }
 
+  const inputClass = 'w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors'
+
   if (isLoading) return <Loading />
   if (!project) {
     return (
-      <div className="min-h-screen bg-[#fafaf9]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12 py-8">
-          <div className="bg-white border border-stone-200 rounded-2xl p-6 text-center text-stone-600">
-            Project not found.
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#fafaf9] flex items-center justify-center">
+        <p className="text-sm text-stone-400">Project not found.</p>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8 space-y-8">
+      <div className="px-5 py-8 space-y-5">
+
+        {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <button
             onClick={() => router.push('/working_project')}
-            className="px-4 py-2 bg-stone-100 border border-stone-200 text-stone-600 rounded-lg hover:bg-stone-200 transition-colors text-sm"
+            className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 transition-colors"
           >
-            Back to Projects
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Projects
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {isSaving && <span className="text-xs text-stone-400">Saving...</span>}
+            <span className={`text-xs px-2 py-0.5 rounded-md font-medium border ${getStatusColor(project.status)}`}>
+              {project.status.replace('-', ' ')}
+            </span>
             <button
               onClick={() => setIsAddTaskOpen(true)}
-              className="px-4 py-2 bg-emerald-600 text-black font-semibold rounded-lg hover:bg-emerald-700 transition-all text-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
             >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
               Add Task
             </button>
-            <div className={`text-xs px-3 py-1 rounded-full border ${getStatusColor(project.status)}`}>
-              {project.status.replace('-', ' ').toUpperCase()}
-            </div>
           </div>
         </div>
 
-        <div className="bg-white border border-stone-200 rounded-2xl p-6">
+        {/* Project info */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-stone-200/50 border border-stone-200 text-accent">
+            <div className="p-2.5 rounded-lg bg-stone-100 border border-stone-200 text-stone-500 flex-shrink-0">
               {getTypeIcon(project.type)}
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-stone-900">{project.name}</h1>
-              <p className="text-sm text-stone-400 mt-1 capitalize">{project.type}</p>
-              <p className="text-stone-600 mt-4">{project.description}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-xl font-bold text-stone-900">{project.name}</h1>
+                <span className="text-xs text-stone-400 capitalize">{project.type}</span>
+              </div>
+              {project.description && <p className="text-sm text-stone-600 mt-2 leading-relaxed">{project.description}</p>}
               {project.techStack?.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-1.5">
                   {project.techStack.map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-3 py-1 rounded-full text-xs bg-stone-100 border border-stone-200 text-stone-600"
-                    >
-                      {tech}
-                    </span>
+                    <span key={tech} className="px-2 py-0.5 rounded text-xs bg-stone-100 border border-stone-200 text-stone-600">{tech}</span>
                   ))}
                 </div>
               )}
@@ -222,98 +242,95 @@ export default function WorkingProjectDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Kanban board */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {statusColumns.map((column) => (
             <div
               key={column.key}
-              className="bg-white border border-stone-200 rounded-2xl p-4 h-[520px] flex flex-col"
+              className={`bg-white border rounded-xl flex flex-col transition-colors duration-150 ${
+                dragOverColumn === column.key
+                  ? 'border-emerald-400 bg-emerald-50/40'
+                  : 'border-stone-200'
+              }`}
+              style={{ minHeight: '480px' }}
+              onDragOver={(e) => { e.preventDefault(); setDragOverColumn(column.key) }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverColumn(null)
+              }}
+              onDrop={() => handleDrop(column.key)}
             >
-              <div className="flex items-center justify-between mb-4">
+              {/* Column header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                 <div>
-                  <div className="text-stone-900 font-semibold">{column.label}</div>
-                  <div className="text-xs text-stone-400">{column.helper}</div>
+                  <p className="text-sm font-semibold text-stone-900">{column.label}</p>
+                  <p className="text-xs text-stone-400">{column.helper}</p>
                 </div>
-                <span className="text-xs text-stone-400">{groupedFeatures[column.key].length}</span>
+                <span className="text-xs text-stone-400 font-medium">{groupedFeatures[column.key].length}</span>
               </div>
 
-              <div className="space-y-3 overflow-y-auto pr-1 flex-1 min-h-0">
+              {/* Tasks */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {groupedFeatures[column.key].length === 0 ? (
-                  <div className="text-xs text-stone-400">No tasks yet.</div>
+                  <div className={`h-16 flex items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
+                    dragOverColumn === column.key ? 'border-emerald-300 text-emerald-400' : 'border-stone-100 text-stone-300'
+                  }`}>
+                    <p className="text-xs">{draggedId ? 'Drop here' : 'No tasks'}</p>
+                  </div>
                 ) : (
                   groupedFeatures[column.key].map((feature) => (
-                    <div key={feature.id} className="bg-stone-100/50 border border-stone-200 rounded-xl p-3">
+                    <div
+                      key={feature.id}
+                      draggable={editingTaskId !== feature.id}
+                      onDragStart={() => setDraggedId(feature.id)}
+                      onDragEnd={() => { setDraggedId(null); setDragOverColumn(null) }}
+                      className={`group bg-stone-50 border border-stone-200 rounded-lg p-3 transition-opacity ${
+                        draggedId === feature.id ? 'opacity-40 cursor-grabbing' : 'cursor-grab'
+                      }`}
+                    >
                       {editingTaskId === feature.id ? (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           <input
                             value={editDraft.name}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-emerald-500"
+                            className={inputClass}
+                            autoFocus
                           />
                           <textarea
                             value={editDraft.description}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, description: e.target.value }))}
                             rows={2}
-                            className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 text-xs focus:outline-none focus:border-emerald-500 resize-none"
+                            className={`${inputClass} resize-none text-xs`}
+                            placeholder="Description (optional)"
                           />
                           <select
                             value={editDraft.status}
                             onChange={(e) => setEditDraft((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                            className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-lg text-stone-900 text-xs focus:outline-none focus:border-emerald-500"
+                            className={inputClass}
                           >
-                            <option value="next" className="bg-stone-100 text-stone-900">Next</option>
-                            <option value="in-progress" className="bg-stone-100 text-stone-900">In Progress</option>
-                            <option value="done" className="bg-stone-100 text-stone-900">Done</option>
+                            <option value="next">Next</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="done">Done</option>
                           </select>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={saveEditTask}
-                              disabled={isSaving}
-                              className="flex-1 px-3 py-2 bg-emerald-600 text-black font-semibold rounded-lg hover:bg-emerald-700 text-xs"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={() => setEditingTaskId(null)}
-                              className="flex-1 px-3 py-2 bg-stone-200 border border-stone-200 text-stone-900 rounded-lg hover:bg-stone-100 text-xs"
-                            >
-                              Cancel
-                            </button>
+                          <div className="flex gap-2">
+                            <button onClick={saveEditTask} disabled={isSaving} className="flex-1 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors">Save</button>
+                            <button onClick={() => setEditingTaskId(null)} className="flex-1 py-1.5 border border-stone-200 text-stone-600 text-xs font-medium rounded-md hover:bg-stone-100 transition-colors">Cancel</button>
                           </div>
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <div className="text-sm font-semibold text-stone-900">{feature.name}</div>
-                              {feature.description && (
-                                <div className="text-xs text-stone-400 mt-1">{feature.description}</div>
-                              )}
-                            </div>
-                            <span className={`text-[10px] px-2 py-1 rounded-full border ${getFeatureStatusColor(feature.status)}`}>
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <p className="text-sm font-semibold text-stone-900 leading-snug">{feature.name}</p>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded border flex-shrink-0 ${getFeatureStatusColor(feature.status)}`}>
                               {feature.status === 'in-progress' ? 'In Progress' : feature.status.charAt(0).toUpperCase() + feature.status.slice(1)}
                             </span>
                           </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {statusColumns.map((item) => (
-                              <button
-                                key={item.key}
-                                onClick={() => handleChangeStatus(feature.id, item.key)}
-                                className="px-2 py-1 text-[10px] rounded-full border border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-200"
-                              >
-                                {item.label}
-                              </button>
-                            ))}
-                            <button
-                              onClick={() => startEditTask(feature)}
-                              className="px-2 py-1 text-[10px] rounded-full border border-stone-200 text-stone-600 hover:text-stone-900 hover:border-stone-200"
-                            >
-                              Edit
+                          {feature.description && <p className="text-xs text-stone-500 mt-1 leading-relaxed">{feature.description}</p>}
+                          <div className="flex items-center justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={(e) => { e.stopPropagation(); startEditTask(feature) }} className="p-1 rounded text-stone-400 hover:text-stone-700 hover:bg-stone-200 transition-colors" title="Edit">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </button>
-                            <button
-                              onClick={() => handleDeleteTask(feature.id)}
-                              className="px-2 py-1 text-[10px] rounded-full border border-red-500/40 text-red-500 hover:text-red-600 hover:border-red-500"
-                            >
-                              Delete
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(feature.id) }} className="p-1 rounded text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Delete">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </div>
                         </>
@@ -327,56 +344,39 @@ export default function WorkingProjectDetailPage() {
         </div>
       </div>
 
+      {/* Add Task Modal */}
       {isAddTaskOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-2xl bg-white border border-stone-200 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-stone-900">Add Task</h2>
-              <button
-                onClick={closeAddTaskModal}
-                className="px-3 py-1 text-xs rounded-lg bg-stone-100 border border-stone-200 text-stone-600 hover:text-stone-900"
-              >
-                Close
+        <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={closeAddTaskModal}>
+          <div className="w-full max-w-md bg-white border border-stone-200 rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-stone-900">Add Task</h2>
+              <button onClick={closeAddTaskModal} className="p-1.5 hover:bg-stone-100 rounded-lg text-stone-400 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-xs text-stone-400 mb-2">Task name</label>
-                <input
-                  value={newTask.name}
-                  onChange={(e) => setNewTask((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="Example: Create login screen"
-                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
-                />
-                <label className="block text-xs text-stone-400 mt-3 mb-2">Description (optional)</label>
-                <textarea
-                  value={newTask.description}
-                  onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Add more detail..."
-                  rows={2}
-                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500 resize-none"
-                />
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Task name *</label>
+                <input value={newTask.name} onChange={(e) => setNewTask((prev) => ({ ...prev, name: e.target.value }))} placeholder="e.g. Create login screen" className={inputClass} autoFocus />
               </div>
               <div>
-                <label className="block text-xs text-stone-400 mb-2">Status</label>
-                <select
-                  value={newTask.status}
-                  onChange={(e) => setNewTask((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))}
-                  className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="next" className="bg-stone-100 text-stone-900">Next</option>
-                  <option value="in-progress" className="bg-stone-100 text-stone-900">In Progress</option>
-                  <option value="done" className="bg-stone-100 text-stone-900">Done</option>
-                </select>
-                <button
-                  onClick={handleAddTask}
-                  disabled={isSaving || !newTask.name.trim()}
-                  className="mt-4 w-full px-4 py-3 bg-emerald-600 text-black font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
-                >
-                  {isSaving ? 'Saving...' : 'Add Task'}
-                </button>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Description (optional)</label>
+                <textarea value={newTask.description} onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))} placeholder="Add more detail..." rows={2} className={`${inputClass} resize-none`} />
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Status</label>
+                <select value={newTask.status} onChange={(e) => setNewTask((prev) => ({ ...prev, status: e.target.value as FeatureStatus }))} className={inputClass}>
+                  <option value="next">Next</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button onClick={closeAddTaskModal} className="flex-1 py-2 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors">Cancel</button>
+              <button onClick={handleAddTask} disabled={isSaving || !newTask.name.trim()} className="flex-1 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+                {isSaving ? 'Saving...' : 'Add Task'}
+              </button>
             </div>
           </div>
         </div>

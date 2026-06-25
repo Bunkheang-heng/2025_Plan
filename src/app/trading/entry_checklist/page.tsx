@@ -228,97 +228,85 @@ export default function EntryChecklistPage() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-3xl mx-auto px-6 lg:px-8 py-12 py-8">
+      <div className="max-w-2xl mx-auto px-5 py-8 space-y-5">
+
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse" />
-            Trading Entry Checklist
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-stone-900">Entry Checklist</h1>
+            <p className="text-sm text-stone-400 mt-0.5">Run through this before every trade</p>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
-            <span>Before You Click Buy/Sell</span>
-            <svg className="w-9 h-9 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m4.243-4.242A9 9 0 1112 3a9 9 0 017.243 3.758z" />
-            </svg>
-          </h1>
-          <p className="text-lg text-stone-600 font-medium max-w-2xl mx-auto">
-            Use this checklist before every entry to protect your capital, follow your rules, and avoid emotional / impulsive trades.
-          </p>
+          {items.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${completionPercent === 100 ? 'text-green-600' : 'text-emerald-600'}`}>
+                {completedCount}/{items.length}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Progress + Actions */}
-        <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-8">
-          <div className="flex items-center gap-3 mb-3 flex-wrap">
-            <span className="text-sm font-bold text-emerald-600">Progress</span>
-            <span className="text-xs text-stone-400">
-              {completedCount}/{items.length} items done
-            </span>
+        {/* Progress bar */}
+        {items.length > 0 && (
+          <div className="bg-white border border-stone-200 rounded-xl p-4 space-y-3">
+            <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${completionPercent === 100 ? 'bg-green-500' : 'bg-emerald-600'}`}
+                style={{ width: `${completionPercent}%` }}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={markAll}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors"
+              >
+                Mark all done
+              </button>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="px-3 py-1.5 border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium rounded-lg transition-colors"
+              >
+                Clear all
+              </button>
+            </div>
           </div>
-          <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden mb-4">
-            <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                completionPercent === 100
-                  ? 'bg-green-500'
-                  : 'bg-emerald-600'
-              }`}
-              style={{ width: `${completionPercent}%` }}
-            />
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={markAll}
-              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-stone-900 font-semibold rounded-xl text-sm shadow-green-500/20"
-            >
-              Mark all done
-            </button>
-            <button
-              type="button"
-              onClick={clearAll}
-              className="px-4 py-2 bg-stone-100 hover:bg-stone-100 border border-stone-200 text-stone-900 font-semibold rounded-xl text-sm"
-            >
-              Clear all
-            </button>
-          </div>
-        </div>
+        )}
 
-        {/* Add new item */}
-        <form onSubmit={handleAddItem} className="flex gap-3 mb-6">
+        {/* Add item */}
+        <form onSubmit={handleAddItem} className="flex gap-2">
           <input
             type="text"
             value={newItemTitle}
             onChange={(e) => setNewItemTitle(e.target.value)}
-            placeholder="Add a new checklist item..."
-            className="flex-1 px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-theme-tertiary focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            placeholder="Add a checklist item..."
+            className="flex-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
             disabled={isSaving}
           />
           <button
             type="submit"
             disabled={isSaving || !newItemTitle.trim()}
-            className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 font-semibold rounded-xl text-sm  transition-all"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors"
           >
-            {isSaving ? 'Adding...' : 'Add'}
+            {isSaving ? '...' : 'Add'}
           </button>
         </form>
 
         {/* Checklist */}
-        <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-black/20">
-          {items.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <p className="text-stone-400 text-sm">No items yet. Add your first checklist item above.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-stone-200">
-              {items.map(item => {
+        {items.length === 0 ? (
+          <div className="bg-white border border-stone-200 rounded-xl px-5 py-12 text-center">
+            <p className="text-sm text-stone-400">No items yet. Add your first checklist item above.</p>
+          </div>
+        ) : (
+          <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+            <div className="divide-y divide-stone-100">
+              {items.map((item) => {
                 const isChecked = !!checked[item.id]
                 const isEditing = editingId === item.id
 
                 if (isEditing) {
                   return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 px-5 py-3 bg-stone-100/80"
-                    >
+                    <div key={item.id} className="flex items-center gap-2 px-4 py-3 bg-stone-50">
                       <input
                         type="text"
                         value={editingTitle}
@@ -328,22 +316,22 @@ export default function EntryChecklistPage() {
                           if (e.key === 'Escape') cancelEditing()
                         }}
                         autoFocus
-                        className="flex-1 px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="flex-1 bg-white border border-stone-200 rounded-lg px-3 py-1.5 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                         disabled={isSaving}
                       />
                       <button
                         type="button"
                         onClick={() => handleEditSave(item.id)}
                         disabled={isSaving || !editingTitle.trim()}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-stone-900 transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-colors"
                       >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        Save
                       </button>
                       <button
                         type="button"
                         onClick={cancelEditing}
                         disabled={isSaving}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-200 hover:bg-stone-600 text-stone-900 transition-colors"
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors"
                       >
                         Cancel
                       </button>
@@ -354,56 +342,40 @@ export default function EntryChecklistPage() {
                 return (
                   <label
                     key={item.id}
-                    className={`flex items-center gap-4 px-5 py-4 cursor-pointer transition-colors ${
-                      isChecked ? 'bg-stone-100/60' : 'hover:bg-stone-100/40'
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors group ${isChecked ? 'bg-stone-50' : 'hover:bg-stone-50'}`}
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => toggleItem(item.id)}
-                      className="h-5 w-5 rounded border-emerald-500/60 text-emerald-600 focus:ring-emerald-500/60 bg-white flex-shrink-0"
+                      className="h-4 w-4 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500/20 flex-shrink-0 cursor-pointer"
                     />
-                    <span
-                      className={`flex-1 text-sm font-medium transition-colors ${
-                        isChecked
-                          ? 'line-through text-stone-400'
-                          : 'text-stone-900'
-                      }`}
-                    >
+                    <span className={`flex-1 text-sm transition-colors ${isChecked ? 'line-through text-stone-400' : 'text-stone-900'}`}>
                       {item.title}
                     </span>
-                    <div className="flex-shrink-0 flex items-center gap-2">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          startEditing(item)
-                        }}
-                        className="px-3 py-1 text-[11px] rounded-full border border-stone-200 text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditing(item) }}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200 transition-colors"
                       >
-                        Edit
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </button>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          handleDelete(item.id)
-                        }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(item.id) }}
                         disabled={deletingId === item.id}
-                        className="px-3 py-1 text-[11px] rounded-full border border-red-500/40 text-red-600 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
                       >
-                        {deletingId === item.id ? 'Removing...' : 'Remove'}
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
                     </div>
                   </label>
                 )
               })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

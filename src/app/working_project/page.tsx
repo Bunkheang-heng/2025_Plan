@@ -3,16 +3,13 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loading } from '@/components'
 import {
-  ProjectCard,
   ProjectModal,
-  ProjectFilters,
   EmptyState,
   Project,
   ProjectFormData,
   Feature,
   ProjectType,
   ProjectStatus,
-  getStatusColor,
   getFeatureStatusColor,
   getTypeIcon
 } from '@/components/projects'
@@ -233,52 +230,176 @@ export default function WorkingProjectPage() {
     return <Loading />
   }
 
+  const statusBadge = (status: ProjectStatus) => {
+    const styles: Record<ProjectStatus, string> = {
+      'planning':    'bg-stone-100 text-stone-600',
+      'in-progress': 'bg-emerald-50 text-emerald-700',
+      'testing':     'bg-amber-50 text-amber-700',
+      'completed':   'bg-green-50 text-green-700',
+      'on-hold':     'bg-red-50 text-red-600',
+    }
+    const labels: Record<ProjectStatus, string> = {
+      'planning': 'Planning', 'in-progress': 'In Progress',
+      'testing': 'Testing', 'completed': 'Completed', 'on-hold': 'On Hold',
+    }
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${styles[status]}`}>
+        {labels[status]}
+      </span>
+    )
+  }
+
+  const selectClass = 'bg-white border border-stone-200 rounded-lg px-3 py-1.5 text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors'
+
   return (
     <div className="min-h-screen bg-[#fafaf9]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 py-8">
+      <div className="max-w-6xl mx-auto px-5 py-8 space-y-5">
+
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-white border border-stone-200 rounded-full text-emerald-600 text-sm font-semibold mb-6">
-            <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2 animate-pulse"></div>
-            Project Management
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-stone-900">My Projects</h1>
+            <p className="text-sm text-stone-400 mt-0.5">
+              {state.filteredProjects.length} project{state.filteredProjects.length !== 1 ? 's' : ''}
+            </p>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-4 flex items-center justify-center gap-3">
-            <span>My Projects</span>
-            <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          <button
+            onClick={() => handleOpenModal()}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-          </h1>
-          <p className="text-xl text-stone-600 font-medium">
-            Organize and manage your development projects
-          </p>
+            New Project
+          </button>
         </div>
 
-        {/* Filters and Create Button */}
-        <ProjectFilters
-          filterType={filterType}
-          filterStatus={filterStatus}
-          onTypeChange={setFilterType}
-          onStatusChange={setFilterStatus}
-          onCreateNew={() => handleOpenModal()}
-        />
+        {/* Filters */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value as ProjectType | 'all')} className={selectClass}>
+            <option value="all">All Types</option>
+            <option value="website">Website</option>
+            <option value="mobile">Mobile</option>
+            <option value="other">Other</option>
+          </select>
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as ProjectStatus | 'all')} className={selectClass}>
+            <option value="all">All Status</option>
+            <option value="planning">Planning</option>
+            <option value="in-progress">In Progress</option>
+            <option value="testing">Testing</option>
+            <option value="completed">Completed</option>
+            <option value="on-hold">On Hold</option>
+          </select>
+        </div>
 
-        {/* Projects Grid or Empty State */}
+        {/* Table */}
         {state.filteredProjects.length === 0 ? (
           <EmptyState onCreateNew={() => handleOpenModal()} />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {state.filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onOpen={(p) => router.push(`/working_project/${p.id}`)}
-                onEdit={handleOpenModal}
-                onDelete={handleDelete}
-                getTypeIcon={getTypeIcon}
-                getStatusColor={getStatusColor}
-                getFeatureStatusColor={getFeatureStatusColor}
-              />
-            ))}
+          <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-200 bg-stone-50">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wide">Project</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wide">Type</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wide hidden md:table-cell">Tech Stack</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wide hidden lg:table-cell">Deadline</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {state.filteredProjects.map((project) => (
+                  <tr key={project.id} className="hover:bg-stone-50 transition-colors group">
+                    {/* Name + description */}
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => router.push(`/working_project/${project.id}`)}
+                        className="text-left"
+                      >
+                        <p className="font-semibold text-stone-900 group-hover:text-emerald-700 transition-colors">
+                          {project.name}
+                        </p>
+                        {project.description && (
+                          <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">{project.description}</p>
+                        )}
+                      </button>
+                    </td>
+
+                    {/* Type */}
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-1.5 text-stone-500">
+                        <span className="text-stone-400">{getTypeIcon(project.type)}</span>
+                        <span className="capitalize text-xs">{project.type}</span>
+                      </span>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-3">
+                      {statusBadge(project.status)}
+                    </td>
+
+                    {/* Tech stack */}
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {project.techStack.slice(0, 3).map((tech) => (
+                          <span key={tech} className="px-1.5 py-0.5 bg-stone-100 text-stone-600 rounded text-xs">
+                            {tech}
+                          </span>
+                        ))}
+                        {project.techStack.length > 3 && (
+                          <span className="px-1.5 py-0.5 text-stone-400 text-xs">+{project.techStack.length - 3}</span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Deadline */}
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      {project.deadline ? (
+                        <span className="text-xs text-stone-500">
+                          {new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-stone-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => router.push(`/working_project/${project.id}`)}
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          title="Open"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleOpenModal(project)}
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+                          title="Edit"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(project.id)}
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -296,36 +417,6 @@ export default function WorkingProjectPage() {
         onFeaturesChange={setFeatures}
         getFeatureStatusColor={getFeatureStatusColor}
       />
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out forwards;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.2s ease-out forwards;
-        }
-      `}</style>
     </div>
   )
 }

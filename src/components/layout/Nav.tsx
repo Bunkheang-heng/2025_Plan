@@ -45,7 +45,6 @@ function BoltIcon() {
 // Module-level constant — no runtime dependencies on props/state
 const ALL_NAV_LINKS: NavLink[] = [
   { path: '/', label: 'Dashboard', icon: <DashIcon /> },
-  { path: '/settings/ai', label: 'AI Settings', icon: <SettingsIcon /> },
   {
     label: 'Tasks',
     icon: <CalendarIcon />,
@@ -69,6 +68,7 @@ const ALL_NAV_LINKS: NavLink[] = [
       { path: '/trading/trading_news', label: 'Trading News', group: 'Market Intel' },
       { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
       { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
+      { path: '/trading/charts', label: 'Live Charts', group: 'Market Intel' },
       { path: '/setup', label: 'My Setup', group: 'Trading' },
     ],
   },
@@ -174,23 +174,32 @@ export default function Nav() {
 
         <div className="mt-auto" />
 
-        {/* Sign out */}
+        {/* Settings + Sign out */}
         {isAuthenticated && (
-          <div className="relative group">
-            <button
-              onClick={async () => { await signOut(); router.push('/login') }}
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-stone-400 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
-              aria-label="Sign Out"
-            >
-              <LogoutIcon />
-            </button>
-            <div className="absolute left-12 top-1/2 -translate-y-1/2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-              <div className="bg-stone-900 text-white text-xs font-medium px-2 py-1 rounded-md whitespace-nowrap">
-                Sign Out
-                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-stone-900" />
+          <>
+            <NavIcon
+              icon={<SettingsIcon />}
+              label="AI Settings"
+              active={pathname === '/settings/ai'}
+              onClick={() => router.push('/settings/ai')}
+            />
+            <div className="w-6 h-px bg-stone-200 my-1" />
+            <div className="relative group">
+              <button
+                onClick={async () => { await signOut(); router.push('/login') }}
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-stone-400 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+                aria-label="Sign Out"
+              >
+                <LogoutIcon />
+              </button>
+              <div className="absolute left-12 top-1/2 -translate-y-1/2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                <div className="bg-stone-900 text-white text-xs font-medium px-2 py-1 rounded-md whitespace-nowrap">
+                  Sign Out
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-stone-900" />
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </aside>
 
@@ -291,7 +300,14 @@ export default function Nav() {
                   )}
                 </div>
               ))}
-            <div className="pt-2 border-t border-stone-100">
+            <div className="pt-2 border-t border-stone-100 space-y-1">
+              <button
+                onClick={() => { router.push('/settings/ai'); setMobileOpen(false) }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/settings/ai' ? 'bg-emerald-50 text-emerald-700' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}
+              >
+                <span className={pathname === '/settings/ai' ? 'text-emerald-600' : 'text-stone-400'}><SettingsIcon /></span>
+                AI Settings
+              </button>
               <button
                 onClick={async () => { await signOut(); router.push('/login'); setMobileOpen(false) }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-red-50 hover:text-red-600 transition-colors"
