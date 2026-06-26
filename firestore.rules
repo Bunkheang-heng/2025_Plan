@@ -62,6 +62,30 @@ service cloud.firestore {
         allow write, delete, create: if false;
       }
     }
+
+    // Compounding accounts - users can only access their own
+    match /compoundingAccounts/{accountId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // Compounding trades - users can only access their own
+    match /compoundingTrades/{tradeId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // Compounding daily P&L calendar (per compounding account)
+    match /compoundingDailyPnL/{docId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+    }
     
     // Projects - authenticated users can access
     match /projects/{document} {

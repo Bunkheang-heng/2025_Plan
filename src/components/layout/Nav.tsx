@@ -42,9 +42,14 @@ function BoltIcon() {
   return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
 }
 
+function CompoundIcon() {
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h4v-6H4v6zM10 19h4V5h-4v14zM16 19h4v-9h-4v9z"/><path d="M3 21h18"/></svg>
+}
+
 // Module-level constant — no runtime dependencies on props/state
 const ALL_NAV_LINKS: NavLink[] = [
   { path: '/', label: 'Dashboard', icon: <DashIcon /> },
+  { path: '/compounding', label: 'Compounding', icon: <CompoundIcon /> },
   {
     label: 'Tasks',
     icon: <CalendarIcon />,
