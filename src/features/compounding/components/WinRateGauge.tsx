@@ -45,7 +45,7 @@ export function WinRateGauge({
   return (
     <div className="h-full flex flex-col items-center justify-center">
       <div className="relative w-full max-w-[300px]">
-        <svg viewBox="0 0 300 168" className="w-full h-auto" aria-hidden>
+        <svg viewBox="0 0 300 168" className="w-full h-auto" aria-label={`Win rate ${displayRate} percent`}>
           <defs>
             <linearGradient id="winRateArcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor={GAUGE_GREEN} />
@@ -99,22 +99,22 @@ export function WinRateGauge({
               </text>
             </motion.g>
           ) : null}
-        </svg>
 
-        <div
-          className="absolute inset-x-0 bottom-6 flex items-center justify-center pointer-events-none"
-          aria-label={`Win rate ${displayRate} percent`}
-        >
-          <motion.span
-            className="text-4xl sm:text-5xl font-bold tabular-nums tracking-tight"
-            style={{ color: GAUGE_GREEN_LIGHT }}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
+          <motion.text
+            x={150}
+            y={124}
+            textAnchor="middle"
+            fill={GAUGE_GREEN_LIGHT}
+            fontSize="52"
+            fontWeight="bold"
+            className="tabular-nums tracking-tight"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.15 }}
           >
             {displayRate}%
-          </motion.span>
-        </div>
+          </motion.text>
+        </svg>
       </div>
 
       <p className="text-sm text-slate-500 mt-1 tabular-nums">
