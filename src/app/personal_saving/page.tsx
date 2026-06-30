@@ -1,18 +1,18 @@
 'use client'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { auth } from '../../../firebase'
 import { getFirestore, collection, query, getDocs, addDoc, doc, deleteDoc, updateDoc, where, orderBy } from 'firebase/firestore'
 import { Loading } from '@/components'
 import {
-  FaHeart,
+  FaWallet,
   FaPlus,
   FaTimes,
   FaTrash,
   FaEdit,
   FaDollarSign,
-  FaChartLine
+  FaChartLine,
+  FaPiggyBank
 } from 'react-icons/fa'
 
 interface SavingEntry {
@@ -21,6 +21,7 @@ interface SavingEntry {
   date: string
   note?: string
   createdAt: Date
+  userId: string
 }
 
 // Helper function to format date in local timezone
@@ -41,7 +42,7 @@ type DailySavings = {
   }>
 }
 
-export default function CoupleSavingPage() {
+export default function PersonalSavingPage() {
   const [entries, setEntries] = useState<SavingEntry[]>([])
   const [dailyData, setDailyData] = useState<Record<string, DailySavings>>({})
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -82,7 +83,8 @@ export default function CoupleSavingPage() {
 
       try {
         const q = query(
-          collection(db, 'coupleSavings'),
+          collection(db, 'personalSavings'),
+          where('userId', '==', user.uid),
           where('date', '>=', startDate),
           where('date', '<=', endDate),
           orderBy('date', 'desc')
@@ -101,11 +103,11 @@ export default function CoupleSavingPage() {
         
         setEntries(fetchedEntries)
       } catch (indexError: any) {
-        // Fallback: fetch all and filter client-side
+        // Fallback: fetch all and filter client-side if index is missing
         if (indexError.code === 'failed-precondition' || indexError.message?.includes('index')) {
           const q = query(
-            collection(db, 'coupleSavings'),
-            orderBy('date', 'desc')
+            collection(db, 'personalSavings'),
+            where('userId', '==', user.uid)
           )
           const querySnapshot = await getDocs(q)
           const allEntries = querySnapshot.docs.map(doc => {
@@ -120,7 +122,7 @@ export default function CoupleSavingPage() {
 
           const filteredEntries = allEntries.filter(entry => 
             entry.date >= startDate && entry.date <= endDate
-          )
+          ).sort((a, b) => b.date.localeCompare(a.date))
           
           setEntries(filteredEntries)
         } else {
@@ -179,15 +181,12 @@ export default function CoupleSavingPage() {
     const month = currentDate.getMonth()
     const dateStr = formatLocalDate(new Date(year, month, day))
     
-    // Always set selectedDate first
     setSelectedDate(dateStr)
     
     const existingData = dailyData[dateStr]
     if (existingData && existingData.entries.length > 0) {
-      // Show existing entries
       setIsEditing(false)
     } else {
-      // Open modal to add new entry
       setEntryFormData({
         amount: '',
         date: dateStr,
@@ -216,7 +215,7 @@ export default function CoupleSavingPage() {
 
       if (isEditing && editingEntryId) {
         // Update existing entry
-        await updateDoc(doc(db, 'coupleSavings', editingEntryId), {
+        await updateDoc(doc(db, 'personalSavings', editingEntryId), {
           amount,
           date: entryFormData.date,
           note: entryFormData.note || null,
@@ -224,11 +223,12 @@ export default function CoupleSavingPage() {
         })
       } else {
         // Add new entry
-        await addDoc(collection(db, 'coupleSavings'), {
+        await addDoc(collection(db, 'personalSavings'), {
           amount,
           date: entryFormData.date,
           note: entryFormData.note || null,
-          createdAt: new Date()
+          createdAt: new Date(),
+          userId: user.uid
         })
       }
       
@@ -253,7 +253,7 @@ export default function CoupleSavingPage() {
 
     try {
       const db = getFirestore()
-      await deleteDoc(doc(db, 'coupleSavings', entryId))
+      await deleteDoc(doc(db, 'personalSavings', entryId))
       fetchEntries(currentDate)
     } catch (error) {
       console.error('Error deleting entry:', error)
@@ -272,10 +272,6 @@ export default function CoupleSavingPage() {
     setIsEntryModalOpen(true)
     setSelectedDate(entry.date)
   }
-
-  const totalSaved = useMemo(() => {
-    return entries.reduce((sum, entry) => sum + entry.amount, 0)
-  }, [entries])
 
   const monthStats = useMemo(() => {
     const monthEntries = Object.values(dailyData)
@@ -303,27 +299,27 @@ export default function CoupleSavingPage() {
 
   return (
     <div className="h-screen bg-[#fafaf9] relative overflow-hidden flex flex-col">
-      {/* Animated Background Elements */}
+      {/* Animated Background Elements - Personal Theme */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-50 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-50 rounded-full blur-3xl animate-float-delayed"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/5 rounded-full blur-3xl animate-float-slow"></div>
-        {/* Floating hearts */}
-        <div className="absolute top-32 left-1/4 text-emerald-600/20 animate-float" style={{ animationDelay: '1s' }}>
-          <FaHeart className="w-8 h-8" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-50 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl animate-float-slow"></div>
+        {/* Floating icons */}
+        <div className="absolute top-32 left-1/4 text-emerald-600/10 animate-float" style={{ animationDelay: '1s' }}>
+          <FaWallet className="w-8 h-8" />
         </div>
-        <div className="absolute top-48 right-1/4 text-red-600/20 animate-float-delayed" style={{ animationDelay: '1.5s' }}>
-          <FaHeart className="w-6 h-6" />
+        <div className="absolute top-48 right-1/4 text-teal-600/10 animate-float-delayed" style={{ animationDelay: '1.5s' }}>
+          <FaPiggyBank className="w-6 h-6" />
         </div>
-        <div className="absolute bottom-32 left-1/3 text-emerald-600/20 animate-float-slow" style={{ animationDelay: '2s' }}>
-          <FaHeart className="w-7 h-7" />
+        <div className="absolute bottom-32 left-1/3 text-emerald-600/10 animate-float-slow" style={{ animationDelay: '2s' }}>
+          <FaDollarSign className="w-7 h-7" />
         </div>
       </div>
 
       <div className="w-full px-6 lg:px-8 py-4 relative z-10 flex flex-col h-full">
 
         {/* Overall Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 animate-fade-in-delayed shrink-0">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 animate-fade-in-delayed shrink-0">
           {[
             {
               label: 'This Month',
@@ -366,7 +362,7 @@ export default function CoupleSavingPage() {
                 <div className="relative p-4 z-10">
                   <div className="text-center">
                     <div className={`mb-2 p-2 bg-gradient-to-br ${stat.gradient} rounded-lg inline-block`}>
-                      <IconComponent className="w-5 h-5 text-stone-900" />
+                      <IconComponent className="w-5 h-5 text-white" />
                     </div>
                     <div className={`font-bold ${stat.isMain ? 'text-xl' : 'text-lg'} ${stat.color} mb-1`}>
                       {stat.value}
@@ -383,18 +379,10 @@ export default function CoupleSavingPage() {
         <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden relative flex-1 flex flex-col min-h-0">
           {/* Decorative corner elements */}
           <div className="absolute top-0 left-0 w-20 h-20 bg-emerald-50 rounded-br-full"></div>
-          <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-bl-full"></div>
-          <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-50 rounded-tr-full"></div>
-          <div className="absolute bottom-0 right-0 w-20 h-20 bg-red-500/10 rounded-tl-full"></div>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-teal-50 rounded-bl-full"></div>
           
           {/* Calendar Header */}
-          <div className="bg-emerald-50 border-b border-stone-200 p-4 relative shrink-0">
-            <div className="absolute top-2 left-4 text-emerald-600/30">
-              <FaHeart className="w-4 h-4" />
-            </div>
-            <div className="absolute top-2 right-4 text-red-600/30">
-              <FaHeart className="w-4 h-4" />
-            </div>
+          <div className="bg-emerald-50/50 border-b border-stone-200 p-4 relative shrink-0">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => changeMonth(-1)}
@@ -407,7 +395,7 @@ export default function CoupleSavingPage() {
               
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-stone-900">{monthName}</h2>
-                <p className="text-xs text-emerald-600/70 mt-1">Bunkheang & Monika's Savings</p>
+                <p className="text-xs text-emerald-600/70 mt-1">My Monthly Progress</p>
               </div>
               
               <button
@@ -423,7 +411,6 @@ export default function CoupleSavingPage() {
 
           {/* Calendar Grid */}
           <div className="p-4 flex-1 flex flex-col min-h-0">
-            {/* Day Headers */}
             <div className="grid grid-cols-7 gap-2 mb-2 shrink-0">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                 <div key={day} className="text-center text-emerald-600 font-bold text-sm py-2">
@@ -432,14 +419,11 @@ export default function CoupleSavingPage() {
               ))}
             </div>
 
-            {/* Calendar Days */}
             <div className="grid grid-cols-7 gap-2 flex-1 min-h-0 auto-rows-fr">
-              {/* Empty cells for days before month starts */}
               {Array.from({ length: startingDayOfWeek }).map((_, index) => (
                 <div key={`empty-${index}`} className="" />
               ))}
 
-              {/* Actual days */}
               {Array.from({ length: daysInMonth }).map((_, index) => {
                 const day = index + 1
                 const dateStr = formatLocalDate(new Date(year, month, day))
@@ -454,7 +438,7 @@ export default function CoupleSavingPage() {
                       isToday 
                         ? 'border-emerald-500 bg-emerald-50' 
                         : dayData && dayData.totalAmount > 0
-                        ? 'border-emerald-500/50 bg-emerald-50 hover:bg-emerald-50'
+                        ? 'border-emerald-500/50 bg-emerald-50 hover:bg-emerald-100'
                         : 'border-stone-200 bg-stone-100 hover:bg-stone-100/50'
                     }`}
                   >
@@ -483,37 +467,19 @@ export default function CoupleSavingPage() {
             </div>
           </div>
         </div>
-
-        {/* Decorative Footer */}
-        <div className="mt-2 text-center animate-fade-in-delayed shrink-0 hidden md:block">
-          <div className="inline-flex items-center gap-3 px-6 py-4 bg-emerald-50 border border-stone-200 rounded-2xl backdrop-blur-sm">
-            <FaHeart className="w-5 h-5 text-emerald-600 animate-pulse" />
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-600 font-semibold">Bunkheang</span>
-              <span className="text-stone-400">×</span>
-              <span className="text-red-600 font-semibold">Phan Chan Monika</span>
-            </div>
-            <FaHeart className="w-5 h-5 text-red-600 animate-pulse" style={{ animationDelay: '0.3s' }} />
-          </div>
-          <p className="text-xs text-stone-400 mt-4">Building our dreams together, one day at a time</p>
-        </div>
       </div>
 
       {/* Add/Edit Entry Modal */}
       {isEntryModalOpen && selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl border border-stone-200 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up relative">
-            {/* Decorative hearts in modal */}
-            <div className="absolute top-4 left-4 text-emerald-600/20">
-              <FaHeart className="w-6 h-6" />
-            </div>
-            <div className="absolute top-4 right-4 text-red-600/20">
-              <FaHeart className="w-6 h-6" />
+            <div className="absolute top-4 left-4 text-emerald-600/10">
+              <FaPiggyBank className="w-8 h-8" />
             </div>
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-red-600">
+                  <h2 className="text-2xl font-bold text-emerald-600">
                     {isEditing ? 'Edit Savings' : dailyData[selectedDate]?.entries.length > 0 ? 'Savings for' : 'Add Savings'}
                   </h2>
                   <p className="text-sm text-stone-400 mt-1">
@@ -524,7 +490,6 @@ export default function CoupleSavingPage() {
                       year: 'numeric'
                     })}
                   </p>
-                  <p className="text-xs text-emerald-600/60 mt-1">💕 Bunkheang & Monika 💕</p>
                 </div>
                 <button
                   onClick={() => {
@@ -539,7 +504,6 @@ export default function CoupleSavingPage() {
                 </button>
               </div>
 
-              {/* Existing Entries - View Mode */}
               {!isEditing && dailyData[selectedDate] && dailyData[selectedDate].entries && dailyData[selectedDate].entries.length > 0 && (
                 <div className="mb-6 space-y-3">
                   <h3 className="text-lg font-semibold text-stone-900 mb-3">Savings Entries</h3>
@@ -552,10 +516,10 @@ export default function CoupleSavingPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleEdit(fullEntry!)}
-                              className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+                              className="p-2 hover:bg-stone-200 rounded-lg transition-colors"
                               aria-label="Edit entry"
                             >
-                              <FaEdit className="w-4 h-4 text-stone-400" />
+                              <FaEdit className="w-4 h-4 text-stone-500" />
                             </button>
                             <button
                               onClick={() => handleDelete(entry.id)}
@@ -567,12 +531,12 @@ export default function CoupleSavingPage() {
                           </div>
                         </div>
                         {entry.note && (
-                          <p className="text-sm text-stone-400">{entry.note}</p>
+                          <p className="text-sm text-stone-500">{entry.note}</p>
                         )}
                       </div>
                     )
                   })}
-                  <div className="bg-emerald-50 border border-stone-200 rounded-xl p-4">
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-stone-900">Total for this day:</span>
                       <span className="text-emerald-600 font-bold text-xl">
@@ -590,7 +554,7 @@ export default function CoupleSavingPage() {
                       setIsEditing(false)
                       setEditingEntryId(null)
                     }}
-                    className="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl  transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
                   >
                     <FaPlus className="w-4 h-4" />
                     Add Another Entry
@@ -598,7 +562,6 @@ export default function CoupleSavingPage() {
                 </div>
               )}
 
-              {/* Add/Edit Entry Form */}
               {(isEditing || !dailyData[selectedDate] || !dailyData[selectedDate]?.entries || dailyData[selectedDate].entries.length === 0) && (
                 <form onSubmit={handleEntrySubmit} className="space-y-6">
                   <div>
@@ -615,7 +578,7 @@ export default function CoupleSavingPage() {
                         min="0.01"
                         step="0.01"
                         placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                        className="w-full pl-8 pr-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
                       />
                     </div>
                   </div>
@@ -642,7 +605,7 @@ export default function CoupleSavingPage() {
                       onChange={(e) => setEntryFormData({ ...entryFormData, note: e.target.value })}
                       rows={3}
                       placeholder="Add a note about this savings..."
-                      className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none"
+                      className="w-full px-4 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none"
                     />
                   </div>
 
@@ -655,13 +618,13 @@ export default function CoupleSavingPage() {
                         setIsEditing(false)
                         setEditingEntryId(null)
                       }}
-                      className="flex-1 px-6 py-3 bg-white hover:bg-stone-100 text-stone-600 font-semibold rounded-xl transition-colors"
+                      className="flex-1 px-6 py-3 bg-white hover:bg-stone-100 text-stone-600 border border-stone-200 font-semibold rounded-xl transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl  transform hover:scale-105 transition-all duration-300"
+                      className="flex-1 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl transform hover:scale-105 transition-all duration-300 shadow-lg shadow-emerald-500/30"
                     >
                       {isEditing ? 'Update Savings' : 'Add Savings'}
                     </button>

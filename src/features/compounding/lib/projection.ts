@@ -7,6 +7,7 @@ export interface SpreadsheetRow {
   tradeNumber: number
   balanceBefore: number
   profitNeeded: number
+  riskAmount: number
   balanceAfterWin: number
   balanceAfterLoss: number
   balanceAfterActual?: number
@@ -35,6 +36,7 @@ export function buildSpreadsheetRows(
       tradeNumber: trade.tradeNumber,
       balanceBefore: trade.balanceBefore,
       profitNeeded: trade.targetProfit,
+      riskAmount: preview.riskAmount,
       balanceAfterWin: roundMoney(trade.balanceBefore + preview.targetProfit),
       balanceAfterLoss: roundMoney(trade.balanceBefore - preview.riskAmount),
       balanceAfterActual: trade.balanceAfter,
@@ -63,6 +65,7 @@ export function buildSpreadsheetRows(
       tradeNumber,
       balanceBefore: balance,
       profitNeeded: preview.targetProfit,
+      riskAmount: preview.riskAmount,
       balanceAfterWin: roundMoney(balance + preview.targetProfit),
       balanceAfterLoss: roundMoney(balance - preview.riskAmount),
       lotSize: preview.suggestedLotSize,

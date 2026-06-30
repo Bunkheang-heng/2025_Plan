@@ -81,6 +81,7 @@ const ALL_NAV_LINKS: NavLink[] = [
     label: 'Saving',
     icon: <HeartIcon />,
     subLinks: [
+      { path: '/personal_saving', label: 'Personal Saving' },
       { path: '/couple_saving', label: 'Couple Saving' },
       { path: '/business_idea', label: 'Business Idea' },
     ],

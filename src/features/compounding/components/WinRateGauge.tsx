@@ -43,9 +43,9 @@ export function WinRateGauge({
   const displayRate = clamped.toFixed(0)
 
   return (
-    <div className="h-full flex flex-col items-center justify-center">
-      <div className="relative w-full max-w-[300px]">
-        <svg viewBox="0 0 300 168" className="w-full h-auto" aria-label={`Win rate ${displayRate} percent`}>
+    <div className="h-full flex flex-col items-center justify-center overflow-hidden">
+      <div className="relative w-full overflow-hidden" style={{ maxWidth: 200, maxHeight: 140 }}>
+        <svg viewBox="0 0 320 180" className="block w-full h-auto" aria-label={`Win rate ${displayRate} percent`}>
           <defs>
             <linearGradient id="winRateArcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor={GAUGE_GREEN} />
@@ -56,68 +56,70 @@ export function WinRateGauge({
             </filter>
           </defs>
 
-          <path
-            d={arcPath}
-            fill="none"
-            stroke={TRACK_COLOR}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-          />
+          <g transform="translate(10, 10)">
+            <path
+              d={arcPath}
+              fill="none"
+              stroke={TRACK_COLOR}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+            />
 
-          <motion.path
-            d={arcPath}
-            fill="none"
-            stroke="url(#winRateArcGradient)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            pathLength={1}
-            strokeDasharray={1}
-            initial={{ strokeDashoffset: 1 }}
-            animate={{ strokeDashoffset: 1 - progress }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-          />
+            <motion.path
+              d={arcPath}
+              fill="none"
+              stroke="url(#winRateArcGradient)"
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              pathLength={1}
+              strokeDasharray={1}
+              initial={{ strokeDashoffset: 1 }}
+              animate={{ strokeDashoffset: 1 - progress }}
+              transition={{ duration: 0.9, ease: 'easeOut' }}
+            />
 
-          {progress > 0.02 ? (
-            <motion.g
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              filter="url(#winRateThumbShadow)"
-            >
-              <circle cx={thumb.x} cy={thumb.y} r={14} fill={GAUGE_GREEN} />
-              <circle cx={thumb.x} cy={thumb.y} r={10} fill={GAUGE_GREEN_LIGHT} opacity={0.45} />
-              <text
-                x={thumb.x}
-                y={thumb.y + 0.5}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="#ecfdf5"
-                fontSize="11"
-                fontWeight="700"
+            {progress > 0.02 ? (
+              <motion.g
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                filter="url(#winRateThumbShadow)"
               >
-                %
-              </text>
-            </motion.g>
-          ) : null}
+                <circle cx={thumb.x} cy={thumb.y} r={12} fill={GAUGE_GREEN} />
+                <circle cx={thumb.x} cy={thumb.y} r={8} fill={GAUGE_GREEN_LIGHT} opacity={0.45} />
+                <text
+                  x={thumb.x}
+                  y={thumb.y + 0.5}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="#ecfdf5"
+                  fontSize="9"
+                  fontWeight="700"
+                >
+                  %
+                </text>
+              </motion.g>
+            ) : null}
 
-          <motion.text
-            x={150}
-            y={124}
-            textAnchor="middle"
-            fill={GAUGE_GREEN_LIGHT}
-            fontSize="52"
-            fontWeight="bold"
-            className="tabular-nums tracking-tight"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-          >
-            {displayRate}%
-          </motion.text>
+            <motion.text
+              x={150}
+              y={124}
+              textAnchor="middle"
+              fill={GAUGE_GREEN_LIGHT}
+              fontSize="46"
+              fontWeight="bold"
+              className="tabular-nums tracking-tight"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              {displayRate}%
+            </motion.text>
+          </g>
         </svg>
       </div>
 
-      <p className="text-sm text-slate-500 mt-1 tabular-nums">
+      <p className="text-xs text-slate-500 mt-1 tabular-nums">
         {wins}W · {losses}L · {breakeven}BE
       </p>
     </div>

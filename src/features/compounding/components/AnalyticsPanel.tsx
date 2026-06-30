@@ -173,7 +173,11 @@ export function AnalyticsPanel({
                 <XAxis dataKey="period" tick={{ fill: '#64748b', fontSize: 10 }} />
                 <YAxis tick={{ fill: '#64748b', fontSize: 11 }} width={50} />
                 <Tooltip {...tooltipStyle} formatter={(v) => formatMoney(Number(v ?? 0))} />
-                <Bar dataKey="profit" fill="#38bdf8" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="profit" radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                  {daily.map((entry, index) => (
+                    <Cell key={index} fill={entry.profit >= 0 ? '#34d399' : '#f87171'} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}

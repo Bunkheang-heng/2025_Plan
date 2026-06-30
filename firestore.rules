@@ -113,6 +113,14 @@ service cloud.firestore {
       }
     }
 
+    // Personal Savings - users can only access their own entries
+    match /personalSavings/{document} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
     // Self Punishment - users can only access their own entries
     match /selfPunishments/{document} {
       allow create: if request.auth != null

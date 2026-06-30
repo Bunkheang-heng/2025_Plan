@@ -117,6 +117,7 @@ export function CompoundingSpreadsheet({
               ) : null}
               <th className="px-3 py-2.5 text-right font-semibold">Balance Before</th>
               <th className="px-3 py-2.5 text-right font-semibold">Profit Needed ({pct}%)</th>
+              <th className="px-3 py-2.5 text-right font-semibold">Risk Amount</th>
               <th className="px-3 py-2.5 text-right font-semibold">Balance After (+{pct}%)</th>
               <th className="px-3 py-2.5 text-right font-semibold">Lot Size</th>
               <th className="px-3 py-2.5 text-center font-semibold w-28">Completed</th>
@@ -164,6 +165,7 @@ export function CompoundingSpreadsheet({
                   ) : null}
                   <td className="px-3 py-2 text-right tabular-nums">{formatMoney(row.balanceBefore)}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-emerald-400/90">{formatMoney(row.profitNeeded)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-red-400/90">{formatMoney(-row.riskAmount)}</td>
                   <td className="px-3 py-2 text-right tabular-nums font-medium text-slate-100">
                     {row.status === 'completed' && isLoss ? (
                       <span className="text-red-400">{formatMoney(balanceAfter)}</span>
