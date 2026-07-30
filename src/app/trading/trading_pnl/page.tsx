@@ -55,6 +55,7 @@ export default function TradingPnLAccountsPage() {
     capital: '',
     target: '',
     maxLoss: '',
+    dailyProfitTarget: '',
     strategy: '',
     rules: '',
   })
@@ -125,6 +126,11 @@ export default function TradingPnLAccountsPage() {
       toast.error('Please enter a valid max loss amount')
       return
     }
+    const dailyProfitTarget = Number(formData.dailyProfitTarget)
+    if (formData.dailyProfitTarget && Number.isNaN(dailyProfitTarget)) {
+      toast.error('Please enter a valid daily profit target')
+      return
+    }
 
     setIsCreating(true)
     try {
@@ -139,6 +145,8 @@ export default function TradingPnLAccountsPage() {
         capital: Number.isFinite(capital) ? capital : 0,
         target: Number.isFinite(target) && target > 0 ? target : null,
         maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
+        dailyProfitTarget:
+          Number.isFinite(dailyProfitTarget) && dailyProfitTarget > 0 ? dailyProfitTarget : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         createdAt: new Date().toISOString(),
@@ -150,6 +158,7 @@ export default function TradingPnLAccountsPage() {
         capital: '',
         target: '',
         maxLoss: '',
+        dailyProfitTarget: '',
         strategy: '',
         rules: '',
       })
@@ -362,19 +371,37 @@ export default function TradingPnLAccountsPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className={labelClassName}>Daily max loss ({formCurrency})</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.maxLoss}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, maxLoss: e.target.value }))}
-                    placeholder="Optional"
-                    className={`${inputClassName} tabular-nums`}
-                  />
-                  <p className="text-xs text-stone-500 mt-2">
-                    When daily loss hits this limit, P&L entry is locked and you can log a self punishment.
-                  </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClassName}>Daily max loss ({formCurrency})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.maxLoss}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, maxLoss: e.target.value }))}
+                      placeholder="Optional"
+                      className={`${inputClassName} tabular-nums`}
+                    />
+                    <p className="text-xs text-stone-500 mt-2">
+                      When daily loss hits this limit, P&L entry is locked and you can log a self punishment.
+                    </p>
+                  </div>
+                  <div>
+                    <label className={labelClassName}>Daily profit target ({formCurrency})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.dailyProfitTarget}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, dailyProfitTarget: e.target.value }))
+                      }
+                      placeholder="Optional"
+                      className={`${inputClassName} tabular-nums`}
+                    />
+                    <p className="text-xs text-stone-500 mt-2">
+                      Track today’s P&amp;L against this daily goal on the account overview.
+                    </p>
+                  </div>
                 </div>
 
                 <div>

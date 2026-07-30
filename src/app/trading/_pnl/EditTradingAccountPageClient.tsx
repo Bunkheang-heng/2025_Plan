@@ -218,9 +218,7 @@ export default function EditTradingAccountPageClient({
         target: Number.isFinite(target) && target > 0 ? target : null,
         maxLoss: Number.isFinite(maxLoss) && maxLoss > 0 ? maxLoss : null,
         dailyProfitTarget:
-          pnlKind === 'mt5' && Number.isFinite(dailyProfitTarget) && dailyProfitTarget > 0
-            ? dailyProfitTarget
-            : null,
+          Number.isFinite(dailyProfitTarget) && dailyProfitTarget > 0 ? dailyProfitTarget : null,
         strategy: formData.strategy.trim() || null,
         rules: formData.rules.trim() || null,
         updatedAt: new Date().toISOString(),
@@ -447,24 +445,24 @@ export default function EditTradingAccountPageClient({
                   )}
                 </div>
 
-                {pnlKind === 'mt5' ? (
-                  <div>
-                    <label className={labelClassName}>Daily profit target ({formCurrency})</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.dailyProfitTarget}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, dailyProfitTarget: e.target.value }))
-                      }
-                      placeholder="Optional"
-                      className={`${inputClassName} tabular-nums`}
-                    />
-                    <p className="text-xs text-stone-500 mt-2">
-                      Shown on the MT5 trade log and included in AI coach context.
-                    </p>
-                  </div>
-                ) : null}
+                <div>
+                  <label className={labelClassName}>Daily profit target ({formCurrency})</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.dailyProfitTarget}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, dailyProfitTarget: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className={`${inputClassName} tabular-nums`}
+                  />
+                  <p className="text-xs text-stone-500 mt-2">
+                    {pnlKind === 'mt5'
+                      ? 'Shown on the MT5 trade log and included in AI coach context.'
+                      : 'Track today’s P&L against this daily goal on the account overview.'}
+                  </p>
+                </div>
               </div>
             </Card>
           </div>

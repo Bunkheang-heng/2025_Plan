@@ -40,6 +40,7 @@ type TradingAccount = {
   capital?: number
   target?: number
   maxLoss?: number
+  dailyProfitTarget?: number | null
   strategy?: string
   rules?: string
   /** When 'bot', daily entries omit trade counts in the UI. */
@@ -237,6 +238,18 @@ export default function TradingPnLAccountPageClient({
     if (targetAmount <= 0) return 0
     return Math.min(100, Math.max(0, (cumulativeData.allTimePnL / targetAmount) * 100))
   }, [cumulativeData.allTimePnL, targetAmount])
+  const dailyProfitTargetAmount = useMemo(
+    () => Number(account?.dailyProfitTarget || 0),
+    [account?.dailyProfitTarget]
+  )
+  const todayProfit = useMemo(() => {
+    const row = state.dailyData[todayStr]
+    return row?.amount ?? 0
+  }, [state.dailyData, todayStr])
+  const dailyProfitPct = useMemo(() => {
+    if (dailyProfitTargetAmount <= 0) return 0
+    return Math.min(100, Math.max(0, (todayProfit / dailyProfitTargetAmount) * 100))
+  }, [todayProfit, dailyProfitTargetAmount])
   const dailyLossPct = useMemo(() => {
     if (maxLossAmount <= 0) return 0
     return Math.min(100, (activeDayLoss / maxLossAmount) * 100)
@@ -842,12 +855,20 @@ export default function TradingPnLAccountPageClient({
             <span className="text-xs font-medium uppercase tracking-wider text-stone-500">Account details</span>
             <Badge variant={accountStatusLabel === 'Target Met' ? 'success' : 'warning'}>{accountStatusLabel}</Badge>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8">
             <DetailField label="Type" value={accountTypeLabel} />
             <DetailField label="Initial balance" value={`${currencySymbol}${capitalAmount.toFixed(2)}`} />
             <DetailField
               label="Profit target"
               value={targetAmount > 0 ? `${currencySymbol}${targetAmount.toFixed(2)}` : '—'}
+            />
+            <DetailField
+              label="Daily profit target"
+              value={
+                dailyProfitTargetAmount > 0
+                  ? `${currencySymbol}${dailyProfitTargetAmount.toFixed(2)}`
+                  : '—'
+              }
             />
             <DetailField
               label="Daily max loss"
@@ -916,6 +937,37 @@ export default function TradingPnLAccountPageClient({
                         : profitTargetPct > 0
                           ? 'stroke-blue-500'
                           : 'stroke-stone-500'
+                    }
+                  />
+                  <div className="flex justify-between text-xs text-theme-muted mt-1 px-2">
+                    <span>0%</span>
+                    <span>100%</span>
+                  </div>
+                </ObjectiveCard>
+              )}
+
+              {dailyProfitTargetAmount > 0 && (
+                <ObjectiveCard
+                  title="Daily profit"
+                  hint={`Today’s P&L on ${todayStr} vs your daily profit target`}
+                  footer={
+                    <>
+                      Current {currencySymbol}{todayProfit.toFixed(2)} · Target {currencySymbol}
+                      {dailyProfitTargetAmount.toFixed(2)}
+                      {todayProfit >= dailyProfitTargetAmount ? ' · Target met' : ''}
+                    </>
+                  }
+                >
+                  <SemiCircleGauge
+                    percent={dailyProfitPct}
+                    strokeClass={
+                      dailyProfitPct >= 100
+                        ? 'stroke-green-500'
+                        : todayProfit < 0
+                          ? 'stroke-red-500'
+                          : dailyProfitPct > 0
+                            ? 'stroke-blue-500'
+                            : 'stroke-stone-500'
                     }
                   />
                   <div className="flex justify-between text-xs text-theme-muted mt-1 px-2">
