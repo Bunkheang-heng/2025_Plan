@@ -46,10 +46,6 @@ function CompoundIcon() {
   return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h4v-6H4v6zM10 19h4V5h-4v14zM16 19h4v-9h-4v9z"/><path d="M3 21h18"/></svg>
 }
 
-function ChecklistIcon() {
-  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>
-}
-
 // Module-level constant — no runtime dependencies on props/state
 const ALL_NAV_LINKS: NavLink[] = [
   { path: '/', label: 'Dashboard', icon: <DashIcon /> },
@@ -70,6 +66,7 @@ const ALL_NAV_LINKS: NavLink[] = [
     subLinks: [
       { path: '/trading/trading_pnl', label: 'Trading P&L', group: 'Trading' },
       { path: '/trading/bot_trading_pnl', label: 'Bot Trading P&L', group: 'Trading' },
+      { path: '/trading/entry_checklist', label: 'Entry Checklist', group: 'Trading' },
       { path: '/trading/lessons', label: 'Lessons', group: 'Learning' },
       { path: '/trading/my_rule', label: 'My Rule', group: 'Learning' },
       { path: '/trading/tools', label: 'Tools', group: 'Learning' },
@@ -77,9 +74,9 @@ const ALL_NAV_LINKS: NavLink[] = [
       { path: '/trading/trading_ai_predication', label: 'AI Prediction', group: 'Market Intel' },
       { path: '/trading/gold_info', label: 'Gold Market Info', group: 'Market Intel' },
       { path: '/trading/charts', label: 'Live Charts', group: 'Market Intel' },
+      { path: '/setup', label: 'My Setup', group: 'Trading' },
     ],
   },
-  { path: '/checklist_setup', label: 'Checklist & Setup', icon: <ChecklistIcon /> },
   {
     label: 'Saving',
     icon: <HeartIcon />,

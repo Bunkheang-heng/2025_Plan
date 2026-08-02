@@ -95,7 +95,6 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
   if (role === 'restricted') {
     return path === '/couple_saving' || path.startsWith('/couple_saving')
       || path === '/setup' || path.startsWith('/setup')
-      || path.startsWith('/checklist_setup')
   }
 
   return false
